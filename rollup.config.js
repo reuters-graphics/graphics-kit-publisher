@@ -13,7 +13,7 @@ const plugins = [
 const output = {
   dir: 'dist',
   format: 'cjs',
-  paths: { '@reuters-graphics/graphics-kit-publisher': './index.js' },
+  paths: { '@reuters-graphics/graphics-publisher': './index.js' },
 };
 
 export default [{
@@ -24,5 +24,5 @@ export default [{
   input: 'src/cli.js',
   output: { ...output, ...{ banner: '#!/usr/bin/env node' } },
   plugins,
-  external: ['@reuters-graphics/graphics-kit-publisher'],
+  external: ['@reuters-graphics/graphics-publisher'],
 }];

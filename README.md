@@ -1,29 +1,31 @@
 ![](badge.svg)
 
-# @reuters-graphics/graphics-kit-publisher
+# @reuters-graphics/graphics-publisher
 
-[![npm version](https://badge.fury.io/js/%40reuters-graphics%2Fgraphics-kit-publisher.svg)](https://badge.fury.io/js/%40reuters-graphics%2Fgraphics-kit-publisher) [![Reuters open source software](https://badgen.net/badge/Reuters/open%20source/?color=ff8000)](https://github.com/reuters-graphics/)
+A filesystem-based publisher for Reuters Graphics projects.
+
+[![npm version](https://badge.fury.io/js/%40reuters-graphics%2Fgraphics-publisher.svg)](https://badge.fury.io/js/%40reuters-graphics%2Fgraphics-publisher) [![Reuters open source software](https://badgen.net/badge/Reuters/open%20source/?color=ff8000)](https://github.com/reuters-graphics/)
 
 ## Quickstart
 
 ```bash
-yarn add @reuters-graphics/graphics-kit-publisher
+yarn add @reuters-graphics/graphics-publisher
 ```
 
 ### CLI
 
 ```bash
-graphics-kit-publisher greet Jon
+graphics-publisher upload
 ```
 
 ### Module
 
 ```javascript
-import GraphicsKitPublisher from '@reuters-graphics/graphics-kit-publisher';
+import GraphicsPublisher from '@reuters-graphics/graphics-publisher';
 
-const graphicsKitPublisher = new GraphicsKitPublisher();
+const graphicsPublisher = new GraphicsPublisher();
 
-graphicsKitPublisher.greet('Jon');
+graphicsPublisher.upload();
 ```
 
 ## Testing

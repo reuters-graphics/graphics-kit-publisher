@@ -1,0 +1,10 @@
+export const DEFAULT_PACK_DIR = 'graphics-pack';
+export const DEFAULT_DIST_DIR = 'dist';
+export const DEFAULT_ASSETS_DIR = 'media-assets';
+export const DEFAULT_STATICS_DIR = 'src/statics';
+export const DEFAULT_IMAGES_DIR = 'images';
+export const DEFAULT_LOCALES_DIR = 'locales';
+export const DEFAULT_LOCALE = 'en';
+export const DEFAULT_LOCALE_METADATA_FILE = 'content.json';
+export const DEFAULT_LOCALE_METADATA_TITLE_PROP = 'seoTitle';
+export const DEFAULT_LOCALE_METADATA_DESCRIPTION_PROP = 'seoDescription';
