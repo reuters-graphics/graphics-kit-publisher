@@ -68,19 +68,6 @@ yarn add @reuters-graphics/graphics-kit-publisher
 
 ```
   Usage
-    $ graphics-publisher upload [options]
-
-  Options
-    --defaultMetadataFile           Relative path to a JSON file in the default locale with metadata  (default content.json)
-    --defaultMetadataTitle          Title prop in default locale metadata  (default seoTitle)
-    --defaultMetadataDescription    Description prop in default locale metadata  (default seoDescription)
-    --width                         Set a max width for images beyond which you'll be prompted to resize  (default 2600)
-    --size                          Set a max size in KB for images beyond which you'll be prompted to resize  (default 200)
-                                                                                                                   
-jmac@Jons-MacBook-Pro ~/Scripts/bluprint_graphics-kit                                                   [23:34:48] 
-> $ npx ./node_modules/@reuters-graphics/graphics-publisher/dist/cli.js publish --help      ⬡ 14.16.0 [±master ✓▴]
-
-  Usage
     $ graphics-publisher publish [options]
 
   Options
