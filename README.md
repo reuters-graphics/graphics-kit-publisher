@@ -85,7 +85,7 @@ const uploadOptions = {
   defaultMetadataDescriptionProp: 'seoDescription',
 };
 
-graphicsPublisher.upload(uploadOptions);
+await graphicsPublisher.upload(uploadOptions);
 ```
 
 #### publish
@@ -101,5 +101,5 @@ const publishOptions = {
   defaultMetadataDescriptionProp: 'seoDescription',
 };
 
-graphicsPublisher.publish(publishOptions);
+await graphicsPublisher.publish(publishOptions);
 ```
