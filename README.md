@@ -128,5 +128,5 @@ const publishOptions = {
   defaultMetadataDescriptionProp: 'seoDescription',
 };
 
-graphicsPublisher.publish();
+graphicsPublisher.publish(publishOptions);
 ```
