@@ -93,6 +93,16 @@ await graphicsPublisher.upload(uploadOptions);
 ```javascript
 import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
+const publisherOptions = {
+  dist: 'dist',
+  pack: 'graphics-pack',
+  assets: 'media-assets',
+  statics: 'src/statics',
+  images: 'images',
+  locales: 'locales',
+  locale: 'en',
+};
+
 const graphicsPublisher = new GraphicsPublisher(publisherOptions);
 
 const publishOptions = {
