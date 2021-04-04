@@ -14,33 +14,6 @@ yarn add @reuters-graphics/graphics-kit-publisher
 
 ### CLI
 
-```
- Usage
-    $ graphics-publisher <command> [options]
-
-  Available Commands
-    prepack    
-    pack       
-    measure    
-    upload     
-    publish    
-
-  For more info, run any command with the `--help` flag
-    $ graphics-publisher prepack --help
-    $ graphics-publisher pack --help
-
-  Options
-    --dist       Relative path to a directory of built files we'll use to create your pack  (default dist)
-    --pack       Relative path to a directory where your pack will be created  (default graphics-pack)
-    --assets     Relative path to a directory of media assets to include with your pack  (default media-assets)
-    --statics    Relative path to a static files directory  (default src/statics)
-    --images     Relative path to directory of images inside the static files directory  (default images)
-    --locales    Relative path to directory of translatable JSON files  (default locales)
-    --locale     Default locale  (default en)
-    --version    Displays current version
-    -h, --help       Displays this message
-```
-
 #### `upload`
 
 ```
