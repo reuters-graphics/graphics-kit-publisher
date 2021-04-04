@@ -91,9 +91,28 @@ yarn add @reuters-graphics/graphics-kit-publisher
 ```javascript
 import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
-const graphicsPublisher = new GraphicsPublisher();
+const publisherOptions = {
+  dist: 'dist',
+  pack: 'graphics-pack',
+  assets: 'media-assets',
+  statics: 'src/statics',
+  images: 'images',
+  locales: 'locales',
+  locale: 'en',
+};
 
-graphicsPublisher.upload();
+const graphicsPublisher = new GraphicsPublisher(publisherOptions);
+
+const uploadOptions = {
+  width: 2600,
+  size: 200,
+  fast: false,
+  defaultMetadataFile: 'content.json',
+  defaultMetadataTitleProp: 'seoTitle',
+  defaultMetadataDescriptionProp: 'seoDescription',
+};
+
+graphicsPublisher.upload(uploadOptions);
 ```
 
 #### publish
@@ -101,13 +120,13 @@ graphicsPublisher.upload();
 ```javascript
 import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
-const graphicsPublisher = new GraphicsPublisher();
+const graphicsPublisher = new GraphicsPublisher(publisherOptions);
+
+const publishOptions = {
+  defaultMetadataFile: 'content.json',
+  defaultMetadataTitleProp: 'seoTitle',
+  defaultMetadataDescriptionProp: 'seoDescription',
+};
 
 graphicsPublisher.publish();
-```
-
-## Testing
-
-```bash
-yarn test
 ```
