@@ -60,9 +60,20 @@ prog
   .option('--defaultMetadataDescription', 'Description prop in default locale metadata', DEFAULT_LOCALE_METADATA_DESCRIPTION_PROP)
   .option('-w, --width', 'Set a max width for images beyond which you\'ll be prompted to resize', 2600)
   .option('-z, --size', 'Set a max size in KB for images beyond which you\'ll be prompted to resize', 200)
+  .option('-f, --fast', 'Publish just the public edition')
   .action(async(opts) => {
     const graphicsPublisher = new GraphicsPublisher(opts);
     await graphicsPublisher.upload(opts);
+  });
+
+prog
+  .command('publish')
+  .option('--defaultMetadataFile', 'Relative path to a JSON file in the default locale with metadata', DEFAULT_LOCALE_METADATA_FILE)
+  .option('--defaultMetadataTitle', 'Title prop in default locale metadata', DEFAULT_LOCALE_METADATA_TITLE_PROP)
+  .option('--defaultMetadataDescription', 'Description prop in default locale metadata', DEFAULT_LOCALE_METADATA_DESCRIPTION_PROP)
+  .action(async(opts) => {
+    const graphicsPublisher = new GraphicsPublisher(opts);
+    await graphicsPublisher.publish(opts);
   });
 
 prog.parse(process.argv);

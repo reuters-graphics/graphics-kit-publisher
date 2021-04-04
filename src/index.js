@@ -15,7 +15,9 @@ import measureMixin from './measure';
 import metadataMixin from './metadata';
 import packMixin from './pack';
 import prepackMixin from './prepack';
+import publishMixin from './publish';
 import setDirectoryConfigMixin from './setDirectoryConfig';
+import uploadMixin from './upload';
 import validateFileSystemMixin from './validateFileSystem';
 
 class GraphicsPublisher {
@@ -38,7 +40,9 @@ class GraphicsPublisher {
       metadataMixin,
       prepackMixin,
       packMixin,
-      measureMixin
+      measureMixin,
+      uploadMixin,
+      publishMixin
     );
 
     this.DEFAULT_METADATA_TITLE_PROP = defaultMetadataTitleProp;
@@ -46,12 +50,6 @@ class GraphicsPublisher {
 
     this.setDirectoryConfig({ dist, assets, pack, statics, images, locales, locale, defaultMetadataFile });
     this.validateFileSystem();
-  }
-
-  async upload(opts) {
-    await this.measure(opts);
-    await this.prepack();
-    await this.pack();
   }
 }
 

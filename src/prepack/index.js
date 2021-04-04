@@ -7,11 +7,11 @@ export default {
   ...createGraphicPackMixin,
   ...updateGraphicPackMixin,
   async prepack() {
-    const packageMetadata = await this.getPackMetadata();
-    if (!packageMetadata.graphic.pack) {
-      await this.createGraphicPack(packageMetadata);
+    this.packageMetadata = await this.getPackMetadata();
+    if (!this.packageMetadata.graphic.pack) {
+      await this.createGraphicPack(this.packageMetadata);
     } else {
-      await this.updateGraphicPack(packageMetadata);
+      await this.updateGraphicPack(this.packageMetadata);
     }
   },
 };
