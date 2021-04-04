@@ -86,12 +86,24 @@ yarn add @reuters-graphics/graphics-kit-publisher
 
 ### Module
 
+#### upload
+
 ```javascript
 import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
 const graphicsPublisher = new GraphicsPublisher();
 
 graphicsPublisher.upload();
+```
+
+#### publish
+
+```javascript
+import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
+
+const graphicsPublisher = new GraphicsPublisher();
+
+graphicsPublisher.publish();
 ```
 
 ## Testing
