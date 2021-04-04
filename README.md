@@ -14,7 +14,7 @@ yarn add @reuters-graphics/graphics-kit-publisher
 
 ### CLI
 
-```bash
+```
  Usage
     $ graphics-publisher <command> [options]
 
