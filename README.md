@@ -55,6 +55,25 @@ yarn add @reuters-graphics/graphics-kit-publisher
     -h, --help               Displays this message
 ```
 
+#### preview
+
+```
+  Usage
+    $ graphics-publisher preview [options]
+
+  Options
+    --distDir                Relative path to a directory of built files we'll use to create your pack  (default dist)
+    --packDir                Relative path to a directory where your pack will be created  (default graphics-pack)
+    --assetsDir              Relative path to a directory of media assets to include with your pack  (default media-assets)
+    --imagesDir              Relative path to directory of images which includes the public share image  (default src/statics/images)
+    --localesDir             Relative path to directory of translatable JSON files  (default locales)
+    --packLocale             Default locale for pack  (default en)
+    --packMetadataFile       Relative path to a JSON file in the default locale with pack metadata  (default content.json)
+    --packTitleProp          Title prop in default pack metadata file  (default seoTitle)
+    --packDescriptionProp    Description prop in default pack metadata file  (default seoDescription)
+    -h, --help               Displays this message
+```
+
 ### Module
 
 #### upload
@@ -105,4 +124,26 @@ const publisherOptions = {
 const graphicsPublisher = new GraphicsPublisher(publisherOptions);
 
 await graphicsPublisher.publish();
+```
+
+#### preview
+
+```javascript
+import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
+
+const publisherOptions = {
+  distDir: 'dist',
+  packDir: 'graphics-pack',
+  assetsDir: 'media-assets',
+  imagesDir: 'src/statics/images',
+  localesDir: 'locales',
+  packLocale: 'en',
+  packMetadataFile: 'content.json',
+  packTitleProp: 'seoTitle',
+  packDescriptionProp: 'seoDescription',
+};
+
+const graphicsPublisher = new GraphicsPublisher(publisherOptions);
+
+await graphicsPublisher.preview();
 ```
