@@ -6,6 +6,14 @@ A filesystem-based publisher for Reuters Graphics projects.
 
 [![npm version](https://badge.fury.io/js/%40reuters-graphics%2Fgraphics-kit-publisher.svg)](https://badge.fury.io/js/%40reuters-graphics%2Fgraphics-kit-publisher) [![Reuters open source software](https://badgen.net/badge/Reuters/open%20source/?color=ff8000)](https://github.com/reuters-graphics/)
 
+## Why this?
+
+Reuters Graphics projects are packaged for both reuters.com readers and media clients. The package structure is defined by our RNGS server, and it is [complex](https://github.com/reuters-graphics/bluprint_graphics-kit/issues/1). This package exists to help compile graphics packs for our server in a way that works across different page builders.
+
+Each graphics pack may consist of any number of public pages for dotcom readers and embeddable graphics for media clients. The publisher needs to be able to flex with each project and bundle all the outputs the right way.
+
+We do that by presuming a certain _filesystem structure_ that the graphics-publisher knows how to pack up for the RNGS server. That makes it a good match for page builders that use filesystem-based routing, namely [SvelteKit](https://kit.svelte.dev/) and [Next.js](https://nextjs.org/), and gives us a publishing tool that makes very few assumptions about the way projects are built as long as they output a pattern of files.
+
 ## Quickstart
 
 ```bash
