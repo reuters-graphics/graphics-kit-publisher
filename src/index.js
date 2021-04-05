@@ -22,6 +22,18 @@ import setDirectoryConfigMixin from './setDirectoryConfig';
 import uploadMixin from './upload';
 import validateFileSystemMixin from './validateFileSystem';
 
+const defaultOptions = {
+  distDir: DEFAULT_DIST_DIR,
+  packDir: DEFAULT_PACK_DIR,
+  assetsDir: DEFAULT_ASSETS_DIR,
+  imagesDir: DEFAULT_IMAGES_DIR,
+  localesDir: DEFAULT_LOCALES_DIR,
+  packLocale: DEFAULT_PACK_LOCALE,
+  packMetadataFile: DEFAULT_PACK_METADATA_FILE,
+  packTitleProp: DEFAULT_PACK_TITLE_PROP,
+  packDescriptionProp: DEFAULT_PACK_DESCRIPTION_PROP,
+};
+
 class GraphicsPublisher {
   constructor({
     distDir = DEFAULT_DIST_DIR,
@@ -33,7 +45,7 @@ class GraphicsPublisher {
     packMetadataFile = DEFAULT_PACK_METADATA_FILE,
     packTitleProp = DEFAULT_PACK_TITLE_PROP,
     packDescriptionProp = DEFAULT_PACK_DESCRIPTION_PROP,
-  }) {
+  } = defaultOptions) {
     Object.assign(
       this,
       setDirectoryConfigMixin,

@@ -15,6 +15,11 @@ import uniqifyBasename from '../utils/uniqifyBasename';
 
 const asyncImgSize = promisify(imgSize);
 
+const defaultOptions = {
+  warnImageWidth: DEFAULT_WARN_IMAGE_WIDTH,
+  warnImageSize: DEFAULT_WARN_IMAGE_SIZE,
+};
+
 export default {
   /**
    * Measures images in the static files images directory, creates a manifest
@@ -22,7 +27,10 @@ export default {
    * or size thresholds.
    * @param {object} opts CLI options, including max width in pixels and size in KB for images
    */
-  async measureImages({ warnImageWidth: maxWidth = DEFAULT_WARN_IMAGE_WIDTH, warnImageSize: maxSize = DEFAULT_WARN_IMAGE_SIZE }) {
+  async measureImages({
+    warnImageWidth = DEFAULT_WARN_IMAGE_WIDTH,
+    warnImageSize = DEFAULT_WARN_IMAGE_SIZE,
+  } = defaultOptions) {
     const images = glob.sync('**/*.{jpg,png,jpeg}', { cwd: this.IMAGES_DIR });
     const MANIFEST = {};
     for (const image of images) {
@@ -32,13 +40,13 @@ export default {
 
       MANIFEST[image] = { width, height, size: sizeKB };
 
-      if (width > maxWidth || sizeKB > maxSize) {
+      if (width > warnImageWidth || sizeKB > warnImageSize) {
         const { resize } = await prompts({
           type: 'confirm',
           name: 'resize',
-          message: width > maxWidth ?
-            chalk`The image {yellow ${image}} is larger than ${maxWidth} pixels wide. Would you like to resize it?` :
-            chalk`The image {yellow ${image}} is larger than ${maxSize} KB. Would you like to resize it?`,
+          message: width > warnImageWidth ?
+            chalk`The image {yellow ${image}} is larger than ${warnImageWidth} pixels wide. Would you like to resize it?` :
+            chalk`The image {yellow ${image}} is larger than ${warnImageSize} KB. Would you like to resize it?`,
           initial: true,
         });
         if (!resize) continue;
@@ -50,7 +58,7 @@ export default {
           type: 'number',
           name: 'resizeWidth',
           message: chalk`What width should {yellow ${image}} be in pixels?`,
-          initial: maxWidth,
+          initial: warnImageWidth,
         });
 
         // Resize file and save to temp file
