@@ -76,12 +76,10 @@ yarn add @reuters-graphics/graphics-kit-publisher
 
 ### Module
 
-#### upload
+#### config
 
 ```javascript
-import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
-
-const publisherOptions = {
+const defaultConfig = {
   distDir: 'dist',
   packDir: 'graphics-pack',
   assetsDir: 'media-assets',
@@ -92,16 +90,22 @@ const publisherOptions = {
   packTitleProp: 'seoTitle',
   packDescriptionProp: 'seoDescription',
 };
+```
 
-const graphicsPublisher = new GraphicsPublisher(publisherOptions);
+#### upload
 
-const uploadOptions = {
+```javascript
+import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
+
+const graphicsPublisher = new GraphicsPublisher(defaultConfig);
+
+const defaultUploadOptions = {
   warnImageWidth: 2600,
   warnImageSize: 200,
   fast: false,
 };
 
-await graphicsPublisher.upload(uploadOptions);
+await graphicsPublisher.upload(defaultUploadOptions);
 ```
 
 #### publish
@@ -109,19 +113,7 @@ await graphicsPublisher.upload(uploadOptions);
 ```javascript
 import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
-const publisherOptions = {
-  distDir: 'dist',
-  packDir: 'graphics-pack',
-  assetsDir: 'media-assets',
-  imagesDir: 'src/statics/images',
-  localesDir: 'locales',
-  packLocale: 'en',
-  packMetadataFile: 'content.json',
-  packTitleProp: 'seoTitle',
-  packDescriptionProp: 'seoDescription',
-};
-
-const graphicsPublisher = new GraphicsPublisher(publisherOptions);
+const graphicsPublisher = new GraphicsPublisher(defaultConfig);
 
 await graphicsPublisher.publish();
 ```
@@ -131,19 +123,7 @@ await graphicsPublisher.publish();
 ```javascript
 import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
-const publisherOptions = {
-  distDir: 'dist',
-  packDir: 'graphics-pack',
-  assetsDir: 'media-assets',
-  imagesDir: 'src/statics/images',
-  localesDir: 'locales',
-  packLocale: 'en',
-  packMetadataFile: 'content.json',
-  packTitleProp: 'seoTitle',
-  packDescriptionProp: 'seoDescription',
-};
-
-const graphicsPublisher = new GraphicsPublisher(publisherOptions);
+const graphicsPublisher = new GraphicsPublisher(defaultConfig);
 
 await graphicsPublisher.preview();
 ```
