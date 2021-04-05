@@ -14,7 +14,7 @@ yarn add @reuters-graphics/graphics-kit-publisher
 
 ### CLI
 
-#### `upload`
+#### upload
 
 ```
   Usage
