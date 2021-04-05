@@ -135,3 +135,16 @@ const graphicsPublisher = new GraphicsPublisher(defaultConfig);
 
 await graphicsPublisher.preview();
 ```
+
+## Filesystem structure
+
+graphics-publisher assumes certain things about the structure of your development environment:
+
+- [dist directory]()
+- [pack directory]()
+- [media assets directory]()
+- [locales directory]()
+- [images directory]()
+- [pack metadata]()
+- [build scripts]()
+- [Reuters Graphics user profile]()
