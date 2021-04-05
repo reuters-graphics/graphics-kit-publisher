@@ -138,13 +138,13 @@ await graphicsPublisher.preview();
 
 ## Filesystem structure
 
-graphics-publisher assumes certain things about the structure of your development environment.
+The publisher assumes certain things about the structure of your development environment.
 
 #### dist directory (`distDir`)
 
 A dist directory is the output from your page builder.
 
-- The dist directory has an `index.html` file at its root, which includes an `og:image` metatag (used to create a preview image for pack).
+- The dist directory has an `index.html` file at its root, which includes an `og:image` metatag (used to create a preview image for the graphics pack).
 - All static assets are included in a separate root-level directory inside the dist folder, e.g., `cdn/` below, and are absolutely referenced from any HTML page in the project.
 - All embeddable graphic pages are contained in a root-level directory named `embeds/` and placed in folders representing a valid locale code and a unique slug within that locale, e.g., `en/chart/index.html` below.
 - Additional pages can be named whatever they need to be as long as they don't collide with `embeds` or the static assets directory.
@@ -175,9 +175,11 @@ graphics-pack/
   media-en-map.zip
 ```
 
+See [this issue](https://github.com/reuters-graphics/bluprint_graphics-kit/issues/1#issuecomment-812350299) for more information on the structure of the files sent to the RNGS server.
+
 #### media assets directory (`assetsDir`)
 
-The media assets directory contains flat JPG and EPS files that will be included with the media editions uploaded to the server. They must be structured using the same directory scheme as embeds in the dist directory -- a folder for a valid locale and for a unique slug within the locale.
+The media assets directory contains flat JPG and EPS files that will be included with the media editions uploaded to the server. They must be structured using the same directory scheme as embeds in the dist directory -- a folder for a valid locale and for a unique slug within the locale. The JPG and EPS filenames can be whatever you want them to be.
 
 ```
 media-assets/
@@ -207,12 +209,69 @@ graphics-pack/
   media-en-chart.zip  👈 Contains both embeddable graphic and flats 
 ```
 
-#### locales directory
+#### locales directory (`localesDir`)
+
+The locales directory contains structured data used to translate the content of your page. The publisher assumes this directory has sub-directories named using a valid locale code, including at least the default locale code for the pack (`packLocale`, usually `'en'`).
+
+Otherwise, the publisher assumes one JSON file (`packMetadataFile`) within this default locale sub-directory contains a title (`packTitleProp`) and description (`packDescriptionProp`) for the pack.
+
+```
+locales/
+  en/
+    content.json
+```
 
 #### images directory
 
-#### pack metadata
+An images directory contains at least the share image referenced in the metatag in the root `index.html` file in the dist directory.
+
+```
+src/
+  statics/
+    images/
+      share-card.jpg
+```
+
+The publisher will create a `manifest.json` file in the root of the images directory with dimensions for every image in that directory. You can use it to set the dimensions of images in your project.
+
+#### package.json
+
+The publisher will fill out your [homepage](https://docs.npmjs.com/cli/v7/configuring-npm/package-json#homepage) prop in package.json with the URL where the root `index.html` file in the dist directory will be served from when it's published through the RNGS server.
+
+It will also fill out a `reuters` prop with metadata about the RNGS graphics pack.
 
 #### build scripts
 
-#### Reuters Graphics user profile
+The publisher assumes two npm [scripts](https://docs.npmjs.com/cli/v7/using-npm/scripts) will be defined in your package.json.
+
+The `build` script will run your page builder, which should build the pages and assets in the dist directory. It will be run during the publisher's `upload` command.
+
+The `build:preview` will be run during the publisher's `preview` command.
+
+#### Reuters Graphics user profiles
+
+The publisher assumes you have two user profiles in your computer's home directory.
+
+The `~/.reuters-graphics/graphics-server.json` file contains the following credentials to grant access to the RNGS server API.
+
+```
+{
+  "username": "<employee ID>",
+  "password": "<RNGS API password>",
+  "apiKey": "<RNGS API key>"
+}
+```
+
+The `~/.reuters-graphics/profile.json` file contains your personal profile.
+
+```
+{
+  "name": "<your name>",
+  "email": "<Thomson Reuters email address>",
+  "url": "<Twitter URL or another link>",
+  "desk": "<graphics desk location>",
+  "github": {
+    "email": "<GitHub email>"
+  }
+}
+```
