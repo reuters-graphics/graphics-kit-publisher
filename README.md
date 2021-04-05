@@ -158,12 +158,10 @@ dist/
   index.html
   a-second-page/
     index.html
-  ...
   embeds/
     en/
       chart/
         index.html
-  ...
 ```
 
 #### pack directory
