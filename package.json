@@ -15,6 +15,7 @@
     "badge.svg"
   ],
   "scripts": {
+    "prepublishOnly": "npm run build",
     "build": "rollup --config rollup.config.js",
     "test": "yarn build && mocha"
   },

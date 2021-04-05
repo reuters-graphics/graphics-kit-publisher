@@ -18,8 +18,11 @@ export default {
             slugs,
             authors,
             published,
+            mediaEditions: {
+              type: 'array',
+            },
           },
-          required: ['desk', 'slugs', 'authors', 'published'],
+          required: ['desk', 'slugs', 'authors', 'published', 'mediaEditions'],
         },
       },
       required: ['contact', 'graphic'],
