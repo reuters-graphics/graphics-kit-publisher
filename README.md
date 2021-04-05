@@ -138,9 +138,9 @@ await graphicsPublisher.preview();
 
 ## Filesystem structure
 
-graphics-publisher assumes certain things about the structure of your development environment:
+graphics-publisher assumes certain things about the structure of your development environment.
 
-#### dist directory
+#### dist directory (`distDir`)
 
 A dist directory is the output from your page builder.
 
@@ -164,9 +164,48 @@ dist/
         index.html
 ```
 
-#### pack directory
+#### pack directory (`packDir`)
 
-#### media assets directory
+A directory will be created containing the different `zip` archives used to build out your graphics pack.
+
+```
+graphics-pack/
+  public.zip
+  media-en-chart.zip
+  media-en-map.zip
+```
+
+#### media assets directory (`assetsDir`)
+
+The media assets directory contains flat JPG and EPS files that will be included with the media editions uploaded to the server. They must be structured using the same directory scheme as embeds in the dist directory -- a folder for a valid locale and for a unique slug within the locale.
+
+```
+media-assets/
+  en/
+    chart/
+      chart.eps
+      chart.jpg
+    map/
+      my-map.eps
+      map-preview.jpg
+```
+
+If you have an embeddable page using the same locale/slug scheme as a set of flat assets, the publisher will upload the JPG and EPS file _with_ the embeddable version of the same graphic.
+
+```
+dist/
+  embeds/
+    en/
+      chart/
+        index.html
+media-assets/
+  en/
+    chart/
+      chart.eps
+      chart.jpg
+graphics-pack/
+  media-en-chart.zip  👈 Contains both embeddable graphic and flats 
+```
 
 #### locales directory
 
