@@ -142,9 +142,22 @@ graphics-publisher assumes certain things about the structure of your developmen
 
 #### dist directory
 
+A dist directory is the output from your page builder.
+
+- The dist directory has an `index.html` file at its root, which includes an `og:image` metatag (used to create a preview image for pack).
+- All static assets are included in a separate root-level directory inside the dist folder, e.g., `cdn/` below, and are absolutely referenced from any HTML page in the project.
+- All embeddable graphic pages are contained in a root-level directory named `embeds/` and placed in folders representing a valid locale code and a unique slug within that locale, e.g., `en/chart/index.html` below.
+- Additional pages can be named whatever they need to be as long as they don't collide with `embeds` or the static assets directory.
+
 ```
 dist/
+  cdn/
+    js/ ...
+    css/ ...
+    images/ ...
   index.html
+  a-second-page/
+    index.html
   ...
   embeds/
     en/
