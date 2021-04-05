@@ -254,7 +254,7 @@ The publisher assumes you have two user profiles in your computer's home directo
 
 The `~/.reuters-graphics/graphics-server.json` file contains the following credentials to grant access to the RNGS server API.
 
-```
+```javascript
 {
   "username": "<employee ID>",
   "password": "<RNGS API password>",
@@ -264,7 +264,7 @@ The `~/.reuters-graphics/graphics-server.json` file contains the following crede
 
 The `~/.reuters-graphics/profile.json` file contains your personal profile.
 
-```
+```javascript
 {
   "name": "<your name>",
   "email": "<Thomson Reuters email address>",
