@@ -1,13 +1,12 @@
-require('dotenv').config();
-const GraphicsKitPublisher = require('../dist');
+const GraphicsPublisher = require('../dist');
 const expect = require('expect.js');
 
-const graphicsKitPublisher = new GraphicsKitPublisher();
+const graphicsPublisher = new GraphicsPublisher();
 
 describe('test GraphicsKitPublisher', function() {
   this.timeout(10000);
 
   it('Should greet', function() {
-    expect(graphicsKitPublisher.greet('Sue', true)).to.be('Hello, Sue!');
+    console.log('Write some tests, plz.');
   });
 });
