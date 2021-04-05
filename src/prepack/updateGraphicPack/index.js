@@ -10,7 +10,7 @@ export default {
     const packMetadata = {
       rootSlug: metadata.graphic.slugs.root,
       desk: metadata.graphic.desk,
-      language: this.DEFAULT_LOCALE,
+      language: this.PACK_LOCALE,
       title: metadata.title,
       description: metadata.description,
       byline: metadata.contact.name,

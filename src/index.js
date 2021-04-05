@@ -2,16 +2,17 @@ import {
   DEFAULT_ASSETS_DIR,
   DEFAULT_DIST_DIR,
   DEFAULT_IMAGES_DIR,
-  DEFAULT_LOCALE,
   DEFAULT_LOCALES_DIR,
-  DEFAULT_LOCALE_METADATA_DESCRIPTION_PROP,
-  DEFAULT_LOCALE_METADATA_FILE,
-  DEFAULT_LOCALE_METADATA_TITLE_PROP,
-  DEFAULT_PACK_DIR,
-  DEFAULT_STATICS_DIR
+  DEFAULT_PACK_DIR
 } from './constants/directories';
+import {
+  DEFAULT_PACK_DESCRIPTION_PROP,
+  DEFAULT_PACK_LOCALE,
+  DEFAULT_PACK_METADATA_FILE,
+  DEFAULT_PACK_TITLE_PROP
+} from './constants/pack';
 
-import measureMixin from './measure';
+import measureImagesMixin from './measureImages';
 import metadataMixin from './metadata';
 import packMixin from './pack';
 import prepackMixin from './prepack';
@@ -22,16 +23,15 @@ import validateFileSystemMixin from './validateFileSystem';
 
 class GraphicsPublisher {
   constructor({
-    dist = DEFAULT_DIST_DIR,
-    assets = DEFAULT_ASSETS_DIR,
-    pack = DEFAULT_PACK_DIR,
-    statics = DEFAULT_STATICS_DIR,
-    images = DEFAULT_IMAGES_DIR,
-    locales = DEFAULT_LOCALES_DIR,
-    locale = DEFAULT_LOCALE,
-    defaultMetadataFile = DEFAULT_LOCALE_METADATA_FILE,
-    defaultMetadataTitleProp = DEFAULT_LOCALE_METADATA_TITLE_PROP,
-    defaultMetadataDescriptionProp = DEFAULT_LOCALE_METADATA_DESCRIPTION_PROP,
+    distDir = DEFAULT_DIST_DIR,
+    packDir = DEFAULT_PACK_DIR,
+    assetsDir = DEFAULT_ASSETS_DIR,
+    imagesDir = DEFAULT_IMAGES_DIR,
+    localesDir = DEFAULT_LOCALES_DIR,
+    packLocale = DEFAULT_PACK_LOCALE,
+    packMetadataFile = DEFAULT_PACK_METADATA_FILE,
+    packTitleProp = DEFAULT_PACK_TITLE_PROP,
+    packDescriptionProp = DEFAULT_PACK_DESCRIPTION_PROP,
   }) {
     Object.assign(
       this,
@@ -40,15 +40,16 @@ class GraphicsPublisher {
       metadataMixin,
       prepackMixin,
       packMixin,
-      measureMixin,
+      measureImagesMixin,
       uploadMixin,
       publishMixin
     );
 
-    this.DEFAULT_METADATA_TITLE_PROP = defaultMetadataTitleProp;
-    this.DEFAULT_METADATA_DESCRIPTION_PROP = defaultMetadataDescriptionProp;
+    this.PACK_LOCALE = packLocale;
+    this.PACK_TITLE_PROP = packTitleProp;
+    this.PACK_DESCRIPTION_PROP = packDescriptionProp;
 
-    this.setDirectoryConfig({ dist, assets, pack, statics, images, locales, locale, defaultMetadataFile });
+    this.setDirectoryConfig({ distDir, packDir, assetsDir, imagesDir, localesDir, packMetadataFile });
     this.validateFileSystem();
   }
 }

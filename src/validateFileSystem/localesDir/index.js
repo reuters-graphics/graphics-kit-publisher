@@ -12,13 +12,13 @@ export default {
    * @param {string} ASSETS_DIR Directory of media assets
    */
   validateLocalesDir(LOCALES_DIR, DEFAULT_LOCALE) {
-    if (!fs.existsSync(LOCALES_DIR)) throw new FileSystemError(chalk`Locales directory {yellow ${path.relative(process.cwd(), LOCALES_DIR)}} does not exist. It needs to.`);
+    if (!fs.existsSync(LOCALES_DIR)) throw new FileSystemError(chalk`Locales directory {yellow ${path.relative(this.CWD, LOCALES_DIR)}} does not exist. It needs to.`);
     const localesDirs = glob.sync('*/', { cwd: LOCALES_DIR });
     for (const localeDir of localesDirs) {
       const locale = localeDir.replace('/', '');
-      if (!VALID_LOCALES.includes(locale)) throw new FileSystemError(chalk`Invalid directory in locales: {cyan ${locale}}. All directories beneath {yellow ${path.relative(process.cwd(), LOCALES_DIR)}} should be named with a valid locale code.`);
+      if (!VALID_LOCALES.includes(locale)) throw new FileSystemError(chalk`Invalid directory in locales: {cyan ${locale}}. All directories beneath {yellow ${path.relative(this.CWD, LOCALES_DIR)}} should be named with a valid locale code.`);
     }
-    if (!fs.existsSync(path.join(LOCALES_DIR, DEFAULT_LOCALE))) throw new FileSystemError(chalk`Locale directory for default locale {cyan ${DEFAULT_LOCALE}} does not exist in {yellow ${path.relative(process.cwd(), LOCALES_DIR)}}. It needs to.`);
-    if (!fs.existsSync(this.DEFAULT_METADATA_FILE)) throw new FileSystemError(chalk`Default metadata JSON file {cyan ${path.basename(this.DEFAULT_METADATA_FILE)}} does not exist in default locale directory {yellow ${path.relative(process.cwd(), path.dirname(this.DEFAULT_METADATA_FILE))}}. It needs to.`);
+    if (!fs.existsSync(path.join(LOCALES_DIR, DEFAULT_LOCALE))) throw new FileSystemError(chalk`Locale directory for default locale {cyan ${DEFAULT_LOCALE}} does not exist in {yellow ${path.relative(this.CWD, LOCALES_DIR)}}. It needs to.`);
+    if (!fs.existsSync(this.PACK_METADATA_FILE)) throw new FileSystemError(chalk`Default metadata JSON file {cyan ${path.basename(this.PACK_METADATA_FILE)}} does not exist in default locale directory {yellow ${path.relative(this.CWD, path.dirname(this.PACK_METADATA_FILE))}}. It needs to.`);
   },
 };

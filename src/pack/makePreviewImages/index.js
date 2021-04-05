@@ -12,15 +12,15 @@ import url from 'url';
  * Finds the image in the local static files directory that matches the social
  * share image, allowing a variable path for statics on the server.
  * @param {string} shareImgPath Path to share image relative to project root
- * @param {string} STATIC_IMGS_DIR Path to local static images directory
+ * @param {string} IMAGES_DIR Path to local static images directory
  * @returns {string} local image path
  */
-const findLocalShareImage = (shareImgPath, STATIC_IMGS_DIR) => {
-  const manifest = fs.readJSONSync(path.join(STATIC_IMGS_DIR, 'manifest.json'));
+const findLocalShareImage = (shareImgPath, IMAGES_DIR) => {
+  const manifest = fs.readJSONSync(path.join(IMAGES_DIR, 'manifest.json'));
   const imageNames = Object.keys(manifest);
   imageNames.sort((a, b) => a.length - b.length);
   for (const imageName of imageNames) {
-    if (shareImgPath.replace(/^\//, '').includes(imageName)) return path.join(STATIC_IMGS_DIR, imageName);
+    if (shareImgPath.replace(/^\//, '').includes(imageName)) return path.join(IMAGES_DIR, imageName);
   }
 };
 
@@ -34,7 +34,7 @@ export default {
     }
     const ROOT_RELATIVE_PATH = new url.URL(this.homepage).pathname;
     const SHARE_IMAGE_PATH = path.join(this.DIST_DIR, shareImage.url.replace(ROOT_RELATIVE_PATH, ''));
-    const LOCAL_SHARE_IMAGE_PATH = findLocalShareImage(SHARE_IMAGE_PATH, this.STATIC_IMGS_DIR);
+    const LOCAL_SHARE_IMAGE_PATH = findLocalShareImage(SHARE_IMAGE_PATH, this.IMAGES_DIR);
 
     const EMBEDS_DIR = path.join(this.DIST_DIR, 'embeds');
     const embedLocales = glob.sync('*/', { cwd: EMBEDS_DIR });

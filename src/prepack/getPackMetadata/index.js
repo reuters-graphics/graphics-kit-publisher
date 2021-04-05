@@ -15,11 +15,11 @@ export default {
     return validPackageJson.reuters;
   },
   async getDefaultLocaleMetadata() {
-    const defaultLocaleMetadatafile = fs.readJSONSync(this.DEFAULT_METADATA_FILE);
-    const title = get(defaultLocaleMetadatafile, this.DEFAULT_METADATA_TITLE_PROP);
-    const description = get(defaultLocaleMetadatafile, this.DEFAULT_METADATA_DESCRIPTION_PROP);
-    if (!title) throw new PackageMetadataError(chalk`{cyan ${this.DEFAULT_METADATA_TITLE_PROP}} not defined in {yellow ${path.relative(this.CWD, this.DEFAULT_METADATA_FILE)}}. It needs to be.`);
-    if (!description) throw new PackageMetadataError(chalk`{cyan ${this.DEFAULT_METADATA_DESCRIPTION_PROP}} not defined in {yellow ${path.relative(this.CWD, this.DEFAULT_METADATA_FILE)}}. It needs to be.`);
+    const defaultLocaleMetadatafile = fs.readJSONSync(this.PACK_METADATA_FILE);
+    const title = get(defaultLocaleMetadatafile, this.PACK_TITLE_PROP);
+    const description = get(defaultLocaleMetadatafile, this.PACK_DESCRIPTION_PROP);
+    if (!title) throw new PackageMetadataError(chalk`{cyan ${this.PACK_TITLE_PROP}} not defined in {yellow ${path.relative(this.CWD, this.PACK_METADATA_FILE)}}. It needs to be.`);
+    if (!description) throw new PackageMetadataError(chalk`{cyan ${this.PACK_DESCRIPTION_PROP}} not defined in {yellow ${path.relative(this.CWD, this.PACK_METADATA_FILE)}}. It needs to be.`);
     return { title, description };
   },
   async getPackMetadata() {

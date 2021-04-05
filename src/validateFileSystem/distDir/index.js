@@ -17,20 +17,20 @@ export default {
     const embedLocalesDirs = glob.sync('embeds/*/', { cwd: EMBEDS_DIR });
     for (const embedLocaleDir of embedLocalesDirs) {
       const locale = embedLocaleDir.replace('/', '');
-      if (!VALID_LOCALES.includes(locale)) throw new FileSystemError(chalk`Invalid directory in embeds: {cyan ${locale}}. All directories beneath {yellow ${path.relative(process.cwd(), EMBEDS_DIR)}} should be named with a valid locale code.`);
+      if (!VALID_LOCALES.includes(locale)) throw new FileSystemError(chalk`Invalid directory in embeds: {cyan ${locale}}. All directories beneath {yellow ${path.relative(this.CWD, EMBEDS_DIR)}} should be named with a valid locale code.`);
       const LOCALE_DIR = path.join(EMBEDS_DIR, locale);
       const embeds = glob.sync('*/', { cwd: LOCALE_DIR });
       for (const embed of embeds) {
         const EMBED_DIR = path.join(LOCALE_DIR, embed);
         const INDEX = path.join(EMBED_DIR, 'index.html');
-        if (!fs.existsSync(INDEX)) throw new FileSystemError(chalk`Did not find an {cyan index.html} file in {yellow ${path.relative(process.cwd(), EMBED_DIR)}}. One is required.`);
+        if (!fs.existsSync(INDEX)) throw new FileSystemError(chalk`Did not find an {cyan index.html} file in {yellow ${path.relative(this.CWD, EMBED_DIR)}}. One is required.`);
       }
     }
   },
 
   validateDistDir(DIST_DIR) {
     const INDEX = path.join(DIST_DIR, 'index.html');
-    if (!fs.existsSync(INDEX)) throw new FileSystemError(chalk`Did not find an {cyan index.html} file in {yellow ${path.relative(process.cwd(), DIST_DIR)}}. One is required.`);
+    if (!fs.existsSync(INDEX)) throw new FileSystemError(chalk`Did not find an {cyan index.html} file in {yellow ${path.relative(this.CWD, DIST_DIR)}}. One is required.`);
     this.validateDistDirEmbeds(DIST_DIR);
   },
 };

@@ -1,3 +1,8 @@
+import {
+  DEFAULT_WARN_IMAGE_SIZE,
+  DEFAULT_WARN_IMAGE_WIDTH
+} from '../constants/images';
+
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import glob from 'glob';
@@ -17,11 +22,11 @@ export default {
    * or size thresholds.
    * @param {object} opts CLI options, including max width in pixels and size in KB for images
    */
-  async measure({ width: maxWidth = 2600, size: maxSize = 200 }) {
-    const images = glob.sync('**/*.{jpg,png,jpeg}', { cwd: this.STATIC_IMGS_DIR });
+  async measureImages({ warnImageWidth: maxWidth = DEFAULT_WARN_IMAGE_WIDTH, warnImageSize: maxSize = DEFAULT_WARN_IMAGE_SIZE }) {
+    const images = glob.sync('**/*.{jpg,png,jpeg}', { cwd: this.IMAGES_DIR });
     const MANIFEST = {};
     for (const image of images) {
-      const IMG_PATH = path.join(this.STATIC_IMGS_DIR, image);
+      const IMG_PATH = path.join(this.IMAGES_DIR, image);
       const { width, height } = await asyncImgSize(IMG_PATH);
       let sizeKB = Math.ceil(fs.statSync(IMG_PATH).size / 1024);
 
@@ -63,6 +68,6 @@ export default {
         MANIFEST[image].size = sizeKB;
       }
     }
-    fs.writeJSONSync(path.join(this.STATIC_IMGS_DIR, 'manifest.json'), MANIFEST);
+    fs.writeJSONSync(path.join(this.IMAGES_DIR, 'manifest.json'), MANIFEST);
   },
 };

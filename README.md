@@ -21,20 +21,19 @@ yarn add @reuters-graphics/graphics-kit-publisher
     $ graphics-publisher upload [options]
 
   Options
-    --defaultMetadataFile           Relative path to a JSON file in the default locale with metadata  (default content.json)
-    --defaultMetadataTitle          Title prop in default locale metadata  (default seoTitle)
-    --defaultMetadataDescription    Description prop in default locale metadata  (default seoDescription)
-    --width                         Set a max width for images beyond which you'll be prompted to resize  (default 2600)
-    --size                          Set a max size in KB for images beyond which you'll be prompted to resize  (default 200)
-    --fast                          Publish just the public edition
-    --dist                          Relative path to a directory of built files we'll use to create your pack  (default dist)
-    --pack                          Relative path to a directory where your pack will be created  (default graphics-pack)
-    --assets                        Relative path to a directory of media assets to include with your pack  (default media-assets)
-    --statics                       Relative path to a static files directory  (default src/statics)
-    --images                        Relative path to directory of images inside the static files directory  (default images)
-    --locales                       Relative path to directory of translatable JSON files  (default locales)
-    --locale                        Default locale  (default en)
-    -h, --help                      Displays this message
+    --warnImageWidth         Set a max width for images beyond which you'll be prompted to resize  (default 2600)
+    --warnImageSize          Set a max size in KB for images beyond which you'll be prompted to resize  (default 200)
+    --fast                   Upload just the public edition, ignoring media embeds
+    --distDir                Relative path to a directory of built files we'll use to create your pack  (default dist)
+    --packDir                Relative path to a directory where your pack will be created  (default graphics-pack)
+    --assetsDir              Relative path to a directory of media assets to include with your pack  (default media-assets)
+    --imagesDir              Relative path to directory of images which includes the public share image  (default src/statics/images)
+    --localesDir             Relative path to directory of translatable JSON files  (default locales)
+    --packLocale             Default locale for pack  (default en)
+    --packMetadataFile       Relative path to a JSON file in the default locale with pack metadata  (default content.json)
+    --packTitleProp          Title prop in default pack metadata file  (default seoTitle)
+    --packDescriptionProp    Description prop in default pack metadata file  (default seoDescription)
+    -h, --help               Displays this message                    Displays this message
 ```
 
 #### publish
@@ -44,17 +43,16 @@ yarn add @reuters-graphics/graphics-kit-publisher
     $ graphics-publisher publish [options]
 
   Options
-    --defaultMetadataFile           Relative path to a JSON file in the default locale with metadata  (default content.json)
-    --defaultMetadataTitle          Title prop in default locale metadata  (default seoTitle)
-    --defaultMetadataDescription    Description prop in default locale metadata  (default seoDescription)
-    --dist                          Relative path to a directory of built files we'll use to create your pack  (default dist)
-    --pack                          Relative path to a directory where your pack will be created  (default graphics-pack)
-    --assets                        Relative path to a directory of media assets to include with your pack  (default media-assets)
-    --statics                       Relative path to a static files directory  (default src/statics)
-    --images                        Relative path to directory of images inside the static files directory  (default images)
-    --locales                       Relative path to directory of translatable JSON files  (default locales)
-    --locale                        Default locale  (default en)
-    -h, --help                      Displays this message
+    --distDir                Relative path to a directory of built files we'll use to create your pack  (default dist)
+    --packDir                Relative path to a directory where your pack will be created  (default graphics-pack)
+    --assetsDir              Relative path to a directory of media assets to include with your pack  (default media-assets)
+    --imagesDir              Relative path to directory of images which includes the public share image  (default src/statics/images)
+    --localesDir             Relative path to directory of translatable JSON files  (default locales)
+    --packLocale             Default locale for pack  (default en)
+    --packMetadataFile       Relative path to a JSON file in the default locale with pack metadata  (default content.json)
+    --packTitleProp          Title prop in default pack metadata file  (default seoTitle)
+    --packDescriptionProp    Description prop in default pack metadata file  (default seoDescription)
+    -h, --help               Displays this message
 ```
 
 ### Module
@@ -65,24 +63,23 @@ yarn add @reuters-graphics/graphics-kit-publisher
 import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
 const publisherOptions = {
-  dist: 'dist',
-  pack: 'graphics-pack',
-  assets: 'media-assets',
-  statics: 'src/statics',
-  images: 'images',
-  locales: 'locales',
-  locale: 'en',
+  distDir: 'dist',
+  packDir: 'graphics-pack',
+  assetsDir: 'media-assets',
+  imagesDir: 'src/statics/images',
+  localesDir: 'locales',
+  packLocale: 'en',
+  packMetadataFile: 'content.json',
+  packTitleProp: 'seoTitle',
+  packDescriptionProp: 'seoDescription',
 };
 
 const graphicsPublisher = new GraphicsPublisher(publisherOptions);
 
 const uploadOptions = {
-  width: 2600,
-  size: 200,
+  warnImageWidth: 2600,
+  warnImageSize: 200,
   fast: false,
-  defaultMetadataFile: 'content.json',
-  defaultMetadataTitleProp: 'seoTitle',
-  defaultMetadataDescriptionProp: 'seoDescription',
 };
 
 await graphicsPublisher.upload(uploadOptions);
@@ -94,22 +91,18 @@ await graphicsPublisher.upload(uploadOptions);
 import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
 const publisherOptions = {
-  dist: 'dist',
-  pack: 'graphics-pack',
-  assets: 'media-assets',
-  statics: 'src/statics',
-  images: 'images',
-  locales: 'locales',
-  locale: 'en',
+  distDir: 'dist',
+  packDir: 'graphics-pack',
+  assetsDir: 'media-assets',
+  imagesDir: 'src/statics/images',
+  localesDir: 'locales',
+  packLocale: 'en',
+  packMetadataFile: 'content.json',
+  packTitleProp: 'seoTitle',
+  packDescriptionProp: 'seoDescription',
 };
 
 const graphicsPublisher = new GraphicsPublisher(publisherOptions);
 
-const publishOptions = {
-  defaultMetadataFile: 'content.json',
-  defaultMetadataTitleProp: 'seoTitle',
-  defaultMetadataDescriptionProp: 'seoDescription',
-};
-
-await graphicsPublisher.publish(publishOptions);
+await graphicsPublisher.publish();
 ```

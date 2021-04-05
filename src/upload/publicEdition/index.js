@@ -6,7 +6,7 @@ export default {
     const { title, description } = this.packageMetadata;
 
     const editionMetadata = {
-      language: this.DEFAULT_LOCALE,
+      language: this.PACK_LOCALE,
       title,
       description,
     };
