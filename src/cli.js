@@ -74,4 +74,11 @@ prog
     await graphicsPublisher.publish();
   });
 
+prog
+  .command('preview')
+  .action(async(opts) => {
+    const graphicsPublisher = new GraphicsPublisher(opts);
+    await graphicsPublisher.preview();
+  });
+
 prog.parse(process.argv);

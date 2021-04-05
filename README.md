@@ -1,6 +1,6 @@
 ![](badge.svg)
 
-# 📦 @reuters-graphics/graphics-kit-publisher
+# 📦 graphics-kit-publisher
 
 A filesystem-based publisher for Reuters Graphics projects.
 

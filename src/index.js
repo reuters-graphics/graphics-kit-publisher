@@ -16,6 +16,7 @@ import measureImagesMixin from './measureImages';
 import metadataMixin from './metadata';
 import packMixin from './pack';
 import prepackMixin from './prepack';
+import previewMixin from './preview';
 import publishMixin from './publish';
 import setDirectoryConfigMixin from './setDirectoryConfig';
 import uploadMixin from './upload';
@@ -42,6 +43,7 @@ class GraphicsPublisher {
       packMixin,
       measureImagesMixin,
       uploadMixin,
+      previewMixin,
       publishMixin
     );
 
