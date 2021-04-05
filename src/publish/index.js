@@ -38,6 +38,6 @@ export default {
 
     await this.SERVER_CLIENT.publishGraphic([], MEDIA, LYNX, isCorrection);
 
-    console.log(chalk`\n\nPublished to: {green ${pkg.homepage}}\n\n`);
+    console.log(chalk`\n\nPublished to: {green ${pkg.homepage}}\n`);
   },
 };
