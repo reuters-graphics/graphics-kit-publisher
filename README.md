@@ -221,7 +221,7 @@ locales/
     content.json
 ```
 
-#### images directory
+#### images directory (`imagesDir`)
 
 An images directory contains at least the share image referenced in the metatag in the root `index.html` file in the dist directory.
 
