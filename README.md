@@ -8,7 +8,7 @@ A filesystem-based publisher for Reuters Graphics projects.
 
 ## Why this?
 
-Reuters Graphics projects are packaged for both reuters.com readers and media clients. The package structure is defined by our RNGS server, and it is [complex](https://github.com/reuters-graphics/bluprint_graphics-kit/issues/1). This package exists to help compile graphics packs for our server in a way that works across different page builders.
+Reuters Graphics projects are packaged for both reuters.com readers and media clients. The structure each graphics pack needs to conform to is defined by our RNGS server, and it is [complex](https://github.com/reuters-graphics/bluprint_graphics-kit/issues/1). This package exists to help compile graphics packs for our server in a way that works across different page builders.
 
 Each graphics pack may consist of any number of public pages for dotcom readers and embeddable graphics for media clients. The publisher needs to be able to flex with each project and bundle all the outputs the right way.
 
