@@ -142,6 +142,17 @@ graphics-publisher assumes certain things about the structure of your developmen
 
 #### dist directory
 
+```
+dist/
+  index.html
+  ...
+  embeds/
+    en/
+      chart/
+        index.html
+  ...
+```
+
 #### pack directory
 
 #### media assets directory
