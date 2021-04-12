@@ -257,3 +257,11 @@ The publisher assumes you have two user profiles in your computer's home directo
 The `~/.reuters-graphics/graphics-server.json` file contains credentials to grant access to the RNGS server API.
 
 The `~/.reuters-graphics/profile.json` file contains your personal profile.
+
+##### *Running in a serverless environment?*
+
+Set the following environment variables in lieu of the above user profiles and make sure your project's metadata has already been filled out.
+
+- `GRAPHICS_SERVER_USERNAME`
+- `GRAPHICS_SERVER_PASSWORD`
+- `GRAPHICS_SERVER_API_KEY`
