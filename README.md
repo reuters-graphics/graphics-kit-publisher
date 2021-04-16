@@ -39,8 +39,8 @@ yarn add @reuters-graphics/graphics-kit-publisher
     --localesDir             Relative path to directory of translatable JSON files  (default locales)
     --packLocale             Default locale for pack  (default en)
     --packMetadataFile       Relative path to a JSON file in the default locale with pack metadata  (default content.json)
-    --packTitleProp          Title prop in default pack metadata file  (default SeoTitle)
-    --packDescriptionProp    Description prop in default pack metadata file  (default SeoDescription)
+    --packTitleProp          Title prop in default pack metadata file  (default SEOTitle)
+    --packDescriptionProp    Description prop in default pack metadata file  (default SEODescription)
     -h, --help               Displays this message                    Displays this message
 ```
 
@@ -58,8 +58,8 @@ yarn add @reuters-graphics/graphics-kit-publisher
     --localesDir             Relative path to directory of translatable JSON files  (default locales)
     --packLocale             Default locale for pack  (default en)
     --packMetadataFile       Relative path to a JSON file in the default locale with pack metadata  (default content.json)
-    --packTitleProp          Title prop in default pack metadata file  (default SeoTitle)
-    --packDescriptionProp    Description prop in default pack metadata file  (default SeoDescription)
+    --packTitleProp          Title prop in default pack metadata file  (default SEOTitle)
+    --packDescriptionProp    Description prop in default pack metadata file  (default SEODescription)
     -h, --help               Displays this message
 ```
 
@@ -77,8 +77,8 @@ yarn add @reuters-graphics/graphics-kit-publisher
     --localesDir             Relative path to directory of translatable JSON files  (default locales)
     --packLocale             Default locale for pack  (default en)
     --packMetadataFile       Relative path to a JSON file in the default locale with pack metadata  (default content.json)
-    --packTitleProp          Title prop in default pack metadata file  (default SeoTitle)
-    --packDescriptionProp    Description prop in default pack metadata file  (default SeoDescription)
+    --packTitleProp          Title prop in default pack metadata file  (default SEOTitle)
+    --packDescriptionProp    Description prop in default pack metadata file  (default SEODescription)
     -h, --help               Displays this message
 ```
 
@@ -95,8 +95,8 @@ const defaultConfig = {
   localesDir: 'locales',
   packLocale: 'en',
   packMetadataFile: 'content.json',
-  packTitleProp: 'SeoTitle',
-  packDescriptionProp: 'SeoDescription',
+  packTitleProp: 'SEOTitle',
+  packDescriptionProp: 'SEODescription',
 };
 ```
 
