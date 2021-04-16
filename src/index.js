@@ -64,7 +64,7 @@ class GraphicsPublisher {
     this.PACK_DESCRIPTION_PROP = packDescriptionProp;
 
     this.setDirectoryConfig({ distDir, packDir, assetsDir, imagesDir, localesDir, packMetadataFile });
-    this.validateFileSystem();
+    this.validateSourceFiles();
   }
 }
 

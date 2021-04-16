@@ -10,11 +10,13 @@ export default {
   ...validateAssetsDirMixin,
   ...validateImagesDirMixin,
   ...validateLocalesDirMixin,
-  validateFileSystem() {
-    this.validateDistDir(this.DIST_DIR);
+  validateSourceFiles() {
     this.validatePackDir(this.PACK_DIR);
     this.validateAssetsDir(this.ASSETS_DIR);
     this.validateImagesDir(this.IMAGES_DIR);
     this.validateLocalesDir(this.LOCALES_DIR, this.PACK_LOCALE);
+  },
+  validateBuiltFiles() {
+    this.validateDistDir(this.DIST_DIR);
   },
 };
