@@ -88,22 +88,22 @@ yarn add @reuters-graphics/graphics-kit-publisher
 
 ```javascript
 const defaultConfig = {
-  distDir: 'dist',
-  packDir: 'graphics-pack',
-  assetsDir: 'media-assets',
-  imagesDir: 'src/statics/images',
-  localesDir: 'locales',
-  packLocale: 'en',
-  packMetadataFile: 'content.json',
-  packTitleProp: 'SEOTitle',
-  packDescriptionProp: 'SEODescription',
+  distDir: "dist",
+  packDir: "graphics-pack",
+  assetsDir: "media-assets",
+  imagesDir: "src/statics/images",
+  localesDir: "locales",
+  packLocale: "en",
+  packMetadataFile: "content.json",
+  packTitleProp: "SEOTitle",
+  packDescriptionProp: "SEODescription",
 };
 ```
 
 #### upload
 
 ```javascript
-import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
+import GraphicsPublisher from "@reuters-graphics/graphics-kit-publisher";
 
 const graphicsPublisher = new GraphicsPublisher(defaultConfig);
 
@@ -119,7 +119,7 @@ await graphicsPublisher.upload(defaultUploadOptions);
 #### publish
 
 ```javascript
-import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
+import GraphicsPublisher from "@reuters-graphics/graphics-kit-publisher";
 
 const graphicsPublisher = new GraphicsPublisher(defaultConfig);
 
@@ -129,7 +129,7 @@ await graphicsPublisher.publish();
 #### preview
 
 ```javascript
-import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
+import GraphicsPublisher from "@reuters-graphics/graphics-kit-publisher";
 
 const graphicsPublisher = new GraphicsPublisher(defaultConfig);
 
@@ -206,7 +206,7 @@ media-assets/
       chart.eps
       chart.jpg
 graphics-pack/
-  media-en-chart.zip  👈 Contains both embeddable graphic and flats 
+  media-en-chart.zip  👈 Contains both embeddable graphic and flats
 ```
 
 #### locales directory (`localesDir`)
@@ -258,10 +258,16 @@ The `~/.reuters-graphics/graphics-server.json` file contains credentials to gran
 
 The `~/.reuters-graphics/profile.json` file contains your personal profile.
 
-##### *Running in a serverless environment?*
+##### _Running in a serverless environment?_
 
 Set the following environment variables in lieu of the above user profiles and make sure your project's metadata has already been filled out.
 
 - `GRAPHICS_SERVER_USERNAME`
 - `GRAPHICS_SERVER_PASSWORD`
 - `GRAPHICS_SERVER_API_KEY`
+
+And if publishing, be sure to set:
+
+- `GRAPHICS_SERVER_PUBLISH`
+- `GRAPHICS_SERVER_PUBLISH_TO_MEDIA` _(optional)_
+- `GRAPHICS_SERVER_PUBLISH_TO_LYNX` _(optional)_
