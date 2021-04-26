@@ -7,6 +7,6 @@ const git = simpleGit(ROOT);
 
 export default async() => {
   await git.add('.');
-  await git.commit('Pre-archive');
+  await git.commit('Pre-archive', { '--allow-empty': null });
   spawnSync('git', ['archive', '-o', 'packages/app.zip', 'HEAD', '.', ':!project-files'], { cwd: ROOT });
 };
