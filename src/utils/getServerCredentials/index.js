@@ -1,16 +1,13 @@
 import { UserConfigError } from '../../exceptions/errors';
 import chalk from 'chalk';
 import fs from 'fs-extra';
+import isServerless from '../isServerless';
 import os from 'os';
 import path from 'path';
 
 export default () => {
   // For serverless environments, use env vars...
-  if (
-    process.env.GRAPHICS_SERVER_USERNAME &&
-    process.env.GRAPHICS_SERVER_PASSWORD &&
-    process.env.GRAPHICS_SERVER_API_KEY
-  ) {
+  if (isServerless()) {
     return {
       username: process.env.GRAPHICS_SERVER_USERNAME,
       password: process.env.GRAPHICS_SERVER_PASSWORD,

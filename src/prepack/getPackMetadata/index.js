@@ -4,13 +4,14 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import get from 'lodash/get';
 import getPkg from '../../utils/getPkg';
+import isServerless from '../../utils/isServerless';
 import packageSchema from './schemas/package';
 import path from 'path';
 
 export default {
   async getPackageMetadata() {
     const packageJson = getPkg();
-    const validPackageJson = await askJSON(packageSchema, packageJson, { askToAddItems: true });
+    const validPackageJson = await askJSON(packageSchema, packageJson, { askToAddItems: !isServerless() });
     fs.writeFileSync(path.join(this.CWD, 'package.json'), JSON.stringify(validPackageJson, null, 2));
     return validPackageJson.reuters;
   },
