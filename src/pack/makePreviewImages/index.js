@@ -8,23 +8,6 @@ import sharp from 'sharp';
 import slugify from 'slugify';
 import url from 'url';
 
-/**
- * Finds the image in the local static files directory that matches the social
- * share image, allowing a variable path for statics on the server.
- * @param {string} shareImgPath Path to share image relative to project root
- * @param {string} IMAGES_DIR Path to local static images directory
- * @returns {string} local image path
- */
-const findLocalShareImage = (shareImgPath, IMAGES_DIR) => {
-  const manifest = fs.readJSONSync(path.join(IMAGES_DIR, 'manifest.json'));
-  const imageNames = Object.keys(manifest);
-  imageNames.sort((a, b) => a.length - b.length);
-  for (const imageName of imageNames) {
-    if (shareImgPath.replace(/^\//, '').includes(imageName)) return path.join(IMAGES_DIR, imageName);
-  }
-  throw new FileNotFoundError(chalk`Did not find the share image: {yellow ${shareImgPath}}`);
-};
-
 export default {
   async makePreviewImages() {
     const INDEX = path.join(this.DIST_DIR, 'index.html');
@@ -35,7 +18,9 @@ export default {
     }
     const ROOT_RELATIVE_PATH = new url.URL(this.homepage).pathname;
     const SHARE_IMAGE_PATH = path.join(this.DIST_DIR, shareImage.url.replace(ROOT_RELATIVE_PATH, ''));
-    const LOCAL_SHARE_IMAGE_PATH = findLocalShareImage(SHARE_IMAGE_PATH, this.IMAGES_DIR);
+    if (!fs.existsSync(SHARE_IMAGE_PATH)) {
+      throw new FileNotFoundError(chalk`Could not find local copy of share image {yellow ${path.relative(this.CWD, SHARE_IMAGE_PATH)}}`);
+    }
 
     const EMBEDS_DIR = path.join(this.DIST_DIR, 'embeds');
     const embedLocales = glob.sync('*/', { cwd: EMBEDS_DIR });
@@ -47,7 +32,7 @@ export default {
       for (const embed of embeds) {
         const embedSlug = `media-${locale}-${slugify(path.dirname(embed))}`;
         const EMBED_DIR = path.join(this.PACK_DIR, embedSlug, 'media-interactive');
-        const previewImgBuffer = await sharp(LOCAL_SHARE_IMAGE_PATH)
+        const previewImgBuffer = await sharp(SHARE_IMAGE_PATH)
           .png()
           .toBuffer();
         fs.writeFileSync(path.join(EMBED_DIR, '_gfxpreview.png'), previewImgBuffer);
