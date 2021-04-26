@@ -22,6 +22,7 @@ const findLocalShareImage = (shareImgPath, IMAGES_DIR) => {
   for (const imageName of imageNames) {
     if (shareImgPath.replace(/^\//, '').includes(imageName)) return path.join(IMAGES_DIR, imageName);
   }
+  throw new FileNotFoundError(chalk`Did not find the share image: {yellow ${shareImgPath}}`);
 };
 
 export default {
