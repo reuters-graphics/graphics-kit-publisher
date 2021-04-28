@@ -11,7 +11,7 @@ import url from 'url';
 export default {
   async makePreviewImages() {
     const INDEX = path.join(this.DIST_DIR, 'index.html');
-    const metadata = await getLocalPageMetadata(INDEX, this.homepage);
+    const metadata = await getLocalPageMetadata(INDEX);
     const { ogImage: shareImage } = metadata;
     if (!shareImage) {
       throw new FileNotFoundError(chalk`No share image found in metadata for {yellow ${path.relative(this.CWD, path.join(this.DIST_DIR, 'index.html'))}}`);
@@ -32,6 +32,20 @@ export default {
       for (const embed of embeds) {
         const embedSlug = `media-${locale}-${slugify(path.dirname(embed))}`;
         const EMBED_DIR = path.join(this.PACK_DIR, embedSlug, 'media-interactive');
+        // Check if embed has a share image.
+        const { ogImage: shareImage } = await getLocalPageMetadata(path.join(LOCALE_DIR, embed));
+        if (shareImage) {
+          const EMBED_SHARE_IMAGE_PATH = path.join(this.DIST_DIR, shareImage.url.replace(ROOT_RELATIVE_PATH, ''));
+          // ... and if we can find that image, use it.
+          if (fs.existsSync(EMBED_SHARE_IMAGE_PATH)) {
+            const previewImgBuffer = await sharp(EMBED_SHARE_IMAGE_PATH)
+              .png()
+              .toBuffer();
+            fs.writeFileSync(path.join(EMBED_DIR, '_gfxpreview.png'), previewImgBuffer);
+            continue;
+          }
+        }
+        // Otherwise, we'll use the share image from the root index page
         const previewImgBuffer = await sharp(SHARE_IMAGE_PATH)
           .png()
           .toBuffer();
