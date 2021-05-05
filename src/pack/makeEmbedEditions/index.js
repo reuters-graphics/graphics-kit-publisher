@@ -12,6 +12,10 @@ export default {
     const ARCHIVE = path.join(this.PACK_DIR, 'app.zip');
     const embedLocales = glob.sync('*/', { cwd: EMBEDS_DIR });
 
+    const CLIENT_README = path.join(this.CWD, 'CLIENT_README.txt');
+
+    const CUSTOM_README = fs.existsSync(CLIENT_README) ? fs.readFileSync(CLIENT_README, 'utf8') : '';
+
     for (const embedLocale of embedLocales) {
       const locale = embedLocale.replace('/', '');
       const LOCALE_DIR = path.join(EMBEDS_DIR, locale);
@@ -24,7 +28,7 @@ export default {
         fs.ensureDirSync(EMBED_DIR);
         const embedCode = pymCodeFromTemplate(embedSlug, embedUrl);
         fs.writeFileSync(path.join(EMBED_DIR, 'EMBED.html'), embedCode);
-        fs.writeFileSync(path.join(EMBED_DIR, 'README.txt'), editionReadme);
+        fs.writeFileSync(path.join(EMBED_DIR, 'README.txt'), editionReadme + `\n\n${CUSTOM_README}`);
         fs.copyFileSync(ARCHIVE, path.join(EMBED_DIR, 'app.zip'));
       }
     }

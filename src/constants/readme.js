@@ -1,2 +1,1 @@
-export const editionReadme = `REUTERS GRAPHICS
-`;
+export const editionReadme = `REUTERS GRAPHICS ${new Date().getFullYear()}`;
