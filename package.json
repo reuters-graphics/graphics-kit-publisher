@@ -1,6 +1,6 @@
 {
   "name": "@reuters-graphics/graphics-kit-publisher",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "main": "dist/index.js",
   "bin": {
     "graphics-publisher": "dist/cli.js"
