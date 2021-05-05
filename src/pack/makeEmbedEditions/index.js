@@ -27,7 +27,7 @@ export default {
         const EMBED_DIR = path.join(this.PACK_DIR, embedSlug, 'media-interactive');
         fs.ensureDirSync(EMBED_DIR);
         const embedCode = pymCodeFromTemplate(embedSlug, embedUrl);
-        fs.writeFileSync(path.join(EMBED_DIR, 'EMBED.html'), embedCode);
+        fs.writeFileSync(path.join(EMBED_DIR, 'EMBED.txt'), embedCode);
         fs.writeFileSync(path.join(EMBED_DIR, 'README.txt'), editionReadme + `\n\n${CUSTOM_README}`);
         fs.copyFileSync(ARCHIVE, path.join(EMBED_DIR, 'app.zip'));
       }
