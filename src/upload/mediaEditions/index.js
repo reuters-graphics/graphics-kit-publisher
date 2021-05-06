@@ -51,7 +51,8 @@ export default {
         title: metadata.title,
         description: metadata.description,
         embed: {
-          declaration: pymCodeFromTemplate(slug, embedURL),
+          // Strip out pym from the embed code, b/c we'll add it as a dependency...
+          declaration: pymCodeFromTemplate(slug, embedURL).replace('<script type="text/javascript" src="//graphics.thomsonreuters.com/pym.min.js"></script>', ''),
           dependencies: '<script type="text/javascript" src="//graphics.thomsonreuters.com/pym.min.js"></script>',
         },
       };
