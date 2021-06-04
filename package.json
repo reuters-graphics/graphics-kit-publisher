@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@reuters-graphics/server-client": "^1.2.2",
+    "@reuters-graphics/teams-klaxon": "^0.0.3",
     "archiver": "^5.3.0",
     "ask-json": "^0.1.8",
     "aws-sdk": "^2.879.0",

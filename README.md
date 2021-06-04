@@ -271,3 +271,5 @@ And if publishing, be sure to set:
 - `GRAPHICS_SERVER_PUBLISH`
 - `GRAPHICS_SERVER_PUBLISH_TO_MEDIA` _(optional)_
 - `GRAPHICS_SERVER_PUBLISH_TO_LYNX` _(optional)_
+
+You can also set `GRAPHICS_SERVER_NOTIFY_TEAMS_CHANNEL` with a Teams channel webhook to notify that channel when the project is successfully published.

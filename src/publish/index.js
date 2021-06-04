@@ -1,3 +1,4 @@
+import TeamsKlaxon from '@reuters-graphics/teams-klaxon';
 import chalk from 'chalk';
 import getPkg from '../utils/getPkg';
 import prompts from 'prompts';
@@ -49,5 +50,10 @@ export default {
     }
 
     console.log(chalk`\n\nPublished to: {green ${pkg.homepage}}\n`);
+
+    if (process.env.GRAPHICS_SERVER_NOTIFY_TEAMS_CHANNEL) {
+      const klaxon = new TeamsKlaxon(process.env.GRAPHICS_SERVER_NOTIFY_TEAMS_CHANNEL);
+      await klaxon.log({ text: `✅ Published to: ${pkg.homepage}` });
+    }
   },
 };
