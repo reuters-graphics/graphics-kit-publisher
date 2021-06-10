@@ -7,6 +7,7 @@ import chalk from 'chalk';
 import fs from 'fs-extra';
 import glob from 'glob';
 import imgSize from 'image-size';
+import isServerless from '../utils/isServerless';
 import path from 'path';
 import { promisify } from 'util';
 import prompts from 'prompts';
@@ -40,7 +41,7 @@ export default {
 
       MANIFEST[image] = { width, height, size: sizeKB };
 
-      if (width > warnImageWidth || sizeKB > warnImageSize) {
+      if ((width > warnImageWidth || sizeKB > warnImageSize) && !isServerless()) {
         const { resize } = await prompts({
           type: 'confirm',
           name: 'resize',
