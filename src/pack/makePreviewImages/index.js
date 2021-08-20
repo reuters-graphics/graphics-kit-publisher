@@ -31,7 +31,7 @@ export default {
       const embeds = glob.sync('*/index.html', { cwd: LOCALE_DIR });
       for (const embed of embeds) {
         const embedSlug = `media-${locale}-${slugify(path.dirname(embed))}`;
-        const EMBED_DIR = path.join(this.PACK_DIR, embedSlug, 'media-interactive');
+        const EMBED_MEDIA_DIR = path.join(this.PACK_DIR, embedSlug, 'media-interactive');
         // Check if embed has a share image.
         const { ogImage: shareImage } = await getLocalPageMetadata(path.join(LOCALE_DIR, embed));
         if (shareImage) {
@@ -41,7 +41,7 @@ export default {
             const previewImgBuffer = await sharp(EMBED_SHARE_IMAGE_PATH)
               .png()
               .toBuffer();
-            fs.writeFileSync(path.join(EMBED_DIR, '_gfxpreview.png'), previewImgBuffer);
+            fs.writeFileSync(path.join(EMBED_MEDIA_DIR, '_gfxpreview.png'), previewImgBuffer);
             continue;
           }
         }
@@ -49,7 +49,7 @@ export default {
         const previewImgBuffer = await sharp(SHARE_IMAGE_PATH)
           .png()
           .toBuffer();
-        fs.writeFileSync(path.join(EMBED_DIR, '_gfxpreview.png'), previewImgBuffer);
+        fs.writeFileSync(path.join(EMBED_MEDIA_DIR, '_gfxpreview.png'), previewImgBuffer);
       }
     }
   },
