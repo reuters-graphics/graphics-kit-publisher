@@ -24,12 +24,17 @@ export default {
         const embedPath = path.relative(this.DIST_DIR, path.join(LOCALE_DIR, embed));
         const embedUrl = urljoin(this.homepage, embedPath);
         const embedSlug = `media-${locale}-${slugify(path.dirname(embed))}`;
-        const EMBED_DIR = path.join(this.PACK_DIR, embedSlug, 'media-interactive');
-        fs.ensureDirSync(EMBED_DIR);
+        // media-interactive edition
+        const EMBED_MEDIA_DIR = path.join(this.PACK_DIR, embedSlug, 'media-interactive');
+        fs.ensureDirSync(EMBED_MEDIA_DIR);
         const embedCode = pymCodeFromTemplate(embedSlug, embedUrl);
-        fs.writeFileSync(path.join(EMBED_DIR, 'EMBED.txt'), embedCode);
-        fs.writeFileSync(path.join(EMBED_DIR, 'README.txt'), editionReadme + `\n\n${CUSTOM_README}`);
-        fs.copyFileSync(ARCHIVE, path.join(EMBED_DIR, 'app.zip'));
+        fs.writeFileSync(path.join(EMBED_MEDIA_DIR, 'EMBED.txt'), embedCode);
+        fs.writeFileSync(path.join(EMBED_MEDIA_DIR, 'README.txt'), editionReadme + `\n\n${CUSTOM_README}`);
+        fs.copyFileSync(ARCHIVE, path.join(EMBED_MEDIA_DIR, 'app.zip'));
+        // interactive edition
+        const EMBED_INTERACTIVE_DIR = path.join(this.PACK_DIR, embedSlug, 'interactive');
+        fs.ensureDirSync(EMBED_INTERACTIVE_DIR);
+        fs.copyFileSync(path.join(LOCALE_DIR, embed), path.join(EMBED_INTERACTIVE_DIR, 'index.html'));
       }
     }
     fs.unlinkSync(ARCHIVE);
