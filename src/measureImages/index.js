@@ -2,6 +2,7 @@ import {
   DEFAULT_WARN_IMAGE_SIZE,
   DEFAULT_WARN_IMAGE_WIDTH
 } from '../constants/images';
+import { getOK, writeOK } from '../utils/getImgSizeOK';
 
 import chalk from 'chalk';
 import fs from 'fs-extra';
@@ -34,6 +35,8 @@ export default {
   } = defaultOptions) {
     const images = glob.sync('**/*.{jpg,png,jpeg}', { cwd: this.IMAGES_DIR });
     const MANIFEST = {};
+    const OK_IMAGES = getOK();
+
     for (const image of images) {
       const IMG_PATH = path.join(this.IMAGES_DIR, image);
       const { width, height } = await asyncImgSize(IMG_PATH);
@@ -41,7 +44,11 @@ export default {
 
       MANIFEST[image] = { width, height, size: sizeKB };
 
-      if ((width > warnImageWidth || sizeKB > warnImageSize) && !isServerless()) {
+      if (
+        (width > warnImageWidth || sizeKB > warnImageSize) && // Exceeds size limits
+        !isServerless() && // Not in serverless env
+        OK_IMAGES.indexOf(image) === -1 // Not already in OK images
+      ) {
         const { resize } = await prompts({
           type: 'confirm',
           name: 'resize',
@@ -50,7 +57,10 @@ export default {
             chalk`The image {yellow ${image}} is larger than ${warnImageSize} KB. Would you like to resize it?`,
           initial: true,
         });
-        if (!resize) continue;
+        if (!resize) {
+          OK_IMAGES.push(image);
+          continue;
+        }
 
         // Create a temp file path
         const RESIZED_IMG_PATH = uniqifyBasename(IMG_PATH);
@@ -78,5 +88,6 @@ export default {
       }
     }
     fs.writeJSONSync(path.join(this.IMAGES_DIR, 'manifest.json'), MANIFEST);
+    writeOK(OK_IMAGES);
   },
 };
