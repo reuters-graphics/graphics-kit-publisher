@@ -36,7 +36,7 @@ export default {
    * @param {string} DIST_DIR Directory of built files
    */
   async validateDistDirFileTypes(DIST_DIR) {
-    const files = glob.sync('**/*', { cwd: DIST_DIR });
+    const files = glob.sync('**/*', { cwd: DIST_DIR, nodir: true });
     const warnFiles = [];
     for (const file of files) {
       const fileType = path.extname(file).toLowerCase();
