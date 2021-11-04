@@ -1,9 +1,12 @@
 import { FileSystemError } from '../../exceptions/errors';
+import { VALID_FILE_TYPES } from '../../constants/fileTypes';
 import { VALID_LOCALES } from '../../constants/locales';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import glob from 'glob';
+import isServerless from '../../utils/isServerless';
 import path from 'path';
+import prompts from 'prompts';
 
 export default {
   /**
@@ -28,9 +31,32 @@ export default {
     }
   },
 
-  validateDistDir(DIST_DIR) {
+  /**
+   * Warns for file types that may be rejected by RNGS
+   * @param {string} DIST_DIR Directory of built files
+   */
+  async validateDistDirFileTypes(DIST_DIR) {
+    const files = glob.sync('**/*', { cwd: DIST_DIR });
+    const warnFiles = [];
+    for (const file of files) {
+      const fileType = path.extname(file).toLowerCase();
+      if (VALID_FILE_TYPES.indexOf(fileType) < 0) warnFiles.push(file);
+    }
+    if (warnFiles.length > 0 && !(isServerless())) {
+      const { bail } = await prompts({
+        type: 'confirm',
+        name: 'bail',
+        message: chalk`Found some unfamiliar file types in the built files for your project. The following files may be rejected by RNGS when uploaded:\n\n{yellow ${warnFiles.join(', ')}}\n\nWant to stop uploading?`,
+        initial: false,
+      });
+      if (bail) throw new FileSystemError(chalk`Invalid file types in built files for project.`);
+    }
+  },
+
+  async validateDistDir(DIST_DIR, forRNGS = false) {
     const INDEX = path.join(DIST_DIR, 'index.html');
     if (!fs.existsSync(INDEX)) throw new FileSystemError(chalk`Did not find an {cyan index.html} file in {yellow ${path.relative(this.CWD, DIST_DIR)}}. One is required.`);
     this.validateDistDirEmbeds(DIST_DIR);
+    if (forRNGS) await this.validateDistDirFileTypes(DIST_DIR);
   },
 };

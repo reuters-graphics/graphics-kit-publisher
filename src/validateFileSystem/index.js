@@ -16,7 +16,7 @@ export default {
     this.validateImagesDir(this.IMAGES_DIR);
     this.validateLocalesDir(this.LOCALES_DIR, this.PACK_LOCALE);
   },
-  validateBuiltFiles() {
-    this.validateDistDir(this.DIST_DIR);
+  async validateBuiltFiles(forRNGS = false) {
+    await this.validateDistDir(this.DIST_DIR, forRNGS);
   },
 };
