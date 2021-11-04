@@ -23,7 +23,8 @@ export default {
     this.getHomepage();
     this.resetPackDir();
     this.build();
-    this.validateBuiltFiles();
+    await this.validateBuiltFiles(true);
+    await this.validateDistFileTypes(this.DIST_DIR);
     await this.makeSrcArchive();
     await this.makePublicEdition();
     this.makeEmbedEditions();
