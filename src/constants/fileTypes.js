@@ -3,6 +3,8 @@ export const VALID_FILE_TYPES = [
   '.html',
   '.js',
   '.css',
+  // Sourcemaps
+  '.map',
   // Image types
   // https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types
   '.png',
