@@ -22,6 +22,14 @@ export class FileSystemError extends Error {
   }
 }
 
+export class InvalidFileTypeError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 export class PackageMetadataError extends Error {
   constructor(message) {
     super(message);
