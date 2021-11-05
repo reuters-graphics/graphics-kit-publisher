@@ -8,7 +8,7 @@ export default {
   async preview() {
     this.getPreviewURL();
     this.buildPreview();
-    await this.validateBuiltFiles();
+    this.validateBuiltFiles();
     await this.publishToAWS();
   },
 };

@@ -1,4 +1,5 @@
-import { FileSystemError } from '../../exceptions/errors';
+import { FileSystemError, InvalidFileTypeError } from '../../exceptions/errors';
+
 import { VALID_FILE_TYPES } from '../../constants/fileTypes';
 import { VALID_LOCALES } from '../../constants/locales';
 import chalk from 'chalk';
@@ -32,31 +33,25 @@ export default {
   },
 
   /**
-   * Warns for file types that may be rejected by RNGS
+   * Error if file types in DIST_DIR will be rejected by RNGS
    * @param {string} DIST_DIR Directory of built files
    */
-  async validateDistDirFileTypes(DIST_DIR) {
+  validateDistDirFileTypes(DIST_DIR) {
     const files = glob.sync('**/*', { cwd: DIST_DIR, nodir: true });
     const warnFiles = [];
     for (const file of files) {
       const fileType = path.extname(file).toLowerCase();
       if (VALID_FILE_TYPES.indexOf(fileType) < 0) warnFiles.push(file);
     }
-    if (warnFiles.length > 0 && !(isServerless())) {
-      const { bail } = await prompts({
-        type: 'confirm',
-        name: 'bail',
-        message: chalk`Found some unfamiliar file types in the built files for your project. The following files may be rejected by RNGS when uploaded:\n\n{yellow ${warnFiles.join(', ')}}\n\nWant to stop uploading?`,
-        initial: false,
-      });
-      if (bail) throw new FileSystemError(chalk`Invalid file types in built files for project.`);
+    if (warnFiles.length > 0) {
+      throw new InvalidFileTypeError(chalk`Found invalid file types in this project's built files. Check your static files for the following: {yellow ${warnFiles.join(', ')}}`);
     }
   },
 
-  async validateDistDir(DIST_DIR, forRNGS = false) {
+  validateDistDir(DIST_DIR) {
     const INDEX = path.join(DIST_DIR, 'index.html');
     if (!fs.existsSync(INDEX)) throw new FileSystemError(chalk`Did not find an {cyan index.html} file in {yellow ${path.relative(this.CWD, DIST_DIR)}}. One is required.`);
     this.validateDistDirEmbeds(DIST_DIR);
-    if (forRNGS) await this.validateDistDirFileTypes(DIST_DIR);
+    this.validateDistDirFileTypes(DIST_DIR);
   },
 };
