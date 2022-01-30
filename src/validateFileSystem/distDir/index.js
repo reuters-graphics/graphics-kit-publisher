@@ -50,7 +50,7 @@ export default {
 
   validateDistDir(DIST_DIR) {
     const INDEX = path.join(DIST_DIR, 'index.html');
-    if (!fs.existsSync(INDEX)) throw new FileSystemError(chalk`Did not find an {cyan index.html} file in {yellow ${path.relative(this.CWD, DIST_DIR)}}. One is required.`);
+    if (!fs.existsSync(INDEX)) throw new FileSystemError(chalk`Did not find an {cyan index.html} file in {yellow ${path.relative(this.CWD, DIST_DIR)}}. One is required. This may mean you had an error when building the project and should check for an earlier error message to determine what went wrong.`);
     this.validateDistDirEmbeds(DIST_DIR);
     this.validateDistDirFileTypes(DIST_DIR);
   },
