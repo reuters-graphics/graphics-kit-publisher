@@ -1,4 +1,5 @@
-import { FileNotFoundError } from '../../exceptions/errors';
+import { FileNotFoundError, InvalidFileTypeError } from '../../exceptions/errors';
+
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import getLocalPageMetadata from '../../utils/getLocalPageMetadata';
@@ -8,6 +9,13 @@ import sharp from 'sharp';
 import slugify from 'slugify';
 import url from 'url';
 
+const VALID_SHARE_IMAGE_FORMATS = [
+  '.jpg',
+  '.jpeg',
+  '.png',
+  '.gif',
+];
+
 export default {
   async makePreviewImages() {
     const INDEX = path.join(this.DIST_DIR, 'index.html');
@@ -15,6 +23,9 @@ export default {
     const { ogImage: shareImage } = metadata;
     if (!shareImage) {
       throw new FileNotFoundError(chalk`No share image found in metadata for {yellow ${path.relative(this.CWD, path.join(this.DIST_DIR, 'index.html'))}}`);
+    }
+    if (!VALID_SHARE_IMAGE_FORMATS.includes(path.extname(shareImage).toLowerCase())) {
+      throw new InvalidFileTypeError(chalk`Invalid share image found in metadata for {yellow ${path.relative(this.CWD, path.join(this.DIST_DIR, 'index.html'))}}. Share image was set as: {yellow ${shareImage}}`);
     }
     const ROOT_RELATIVE_PATH = new url.URL(this.homepage).pathname;
     const SHARE_IMAGE_PATH = path.join(this.DIST_DIR, shareImage.url.replace(this.homepage, '').replace(ROOT_RELATIVE_PATH, ''));
