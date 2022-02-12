@@ -24,8 +24,8 @@ export default {
     if (!shareImage) {
       throw new FileNotFoundError(chalk`No share image found in metadata for {yellow ${path.relative(this.CWD, path.join(this.DIST_DIR, 'index.html'))}}`);
     }
-    if (!VALID_SHARE_IMAGE_FORMATS.includes(path.extname(shareImage).toLowerCase())) {
-      throw new InvalidFileTypeError(chalk`Invalid share image found in metadata for {yellow ${path.relative(this.CWD, path.join(this.DIST_DIR, 'index.html'))}}. Share image was set as: {yellow ${shareImage}}`);
+    if (!VALID_SHARE_IMAGE_FORMATS.includes(path.extname(shareImage.url).toLowerCase())) {
+      throw new InvalidFileTypeError(chalk`Invalid share image found in metadata for {yellow ${path.relative(this.CWD, path.join(this.DIST_DIR, 'index.html'))}}. Share image was set as: {yellow ${shareImage.url}}`);
     }
     const ROOT_RELATIVE_PATH = new url.URL(this.homepage).pathname;
     const SHARE_IMAGE_PATH = path.join(this.DIST_DIR, shareImage.url.replace(this.homepage, '').replace(ROOT_RELATIVE_PATH, ''));
