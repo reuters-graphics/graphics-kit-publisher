@@ -46,14 +46,17 @@ export default {
         // Check if embed has a share image.
         const { ogImage: shareImage } = await getLocalPageMetadata(path.join(LOCALE_DIR, embed));
         if (shareImage) {
-          const EMBED_SHARE_IMAGE_PATH = path.join(this.DIST_DIR, shareImage.url.replace(ROOT_RELATIVE_PATH, ''));
-          // ... and if we can find that image, use it.
-          if (fs.existsSync(EMBED_SHARE_IMAGE_PATH)) {
-            const previewImgBuffer = await sharp(EMBED_SHARE_IMAGE_PATH)
-              .png()
-              .toBuffer();
-            fs.writeFileSync(path.join(EMBED_MEDIA_DIR, '_gfxpreview.png'), previewImgBuffer);
-            continue;
+          // Ensure share image is valid format
+          if (VALID_SHARE_IMAGE_FORMATS.includes(path.extname(shareImage.url).toLowerCase())) {
+            const EMBED_SHARE_IMAGE_PATH = path.join(this.DIST_DIR, shareImage.url.replace(ROOT_RELATIVE_PATH, ''));
+            // ... and if we can find that image, use it.
+            if (fs.existsSync(EMBED_SHARE_IMAGE_PATH)) {
+              const previewImgBuffer = await sharp(EMBED_SHARE_IMAGE_PATH)
+                .png()
+                .toBuffer();
+              fs.writeFileSync(path.join(EMBED_MEDIA_DIR, '_gfxpreview.png'), previewImgBuffer);
+              continue;
+            }
           }
         }
         // Otherwise, we'll use the share image from the root index page
