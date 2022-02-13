@@ -5,9 +5,7 @@ import { VALID_LOCALES } from '../../constants/locales';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import glob from 'glob';
-import isServerless from '../../utils/isServerless';
 import path from 'path';
-import prompts from 'prompts';
 
 export default {
   /**
@@ -18,7 +16,7 @@ export default {
   validateDistDirEmbeds(DIST_DIR) {
     const EMBEDS_DIR = path.join(DIST_DIR, 'embeds');
     if (!fs.existsSync(EMBEDS_DIR)) return;
-    const embedLocalesDirs = glob.sync('embeds/*/', { cwd: EMBEDS_DIR });
+    const embedLocalesDirs = glob.sync('*/', { cwd: EMBEDS_DIR });
     for (const embedLocaleDir of embedLocalesDirs) {
       const locale = embedLocaleDir.replace('/', '');
       if (!VALID_LOCALES.includes(locale)) throw new FileSystemError(chalk`Invalid directory in embeds: {cyan ${locale}}. All directories beneath {yellow ${path.relative(this.CWD, EMBEDS_DIR)}} should be named with a valid locale code.`);

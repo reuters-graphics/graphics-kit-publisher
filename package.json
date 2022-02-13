@@ -15,9 +15,9 @@
     "badge.svg"
   ],
   "scripts": {
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm run test",
     "build": "rollup --config rollup.config.js",
-    "test": "yarn build && mocha"
+    "test": "yarn build && nyc mocha"
   },
   "devDependencies": {
     "@reuters-graphics/eslint-config": "^0.0.2",
@@ -27,6 +27,10 @@
     "eslint": "^6.8.0",
     "expect.js": "^0.3.1",
     "mocha": "^7.1.2",
+    "mock-fs": "^5.1.2",
+    "nyc": "^15.1.0",
+    "pixelmatch": "^5.2.1",
+    "pngjs": "^6.0.0",
     "rollup": "^2.10.5",
     "rollup-plugin-node-externals": "^2.2.0",
     "rollup-plugin-size-snapshot": "^0.12.0"
