@@ -48,10 +48,10 @@ export default {
         if (shareImage) {
           // Ensure share image is valid format
           if (VALID_SHARE_IMAGE_FORMATS.includes(path.extname(shareImage.url).toLowerCase())) {
-            const EMBED_SHARE_IMAGE_PATH = path.join(this.DIST_DIR, shareImage.url.replace(ROOT_RELATIVE_PATH, ''));
+            const EMBED_SHARE_IMAGE_PATH = path.join(this.DIST_DIR, shareImage.url.replace(this.homepage, ''));
             // ... and if we can find that image, use it.
             if (fs.existsSync(EMBED_SHARE_IMAGE_PATH)) {
-              const previewImgBuffer = await sharp(EMBED_SHARE_IMAGE_PATH)
+              const previewImgBuffer = await sharp(fs.readFileSync(EMBED_SHARE_IMAGE_PATH))
                 .png()
                 .toBuffer();
               fs.writeFileSync(path.join(EMBED_MEDIA_DIR, '_gfxpreview.png'), previewImgBuffer);
@@ -60,7 +60,7 @@ export default {
           }
         }
         // Otherwise, we'll use the share image from the root index page
-        const previewImgBuffer = await sharp(SHARE_IMAGE_PATH)
+        const previewImgBuffer = await sharp(fs.readFileSync(SHARE_IMAGE_PATH))
           .png()
           .toBuffer();
         fs.writeFileSync(path.join(EMBED_MEDIA_DIR, '_gfxpreview.png'), previewImgBuffer);

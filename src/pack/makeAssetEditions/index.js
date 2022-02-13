@@ -26,7 +26,7 @@ export default {
         );
         const MEDIA_EDITION = path.join(EMBED_EDITION_DIR, 'media-interactive');
         if (!fs.existsSync(MEDIA_EDITION)) continue;
-        const previewImgBuffer = await sharp(JPG_PATH)
+        const previewImgBuffer = await sharp(fs.readFileSync(JPG_PATH))
           .png()
           .toBuffer();
         fs.writeFileSync(path.join(EMBED_EDITION_DIR, 'media-interactive', '_gfxpreview.png'), previewImgBuffer);
