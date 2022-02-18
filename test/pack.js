@@ -151,8 +151,16 @@ describe('GraphicsKitPublisher packs project', function() {
     await graphicsPublisher.makePublicEdition();
     await graphicsPublisher.makeEmbedEditions();
     await graphicsPublisher.makePreviewImages();
-    fs.existsSync('graphics-pack/media-en-chart/media-interactive/_gfxpreview.png');
-    fs.existsSync('graphics-pack/media-de-chart/media-interactive/_gfxpreview.png');
+
+    const medImg1Exists = fs.existsSync('graphics-pack/media-en-chart/media-interactive/_gfxpreview.png');
+    const medImg2Exists = fs.existsSync('graphics-pack/media-de-chart/media-interactive/_gfxpreview.png');
+    const intImg1Exists = fs.existsSync('graphics-pack/media-en-chart/interactive/_gfxpreview.png');
+    const intImg2Exists = fs.existsSync('graphics-pack/media-de-chart/interactive/_gfxpreview.png');
+
+    expect(medImg1Exists).to.be(true);
+    expect(medImg2Exists).to.be(true);
+    expect(intImg1Exists).to.be(true);
+    expect(intImg2Exists).to.be(true);
 
     const img1 = PNG.sync.read(fs.readFileSync('graphics-pack/media-en-chart/media-interactive/_gfxpreview.png'));
     const img2 = PNG.sync.read(fs.readFileSync('graphics-pack/media-de-chart/media-interactive/_gfxpreview.png'));
