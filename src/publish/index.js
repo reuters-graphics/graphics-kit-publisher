@@ -13,8 +13,8 @@ export default {
     }
 
     if (process.env.GRAPHICS_SERVER_PUBLISH) {
-      const MEDIA = process.env.GRAPHICS_SERVER_PUBLISH_TO_MEDIA ? ['media-interactive'] : false;
-      const LYNX = process.env.GRAPHICS_SERVER_PUBLISH_TO_LYNX ? ['interactive'] : false;
+      const MEDIA = process.env.GRAPHICS_SERVER_PUBLISH_TO_MEDIA ? ['media-interactive', 'EPS'] : false;
+      const LYNX = process.env.GRAPHICS_SERVER_PUBLISH_TO_LYNX ? ['interactive', 'JPG'] : false;
 
       this.packageMetadata = await this.getPackMetadata();
       await this.updateGraphicPack(this.packageMetadata);
@@ -40,8 +40,8 @@ export default {
 
       const { isCorrection, publishToLynx, publishToMedia } = await prompts(questions);
 
-      const MEDIA = publishToMedia ? ['media-interactive'] : false;
-      const LYNX = publishToLynx ? ['interactive'] : false;
+      const MEDIA = publishToMedia ? ['media-interactive', 'EPS'] : false;
+      const LYNX = publishToLynx ? ['interactive', 'JPG'] : false;
 
       this.packageMetadata = await this.getPackMetadata();
       await this.updateGraphicPack(this.packageMetadata);
