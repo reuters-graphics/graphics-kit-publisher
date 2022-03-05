@@ -21,7 +21,7 @@ export default {
       packageJson.reuters.graphic.updated = new Date().toISOString();
     // ... otherwise ask.
     } else {
-      const { confirm } = await prompts({
+      const { confirm } = await prompts.prompt({
         type: 'confirm',
         name: 'confirm',
         message: packageJson.reuters.graphic.updated ?
