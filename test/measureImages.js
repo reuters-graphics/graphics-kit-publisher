@@ -5,6 +5,10 @@ const fs = require('fs');
 const path = require('path');
 const sinon = require('sinon');
 const prompts = require('prompts');
+const imgSize = require('image-size');
+const { promisify } = require('util');
+
+const asyncImgSize = promisify(imgSize);
 
 describe('GraphicsKitPublisher measures images', function() {
   this.timeout(20000);
@@ -13,6 +17,7 @@ describe('GraphicsKitPublisher measures images', function() {
     mock({
       'src/statics/images/share.jpg': mock.load(path.resolve(__dirname, 'img.jpg')),
       'src/statics/images/oversize.jpg': mock.load(path.resolve(__dirname, 'oversize.jpg')),
+      'src/statics/images/oversize.png': mock.load(path.resolve(__dirname, 'oversize.png')),
       'locales/en/content.json': JSON.stringify({ SEOTitle: 'title', SEODescription: 'description' }),
       'media-assets': {},
       node_modules: mock.load(path.resolve(__dirname, '../node_modules')),
@@ -32,43 +37,86 @@ describe('GraphicsKitPublisher measures images', function() {
   it('Should optimise an image', async function() {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(Promise.resolve({
-      confirm: true,
+      operation: 'each',
       quality: 70,
       option: 'optimise',
     }));
     sinon.replace(prompts, 'prompt', fake);
 
-    const size = Math.ceil(fs.statSync('src/statics/images/oversize.jpg').size / 1024);
+    const sizeJPG = Math.ceil(fs.statSync('src/statics/images/oversize.jpg').size / 1024);
+    const sizePNG = Math.ceil(fs.statSync('src/statics/images/oversize.png').size / 1024);
 
     await graphicsPublisher.measureImages();
 
-    const resize = Math.ceil(fs.statSync('src/statics/images/oversize.jpg').size / 1024);
+    const resizeJPG = Math.ceil(fs.statSync('src/statics/images/oversize.jpg').size / 1024);
+    const resizePNG = Math.ceil(fs.statSync('src/statics/images/oversize.png').size / 1024);
 
-    expect(resize).to.be.lessThan(size);
+    expect(resizeJPG).to.be.lessThan(sizeJPG);
+    expect(resizePNG).to.be.lessThan(sizePNG);
   });
 
   it('Should resize an image', async function() {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(Promise.resolve({
-      confirm: true,
+      operation: 'each',
       resizeWidth: 1200,
       option: 'resize',
     }));
     sinon.replace(prompts, 'prompt', fake);
 
-    const size = Math.ceil(fs.statSync('src/statics/images/oversize.jpg').size / 1024);
+    const sizeJPG = Math.ceil(fs.statSync('src/statics/images/oversize.jpg').size / 1024);
+    const sizePNG = Math.ceil(fs.statSync('src/statics/images/oversize.png').size / 1024);
 
     await graphicsPublisher.measureImages();
 
-    const resize = Math.ceil(fs.statSync('src/statics/images/oversize.jpg').size / 1024);
+    const resizeJPG = Math.ceil(fs.statSync('src/statics/images/oversize.jpg').size / 1024);
+    const resizePNG = Math.ceil(fs.statSync('src/statics/images/oversize.png').size / 1024);
 
-    expect(resize).to.be.lessThan(size);
+    expect(resizeJPG).to.be.lessThan(sizeJPG);
+    expect(resizePNG).to.be.lessThan(sizePNG);
+  });
+
+  it('Should optimise an image in bulk', async function() {
+    const graphicsPublisher = new GraphicsPublisher();
+    const fake = sinon.fake.returns(Promise.resolve({
+      operation: 'all',
+      quality: 60,
+    }));
+    sinon.replace(prompts, 'prompt', fake);
+
+    const sizeJPG = Math.ceil(fs.statSync('src/statics/images/oversize.jpg').size / 1024);
+    const sizePNG = Math.ceil(fs.statSync('src/statics/images/oversize.png').size / 1024);
+
+    await graphicsPublisher.measureImages();
+
+    const resizeJPG = Math.ceil(fs.statSync('src/statics/images/oversize.jpg').size / 1024);
+    const resizePNG = Math.ceil(fs.statSync('src/statics/images/oversize.png').size / 1024);
+
+    expect(resizeJPG).to.be.lessThan(sizeJPG);
+    expect(resizePNG).to.be.lessThan(sizePNG);
+  });
+
+  it('Should resize and optimise an image', async function() {
+    const graphicsPublisher = new GraphicsPublisher();
+    const fake = sinon.fake.returns(Promise.resolve({
+      operation: 'each',
+      resizeWidth: 1200,
+      quality: 70,
+      option: 'both',
+    }));
+    sinon.replace(prompts, 'prompt', fake);
+
+    await graphicsPublisher.measureImages();
+    const { width: widthJPG } = await asyncImgSize('src/statics/images/oversize.jpg');
+    expect(widthJPG).to.be(1200);
+    const { width: widthPNG } = await asyncImgSize('src/statics/images/oversize.png');
+    expect(widthPNG).to.be(1200);
   });
 
   it('Should skip an image', async function() {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(Promise.resolve({
-      confirm: true,
+      operation: 'each',
       option: null,
     }));
     sinon.replace(prompts, 'prompt', fake);
@@ -83,7 +131,7 @@ describe('GraphicsKitPublisher measures images', function() {
   it('Should write an image manifest', async function() {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(Promise.resolve({
-      confirm: true,
+      operation: 'each',
       option: null,
     }));
     sinon.replace(prompts, 'prompt', fake);
@@ -98,6 +146,11 @@ describe('GraphicsKitPublisher measures images', function() {
         height: 1680,
         size: 214,
       },
+      'oversize.png': {
+        height: 1080,
+        size: 1051,
+        width: 1920,
+      },
       'share.jpg': {
         width: 2400,
         height: 1350,
@@ -109,7 +162,7 @@ describe('GraphicsKitPublisher measures images', function() {
   it('Should update an image manifest after resize', async function() {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(Promise.resolve({
-      confirm: true,
+      operation: 'each',
       resizeWidth: 1200,
       option: 'resize',
     }));
@@ -124,6 +177,11 @@ describe('GraphicsKitPublisher measures images', function() {
         width: 1200,
         height: 900,
         size: 53,
+      },
+      'oversize.png': {
+        height: 675,
+        size: 717,
+        width: 1200,
       },
       'share.jpg': {
         width: 2400,
@@ -153,7 +211,7 @@ describe('GraphicsKitPublisher measures images', function() {
     process.env.GRAPHICS_SERVER_API_KEY = 'tk';
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(Promise.resolve({
-      confirm: true,
+      operation: 'each',
       resizeWidth: 1200,
       option: 'resize',
     }));
