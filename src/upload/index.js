@@ -1,14 +1,11 @@
 import {
-  DEFAULT_WARN_IMAGE_SIZE,
-  DEFAULT_WARN_IMAGE_WIDTH
+  DEFAULT_WARN_IMAGE_SIZE
 } from '../constants/images';
-
 import chalk from 'chalk';
 import mediaEditionsMixin from './mediaEditions';
 import publicEditionMixin from './publicEdition';
 
 const defaultOptions = {
-  warnImageWidth: DEFAULT_WARN_IMAGE_WIDTH,
   warnImageSize: DEFAULT_WARN_IMAGE_SIZE,
   fast: false,
 };

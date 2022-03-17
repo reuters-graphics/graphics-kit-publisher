@@ -29,7 +29,6 @@ yarn add @reuters-graphics/graphics-kit-publisher
     $ graphics-publisher upload [options]
 
   Options
-    --warnImageWidth         Set a max width for images beyond which you'll be prompted to resize  (default 2600)
     --warnImageSize          Set a max size in KB for images beyond which you'll be prompted to resize  (default 200)
     --fast                   Upload just the public edition, ignoring media embeds
     --distDir                Relative path to a directory of built files we'll use to create your pack  (default dist)
@@ -108,7 +107,6 @@ import GraphicsPublisher from "@reuters-graphics/graphics-kit-publisher";
 const graphicsPublisher = new GraphicsPublisher(defaultConfig);
 
 const defaultUploadOptions = {
-  warnImageWidth: 2600,
   warnImageSize: 200,
   fast: false,
 };

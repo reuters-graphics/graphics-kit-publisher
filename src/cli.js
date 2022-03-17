@@ -11,11 +11,10 @@ import {
   DEFAULT_PACK_METADATA_FILE,
   DEFAULT_PACK_TITLE_PROP
 } from './constants/pack';
-import {
-  DEFAULT_WARN_IMAGE_SIZE,
-  DEFAULT_WARN_IMAGE_WIDTH
-} from './constants/images';
 
+import {
+  DEFAULT_WARN_IMAGE_SIZE
+} from './constants/images';
 import GraphicsPublisher from '@reuters-graphics/graphics-publisher';
 import pkg from '../package.json';
 import sade from 'sade';
@@ -50,8 +49,7 @@ prog
 
 prog
   .command('measure-images')
-  .option('--warnImageWidth', 'Set a max width for images beyond which you\'ll be prompted to resize', DEFAULT_WARN_IMAGE_WIDTH)
-  .option('--warnImageSize', 'Set a max size in KB for images beyond which you\'ll be prompted to resize', DEFAULT_WARN_IMAGE_SIZE)
+  .option('--warnImageSize', 'Set a max size in KB for images beyond which you\'ll be prompted to optimise or resize', DEFAULT_WARN_IMAGE_SIZE)
   .action(async(opts) => {
     const graphicsPublisher = new GraphicsPublisher(opts);
     await graphicsPublisher.measureImages(opts);
@@ -59,8 +57,7 @@ prog
 
 prog
   .command('upload')
-  .option('--warnImageWidth', 'Set a max width for images beyond which you\'ll be prompted to resize', DEFAULT_WARN_IMAGE_WIDTH)
-  .option('--warnImageSize', 'Set a max size in KB for images beyond which you\'ll be prompted to resize', DEFAULT_WARN_IMAGE_SIZE)
+  .option('--warnImageSize', 'Set a max size in KB for images beyond which you\'ll be prompted to optimise or resize', DEFAULT_WARN_IMAGE_SIZE)
   .option('--fast', 'Upload just the public edition, ignoring media embeds')
   .action(async(opts) => {
     const graphicsPublisher = new GraphicsPublisher(opts);
