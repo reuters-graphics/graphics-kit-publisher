@@ -21,6 +21,9 @@ const defaultOptions = {
   warnImageSize: DEFAULT_WARN_IMAGE_SIZE,
 };
 
+const OPTIMISE_MIN = 80;
+const OPTIMISE_DEFAULT = 85;
+
 export default {
   /**
    * Measures images in the static files images directory, creates a manifest
@@ -92,9 +95,9 @@ export default {
       const { quality } = await prompts.prompt({
         type: 'number',
         name: 'quality',
-        message: chalk`OK, choose an optimisation quality level for your oversize images. {grey (1-100)}`,
-        initial: 80,
-        min: 1,
+        message: chalk`OK, choose an optimisation level for your oversize images.\n{grey 80 - 100 least optimised/highest quality}\n`,
+        initial: OPTIMISE_DEFAULT,
+        min: OPTIMISE_MIN,
         max: 100,
       });
 
@@ -171,9 +174,9 @@ export default {
           const { quality } = await prompts.prompt({
             type: 'number',
             name: 'quality',
-            message: chalk`Choose an optimisation quality level for {cyan ${image}}.`,
-            initial: 80,
-            min: 1,
+            message: chalk`Choose an optimisation level for {cyan ${image}}.\n{grey 80 - 100 least optimised/highest quality}\n`,
+            initial: OPTIMISE_DEFAULT,
+            min: OPTIMISE_MIN,
             max: 100,
           });
 
