@@ -11,7 +11,7 @@ const { promisify } = require('util');
 const asyncImgSize = promisify(imgSize);
 
 describe('GraphicsKitPublisher measures images', function() {
-  this.timeout(20000);
+  this.timeout(200000);
 
   beforeEach(function() {
     mock({
@@ -226,5 +226,25 @@ describe('GraphicsKitPublisher measures images', function() {
     delete process.env.GRAPHICS_SERVER_USERNAME;
     delete process.env.GRAPHICS_SERVER_PASSWORD;
     delete process.env.GRAPHICS_SERVER_API_KEY;
+  });
+
+  it('Speed test with an image', async function() {
+    const graphicsPublisher = new GraphicsPublisher();
+    const fake = sinon.fake.returns(Promise.resolve({
+      operation: 'all',
+      quality: 70,
+    }));
+    sinon.replace(prompts, 'prompt', fake);
+
+    for (const i of [...Array(100).keys()]) {
+      fs.copyFileSync('src/statics/images/oversize.jpg', `src/statics/images/oversize-img-${i}.jpg`);
+    }
+
+    const start = new Date().getTime();
+
+    await graphicsPublisher.measureImages();
+
+    const timeElapsed = (new Date().getTime() - start) / 1000;
+    expect(timeElapsed).to.be.lessThan(100);
   });
 });

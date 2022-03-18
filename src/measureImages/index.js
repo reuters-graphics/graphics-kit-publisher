@@ -4,6 +4,7 @@ import {
   DEFAULT_WARN_IMAGE_SIZE
 } from '../constants/images';
 import chalk from 'chalk';
+import cliProgress from 'cli-progress';
 import fs from 'fs-extra';
 import glob from 'glob';
 import imgSize from 'image-size';
@@ -91,13 +92,22 @@ export default {
       const { quality } = await prompts.prompt({
         type: 'number',
         name: 'quality',
-        message: chalk`OK, choose an optimisation quality level for your oversize images.`,
+        message: chalk`OK, choose an optimisation quality level for your oversize images. {grey (1-100)}`,
         initial: 80,
         min: 1,
         max: 100,
       });
 
+      const progressBar = new cliProgress.SingleBar({
+        format: `⚙️ Optimising ${oversizeImages.length} images: [{bar}] ${chalk.green('{percentage}%')}`,
+      }, cliProgress.Presets.shades_grey);
+      progressBar.start(oversizeImages.length - 1, 0);
+
+      let totalRawSize = 0;
+      let totalOptimisedSize = 0;
       for (const image of oversizeImages) {
+        totalRawSize += MANIFEST[image].size;
+        progressBar.update(oversizeImages.indexOf(image));
         const IMG_PATH = path.join(this.IMAGES_DIR, image);
         const OPTIMISED_IMG_PATH = uniqifyBasename(IMG_PATH);
 
@@ -107,7 +117,13 @@ export default {
 
         writeImg(IMG_PATH, OPTIMISED_IMG_PATH, buffer);
         await measureAndUpdateManifest(image);
+        totalOptimisedSize += MANIFEST[image].size;
       }
+      progressBar.stop();
+      const savedKB = totalRawSize - totalOptimisedSize;
+      const avgSavedKB = Math.round(savedKB / oversizeImages.length);
+      const savedPercent = Math.round(savedKB / totalRawSize * 100);
+      console.log(chalk`You saved about {green ${avgSavedKB} KB} per image for a total {green ${savedPercent}%} file size saved!`);
     }
 
     if (operation === 'each') {
