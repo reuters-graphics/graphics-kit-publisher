@@ -22,10 +22,6 @@ describe('GraphicsKitPublisher measures images', function() {
       'media-assets': {},
       node_modules: mock.load(path.resolve(__dirname, '../node_modules')),
       'package.json': JSON.stringify({ scripts: { build: '' } }),
-      dist: {
-        'index.html': '<html></html>',
-        embeds: { en: { chart: { 'index.html': '<html></html>' } } },
-      },
     }, { createCwd: false });
   });
 
@@ -113,7 +109,7 @@ describe('GraphicsKitPublisher measures images', function() {
     expect(widthPNG).to.be(1200);
   });
 
-  it('Should skip an image', async function() {
+  it('Should skip an image if previously declined to optimize', async function() {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(Promise.resolve({
       operation: 'each',
@@ -121,11 +117,29 @@ describe('GraphicsKitPublisher measures images', function() {
     }));
     sinon.replace(prompts, 'prompt', fake);
 
+    const { width: ogWidth } = await asyncImgSize('src/statics/images/oversize.jpg');
+
+    await graphicsPublisher.measureImages();
+    sinon.restore();
+
+    const fake2 = sinon.fake.returns(Promise.resolve({
+      operation: 'each',
+      resizeWidth: 100,
+      option: 'resize',
+    }));
+    sinon.replace(prompts, 'prompt', fake2);
+
     await graphicsPublisher.measureImages();
 
-    const oks = JSON.parse(fs.readFileSync('node_modules/.reuters-graphics/image-size-ok.json'));
+    const { width: newWidth } = await asyncImgSize('src/statics/images/oversize.jpg');
 
-    expect(oks).to.contain('oversize.jpg');
+    expect(ogWidth).to.be(newWidth);
+
+    const manifest = JSON.parse(fs.readFileSync('src/statics/images/manifest.json'));
+
+    expect(manifest['oversize.jpg'].optimised).to.be(false);
+    expect(manifest['oversize.png'].optimised).to.be(false);
+    expect(manifest['share.jpg'].optimised).to.be(undefined);
   });
 
   it('Should write an image manifest', async function() {
@@ -145,11 +159,13 @@ describe('GraphicsKitPublisher measures images', function() {
         width: 2240,
         height: 1680,
         size: 214,
+        optimised: false,
       },
       'oversize.png': {
         height: 1080,
         size: 1051,
         width: 1920,
+        optimised: false,
       },
       'share.jpg': {
         width: 2400,
@@ -177,11 +193,13 @@ describe('GraphicsKitPublisher measures images', function() {
         width: 1200,
         height: 900,
         size: 53,
+        optimised: false,
       },
       'oversize.png': {
         height: 675,
         size: 717,
         width: 1200,
+        optimised: false,
       },
       'share.jpg': {
         width: 2400,

@@ -1,5 +1,3 @@
-import { getOK, writeOK } from '../utils/getImgSizeOK';
-
 import {
   DEFAULT_WARN_IMAGE_SIZE
 } from '../constants/images';
@@ -25,9 +23,22 @@ const OPTIMISE_MIN = 80;
 const OPTIMISE_DEFAULT = 85;
 
 export default {
+  getImgManifest() {
+    const MANIFEST_PATH = path.join(this.IMAGES_DIR, 'manifest.json');
+    // Ensure it's there
+    if (!fs.existsSync(MANIFEST_PATH)) {
+      fs.ensureDirSync(path.dirname(MANIFEST_PATH));
+      fs.writeFileSync(MANIFEST_PATH, '{}');
+    }
+    return fs.readJSONSync(MANIFEST_PATH);
+  },
+  writeImgManifest(manifest) {
+    const MANIFEST_PATH = path.join(this.IMAGES_DIR, 'manifest.json');
+    fs.writeJSONSync(MANIFEST_PATH, manifest);
+  },
   /**
    * Measures images in the static files images directory, creates a manifest
-   * in the root of that directory and offers to optimise/ resize any images
+   * in the root of that directory and offers to optimise/resize any images
    * over a size threshold.
    * @param {object} opts CLI options, including max size in KB for images
    */
@@ -35,9 +46,8 @@ export default {
     warnImageSize = DEFAULT_WARN_IMAGE_SIZE,
   } = defaultOptions) {
     const images = glob.sync('**/*.{png,jpg,jpeg}', { cwd: this.IMAGES_DIR });
-    const MANIFEST = {};
-    const writeManifest = () => fs.writeJSONSync(path.join(this.IMAGES_DIR, 'manifest.json'), MANIFEST);
-    const OK_IMAGES = getOK();
+
+    const MANIFEST = this.getImgManifest();
 
     const writeImg = (IMG_PATH, OPTIMISED_IMG_PATH, buffer) => {
       fs.writeFileSync(OPTIMISED_IMG_PATH, buffer);
@@ -46,38 +56,64 @@ export default {
       fs.unlinkSync(OPTIMISED_IMG_PATH);
     };
 
-    const measureAndUpdateManifest = async(image) => {
+    const imageChanged = (manifest, updated) => (
+      manifest.width !== updated.width ||
+      manifest.height !== updated.height ||
+      manifest.size !== updated.size
+    );
+
+    const measureImage = async(image) => {
       const IMG_PATH = path.join(this.IMAGES_DIR, image);
       const { width, height } = await asyncImgSize(IMG_PATH);
       const size = Math.ceil(fs.statSync(IMG_PATH).size / 1024);
-      MANIFEST[image] = { width, height, size };
+      return { width, height, size };
+    };
+
+    const resetManifest = async(image) => {
+      const updated = await measureImage(image);
+      if (
+        // IF image not in manifest OR
+        !MANIFEST[image] ||
+        // image is in manifest but dimensions/size changed
+        (MANIFEST[image] && imageChanged(MANIFEST[image], updated))
+      ) {
+        // ... write it to the manifest w/out "optimised" key
+        MANIFEST[image] = updated;
+      }
+    };
+
+    const updateManifest = async(image, optimised = true) => {
+      const updated = await measureImage(image);
+      MANIFEST[image] = { ...updated, optimised };
     };
 
     const isPNG = (img) => path.extname(img).toLowerCase() === '.png';
 
     for (const image of images) {
-      await measureAndUpdateManifest(image);
+      await resetManifest(image);
     }
 
     const oversizeImages = Object.keys(MANIFEST)
-      .filter(img => MANIFEST[img].size > warnImageSize)
-      .filter(img => OK_IMAGES.indexOf(img) < 0);
+      // We haven't already asked to optimise the image
+      .filter(img => 'optimised' in MANIFEST[img] === false)
+      // and size is above warn size
+      .filter(img => MANIFEST[img].size > warnImageSize);
 
     // Don't prompt for optimising images in serverless env
     if (isServerless()) {
-      writeManifest();
+      this.writeImgManifest(MANIFEST);
       return;
     }
 
     if (oversizeImages.length === 0) {
-      writeManifest();
+      this.writeImgManifest(MANIFEST);
       return;
     }
 
     const { operation } = await prompts.prompt({
       type: 'select',
       name: 'operation',
-      message: chalk`We found {cyan ${oversizeImages.length}} images in your project larger than {yellow ${warnImageSize} KB}.\n\nYou should probably optimise or resize these images to reduce their file size. We can do that now or you can optimise all these images in bulk.\n\nWhat do you want to do?`,
+      message: chalk`We found {cyan ${oversizeImages.length}} new images in your project larger than {yellow ${warnImageSize} KB}.\n\nYou should probably optimise or resize these images to reduce their file size. We can do that now or you can optimise all these images in bulk.\n\nWhat do you want to do?`,
       choices: [
         { title: 'Resize/optimise each one', value: 'each' },
         { title: 'Optimise them all together', value: 'all' },
@@ -87,7 +123,7 @@ export default {
     });
 
     if (!operation) {
-      writeManifest();
+      this.writeImgManifest(MANIFEST);
       return;
     }
 
@@ -119,7 +155,7 @@ export default {
           await sharp(fs.readFileSync(IMG_PATH)).jpeg({ quality, progressive: true }).toBuffer();
 
         writeImg(IMG_PATH, OPTIMISED_IMG_PATH, buffer);
-        await measureAndUpdateManifest(image);
+        await updateManifest(image);
         totalOptimisedSize += MANIFEST[image].size;
       }
       progressBar.stop();
@@ -137,7 +173,7 @@ export default {
         const { option } = await prompts.prompt({
           type: 'select',
           name: 'option',
-          message: chalk`{cyan ${image}} is {yellow ${size} KB}. What should we do?`,
+          message: chalk`{cyan ${image}} is {yellow ${size} KB} {yellow ${width}px} wide. What should we do?`,
           choices: [
             { title: 'Optimise it', value: 'optimise' },
             { title: 'Resize it', value: 'resize' },
@@ -149,7 +185,7 @@ export default {
 
         if (!option) {
           console.log(chalk`OK, we'll ignore that one from now on.`);
-          OK_IMAGES.push(image);
+          await updateManifest(image, false);
           continue;
         }
 
@@ -168,6 +204,7 @@ export default {
             .resize({ width: resizeWidth })
             .toBuffer();
           writeImg(IMG_PATH, OPTIMISED_IMG_PATH, buffer);
+          await updateManifest(image, option === 'both');
         }
 
         if (option === 'optimise' || option === 'both') {
@@ -184,15 +221,14 @@ export default {
             await sharp(fs.readFileSync(IMG_PATH)).png({ quality }).toBuffer() :
             await sharp(fs.readFileSync(IMG_PATH)).jpeg({ quality, progressive: true }).toBuffer();
           writeImg(IMG_PATH, OPTIMISED_IMG_PATH, buffer);
+          await updateManifest(image);
         }
-        await measureAndUpdateManifest(image);
 
         const { size: resizeSize } = MANIFEST[image];
         console.log(chalk`{cyan ${image}} is now ${resizeSize} KB. You saved {green ${size - resizeSize} KB}!`);
       }
     }
 
-    writeManifest();
-    writeOK(OK_IMAGES);
+    this.writeImgManifest(MANIFEST);
   },
 };
