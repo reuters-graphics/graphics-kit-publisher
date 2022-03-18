@@ -173,7 +173,7 @@ export default {
         const { option } = await prompts.prompt({
           type: 'select',
           name: 'option',
-          message: chalk`{cyan ${image}} is {yellow ${size} KB} {yellow ${width}px} wide. What should we do?`,
+          message: chalk`{cyan ${image}} is {yellow ${size} KB} and {yellow ${width}px} wide. What should we do?`,
           choices: [
             { title: 'Optimise it', value: 'optimise' },
             { title: 'Resize it', value: 'resize' },
