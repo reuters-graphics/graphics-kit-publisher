@@ -56,18 +56,18 @@ export default {
       fs.unlinkSync(OPTIMISED_IMG_PATH);
     };
 
-    const imageChanged = (manifest, updated) => (
-      manifest.width !== updated.width ||
-      manifest.height !== updated.height ||
-      manifest.size !== updated.size
-    );
-
     const measureImage = async(image) => {
       const IMG_PATH = path.join(this.IMAGES_DIR, image);
       const { width, height } = await asyncImgSize(IMG_PATH);
       const size = Math.ceil(fs.statSync(IMG_PATH).size / 1024);
       return { width, height, size };
     };
+
+    const imageChanged = (manifest, updated) => (
+      manifest.width !== updated.width ||
+      manifest.height !== updated.height ||
+      manifest.size !== updated.size
+    );
 
     const resetManifest = async(image) => {
       const updated = await measureImage(image);
@@ -77,7 +77,8 @@ export default {
         // image is in manifest but dimensions/size changed
         (MANIFEST[image] && imageChanged(MANIFEST[image], updated))
       ) {
-        // ... write it to the manifest w/out "optimised" key
+        // ... write it to the manifest w/out "optimised" key,
+        // which will trigger asking for optimisation.
         MANIFEST[image] = updated;
       }
     };
@@ -113,7 +114,7 @@ export default {
     const { operation } = await prompts.prompt({
       type: 'select',
       name: 'operation',
-      message: chalk`We found {cyan ${oversizeImages.length}} new images in your project larger than {yellow ${warnImageSize} KB}.\n\nYou should probably optimise or resize these images to reduce their file size. We can do that now or you can optimise all these images in bulk.\n\nWhat do you want to do?`,
+      message: chalk`We found {cyan ${oversizeImages.length}} new images in your project larger than {yellow ${warnImageSize}KB}.\n\nYou should probably optimise or resize these images to reduce their file size. We can do that now or you can optimise all these images in bulk.\n\nWhat do you want to do?`,
       choices: [
         { title: 'Resize/optimise each one', value: 'each' },
         { title: 'Optimise them all together', value: 'all' },
@@ -162,7 +163,7 @@ export default {
       const savedKB = totalRawSize - totalOptimisedSize;
       const avgSavedKB = Math.round(savedKB / oversizeImages.length);
       const savedPercent = Math.round(savedKB / totalRawSize * 100);
-      console.log(chalk`You saved about {green ${avgSavedKB} KB} per image for a total {green ${savedPercent}%} file size saved!`);
+      console.log(chalk`You saved about {green ${avgSavedKB}KB} per image for a total {green ${savedPercent}%} file size saved!`);
     }
 
     if (operation === 'each') {
@@ -173,7 +174,7 @@ export default {
         const { option } = await prompts.prompt({
           type: 'select',
           name: 'option',
-          message: chalk`{cyan ${image}} is {yellow ${size} KB} and {yellow ${width}px} wide. What should we do?`,
+          message: chalk`{cyan ${image}} is {yellow ${size}KB} and {yellow ${width}px} wide. What should we do?`,
           choices: [
             { title: 'Optimise it', value: 'optimise' },
             { title: 'Resize it', value: 'resize' },
@@ -225,7 +226,7 @@ export default {
         }
 
         const { size: resizeSize } = MANIFEST[image];
-        console.log(chalk`{cyan ${image}} is now ${resizeSize} KB. You saved {green ${size - resizeSize} KB}!`);
+        console.log(chalk`{cyan ${image}} is now ${resizeSize}KB. You saved {green ${size - resizeSize}KB}!`);
       }
     }
 
