@@ -8,11 +8,12 @@ const PNG = require('pngjs').PNG;
 const pixelmatch = require('pixelmatch');
 
 describe('GraphicsKitPublisher packs project', function() {
-  this.timeout(20000);
+  this.timeout(30000);
 
   beforeEach(function() {
     mock({
       'CLIENT_README.txt': 'Custom client docs',
+      'oversize.jpg': mock.load(path.resolve(__dirname, 'oversize.jpg')),
       'src/statics/images/share.jpg': mock.load(path.resolve(__dirname, 'img.jpg')),
       'src/statics/images/share-embed.jpg': mock.load(path.resolve(__dirname, 'img2.jpg')),
       'locales/en/content.json': JSON.stringify({ SEOTitle: 'title', SEODescription: 'description' }),
@@ -282,5 +283,34 @@ describe('GraphicsKitPublisher packs project', function() {
     expect(fs.existsSync('graphics-pack/media-en-map.zip')).to.be(true);
     expect(fs.existsSync('graphics-pack/media-de-chart.zip')).to.be(true);
     expect(fs.existsSync('graphics-pack/public.zip')).to.be(true);
+  });
+
+  it('Should error if edition archive size is too large for RNGS', async function() {
+    const graphicsPublisher = new GraphicsPublisher();
+    graphicsPublisher.getHomepage();
+    await graphicsPublisher.makePublicEdition();
+    await graphicsPublisher.makeEmbedEditions();
+    await graphicsPublisher.makePreviewImages();
+    await graphicsPublisher.makeAssetEditions();
+
+    // Add enough files to make an edition too large
+    for (const i of [...Array(1000).keys()]) {
+      fs.copyFileSync('oversize.jpg', `graphics-pack/media-en-map/oversize-${i}.jpg`);
+    }
+
+    try {
+      await graphicsPublisher.archiveEditions();
+      expect(true).to.be(false);
+    } catch (e) {
+      expect(e.name).to.be('EditionArchiveError');
+      expect(e.message).to.contain('too large to upload');
+      // Should correctly create edition archives within size limit
+      expect(fs.existsSync('graphics-pack/media-de-chart.zip')).to.be(true);
+      expect(fs.existsSync('graphics-pack/media-en-chart.zip')).to.be(true);
+      // Should create archive too big, but then error
+      expect(fs.existsSync('graphics-pack/media-en-map.zip')).to.be(true);
+      // Should not create more edition archives after error
+      expect(fs.existsSync('graphics-pack/public.zip')).to.be(false);
+    }
   });
 });
