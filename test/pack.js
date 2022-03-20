@@ -264,4 +264,23 @@ describe('GraphicsKitPublisher packs project', function() {
     expect(fs.existsSync('graphics-pack/media-en-map/JPG/my-map.jpg')).to.be(true);
     expect(fs.existsSync('graphics-pack/media-de-chart/JPG/chart.jpg')).to.be(true);
   });
+
+  it('Should create edition archives', async function() {
+    const graphicsPublisher = new GraphicsPublisher();
+    graphicsPublisher.getHomepage();
+    await graphicsPublisher.makePublicEdition();
+    await graphicsPublisher.makeEmbedEditions();
+    await graphicsPublisher.makePreviewImages();
+    await graphicsPublisher.makeAssetEditions();
+    await graphicsPublisher.archiveEditions();
+
+    expect(fs.existsSync('graphics-pack/media-en-chart/JPG/chart.jpg')).to.be(false);
+    expect(fs.existsSync('graphics-pack/media-en-chart/EPS/chart.eps')).to.be(false);
+    expect(fs.existsSync('graphics-pack/media-en-map/JPG/my-map.jpg')).to.be(false);
+    expect(fs.existsSync('graphics-pack/media-de-chart/JPG/chart.jpg')).to.be(false);
+    expect(fs.existsSync('graphics-pack/media-en-chart.zip')).to.be(true);
+    expect(fs.existsSync('graphics-pack/media-en-map.zip')).to.be(true);
+    expect(fs.existsSync('graphics-pack/media-de-chart.zip')).to.be(true);
+    expect(fs.existsSync('graphics-pack/public.zip')).to.be(true);
+  });
 });
