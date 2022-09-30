@@ -153,11 +153,13 @@ describe('GraphicsKitPublisher packs project', function() {
     await graphicsPublisher.makeEmbedEditions();
     await graphicsPublisher.makePreviewImages();
 
+    const pubImgExists = fs.existsSync('graphics-pack/public/interactive/_gfxpreview.png');
     const medImg1Exists = fs.existsSync('graphics-pack/media-en-chart/media-interactive/_gfxpreview.png');
     const medImg2Exists = fs.existsSync('graphics-pack/media-de-chart/media-interactive/_gfxpreview.png');
     const intImg1Exists = fs.existsSync('graphics-pack/media-en-chart/interactive/_gfxpreview.png');
     const intImg2Exists = fs.existsSync('graphics-pack/media-de-chart/interactive/_gfxpreview.png');
 
+    expect(pubImgExists).to.be(true);
     expect(medImg1Exists).to.be(true);
     expect(medImg2Exists).to.be(true);
     expect(intImg1Exists).to.be(true);
