@@ -33,6 +33,13 @@ export default {
       throw new FileNotFoundError(chalk`Could not find local copy of share image {yellow ${path.relative(this.CWD, SHARE_IMAGE_PATH)}}`);
     }
 
+    const INTERACTIVE_PUBLIC_DIR = path.join(this.PACK_DIR, 'public/interactive');
+
+    const previewImgBuffer = await sharp(fs.readFileSync(SHARE_IMAGE_PATH))
+      .png()
+      .toBuffer();
+    fs.writeFileSync(path.join(INTERACTIVE_PUBLIC_DIR, '_gfxpreview.png'), previewImgBuffer);
+
     const EMBEDS_DIR = path.join(this.DIST_DIR, 'embeds');
     const embedLocales = glob.sync('*/', { cwd: EMBEDS_DIR });
 
@@ -62,9 +69,6 @@ export default {
           }
         }
         // Otherwise, we'll use the share image from the root index page
-        const previewImgBuffer = await sharp(fs.readFileSync(SHARE_IMAGE_PATH))
-          .png()
-          .toBuffer();
         fs.writeFileSync(path.join(EMBED_MEDIA_DIR, '_gfxpreview.png'), previewImgBuffer);
         fs.writeFileSync(path.join(INTERACTIVE_MEDIA_DIR, '_gfxpreview.png'), previewImgBuffer);
       }
