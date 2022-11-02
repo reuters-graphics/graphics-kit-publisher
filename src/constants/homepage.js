@@ -1,1 +1,1 @@
-export const validHomepageHostnames = ['graphics.reuters.com'];
+export const validHomepageHostnames = ['reuters.com', 'graphics.reuters.com'];
