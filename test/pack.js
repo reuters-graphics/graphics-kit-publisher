@@ -34,11 +34,11 @@ describe('GraphicsKitPublisher packs project', function() {
         },
       },
       node_modules: mock.load(path.resolve(__dirname, '../node_modules')),
-      'package.json': JSON.stringify({ scripts: { build: '' }, homepage: 'https://graphics.reuters.com/project/' }),
+      'package.json': JSON.stringify({ scripts: { build: '' }, homepage: 'https://www.reuters.com/graphics/project/' }),
       dist: {
         'index.html': `<html>
           <head>
-            <meta property="og:image" content="https://graphics.reuters.com/project/cdn/images/share.jpg" />
+            <meta property="og:image" content="https://www.reuters.com/graphics/project/cdn/images/share.jpg" />
           </head>
           <body></body>
         </html>`,
@@ -89,7 +89,7 @@ describe('GraphicsKitPublisher packs project', function() {
   it('Should set homepage from package.json', async function() {
     const graphicsPublisher = new GraphicsPublisher();
     graphicsPublisher.getHomepage();
-    expect(graphicsPublisher.homepage).to.be('https://graphics.reuters.com/project/');
+    expect(graphicsPublisher.homepage).to.be('https://www.reuters.com/graphics/project/');
   });
 
   it('Should create public edition from dist', async function() {
@@ -132,7 +132,7 @@ describe('GraphicsKitPublisher packs project', function() {
     graphicsPublisher.getHomepage();
     await graphicsPublisher.makeEmbedEditions();
     const EMBED = fs.readFileSync('graphics-pack/media-de-chart/media-interactive/EMBED.txt', 'utf-8');
-    expect(EMBED).to.contain('https://graphics.reuters.com/project/embeds/de/chart/index.html');
+    expect(EMBED).to.contain('https://www.reuters.com/graphics/project/embeds/de/chart/index.html');
     expect(EMBED).to.contain('new pym.Parent("media-de-chart"');
     expect(EMBED).to.contain('<div id="media-de-chart"></div>');
   });
@@ -192,7 +192,7 @@ describe('GraphicsKitPublisher packs project', function() {
     fs.writeFileSync('dist/index.html', `
     <html>
     <head>
-    <meta property="og:image" content="https://graphics.reuters.com/project/cdn/" />
+    <meta property="og:image" content="https://www.reuters.com/graphics/project/cdn/" />
     </head>
     <body></body>
     </html>
@@ -214,7 +214,7 @@ describe('GraphicsKitPublisher packs project', function() {
     fs.writeFileSync('dist/index.html', `
     <html>
     <head>
-    <meta property="og:image" content="https://graphics.reuters.com/project/cdn/images/missing.jpg" />
+    <meta property="og:image" content="https://www.reuters.com/graphics/project/cdn/images/missing.jpg" />
     </head>
     <body></body>
     </html>
@@ -236,7 +236,7 @@ describe('GraphicsKitPublisher packs project', function() {
     fs.writeFileSync('dist/embeds/de/chart/index.html', `
     <html>
     <head>
-    <meta property="og:image" content="https://graphics.reuters.com/project/cdn/images/share-embed.jpg" />
+    <meta property="og:image" content="https://www.reuters.com/graphics/project/cdn/images/share-embed.jpg" />
     </head>
     <body></body>
     </html>

@@ -42,10 +42,18 @@ export default {
     const { url } = editions['public.zip'].interactive;
 
     setPkgProp('reuters.graphic.pack', pack);
-    setPkgProp('homepage', url);
+
+    /**
+     * TEMP: Force graphics.reuters.com URLs from RNGS
+     * to be www.reuters.com/graphics/ until RNGS gives
+     * us back the correct URL.
+     */
+    const standardisedURL = url.replace('graphics.reuters.com', 'www.reuters.com/graphics');
+
+    setPkgProp('homepage', standardisedURL);
 
     fs.unlinkSync(path.join(this.PACK_DIR, 'public.zip'));
 
-    return { pack, url };
+    return { pack, url: standardisedURL };
   },
 };
