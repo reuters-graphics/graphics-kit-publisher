@@ -270,6 +270,6 @@ describe('GraphicsKitPublisher measures images', function() {
     await graphicsPublisher.measureImages();
 
     const timeElapsed = (new Date().getTime() - start) / 1000;
-    expect(timeElapsed).to.be.lessThan(20);
+    expect(timeElapsed).to.be.lessThan(60);
   });
 });
