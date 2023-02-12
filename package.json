@@ -45,7 +45,7 @@
     "chalk": "^4.1.0",
     "cli-progress": "^3.10.0",
     "crypto-random-string": "^4.0.0",
-    "fs-extra": "^9.1.0",
+    "fs-extra": "^11.1.0",
     "glob": "^7.1.6",
     "image-size": "^0.9.7",
     "lodash": "^4.17.21",
