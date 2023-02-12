@@ -108,15 +108,6 @@ describe('GraphicsKitPublisher packs project', function() {
     expect(fs.existsSync('graphics-pack/public/interactive/cdn/nested/css/styles4.css')).to.be(true);
   });
 
-  it('Should create public edition from dist', async function() {
-    const graphicsPublisher = new GraphicsPublisher();
-    await graphicsPublisher.makePublicEdition();
-    expect(fs.existsSync('graphics-pack/public/interactive/index.html')).to.be(true);
-    expect(fs.existsSync('graphics-pack/public/interactive/cdn/js/chunk2.js')).to.be(true);
-    expect(fs.existsSync('graphics-pack/public/interactive/cdn/css/styles1.css')).to.be(true);
-    expect(fs.existsSync('graphics-pack/public/interactive/cdn/nested/css/styles4.css')).to.be(true);
-  });
-
   it('Should create embed editions from dist', async function() {
     const graphicsPublisher = new GraphicsPublisher();
     graphicsPublisher.getHomepage();
