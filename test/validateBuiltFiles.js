@@ -4,12 +4,19 @@ const mock = require('mock-fs');
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
+const os = require('os');
 
 describe('GraphicsKitPublisher validates built files', function() {
   this.timeout(20000);
 
   beforeEach(function() {
     mock({
+      [path.join(os.homedir(), '.reuters-graphics/profile.json')]: JSON.stringify({
+        name: 'Graphics Staff',
+        email: 'all.graphics@thomsonreuters.com',
+        url: 'https://www.reuters.com',
+        desk: 'london',
+      }),
       'src/statics/images/share.jpg': mock.load(path.resolve(__dirname, 'img.jpg')),
       'locales/en/content.json': JSON.stringify({ SEOTitle: 'title', SEODescription: 'description' }),
       'media-assets': {},

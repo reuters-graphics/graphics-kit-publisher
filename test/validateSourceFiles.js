@@ -4,12 +4,19 @@ const mock = require('mock-fs');
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
+const os = require('os');
 
 describe('GraphicsKitPublisher validates source files', function() {
   this.timeout(20000);
 
   beforeEach(function() {
     mock({
+      [path.join(os.homedir(), '.reuters-graphics/profile.json')]: JSON.stringify({
+        name: 'Graphics Staff',
+        email: 'all.graphics@thomsonreuters.com',
+        url: 'https://www.reuters.com',
+        desk: 'london',
+      }),
       'src/statics/images/share.jpg': mock.load(path.resolve(__dirname, 'img.jpg')),
       'locales/en/content.json': JSON.stringify({ SEOTitle: 'title', SEODescription: 'description' }),
       'media-assets': {},
@@ -33,7 +40,7 @@ describe('GraphicsKitPublisher validates source files', function() {
   });
 
   it('Should error if imagesDir does not exist', function() {
-    fs.rmdirSync('src/statics/images/', { recursive: true });
+    fs.rmSync('src/statics/images/', { recursive: true });
     try {
       const graphicsPublisher = new GraphicsPublisher();
       graphicsPublisher.validateSourceFiles();
@@ -45,7 +52,7 @@ describe('GraphicsKitPublisher validates source files', function() {
   });
 
   it('Should error if assetsDir does not exist', function() {
-    fs.rmdirSync('media-assets');
+    fs.rmSync('media-assets', { recursive: true });
     try {
       const graphicsPublisher = new GraphicsPublisher();
       graphicsPublisher.validateSourceFiles();
@@ -93,7 +100,7 @@ describe('GraphicsKitPublisher validates source files', function() {
   });
 
   it('Should error if localesDir does not exist', function() {
-    fs.rmdirSync('locales', { recursive: true });
+    fs.rmSync('locales', { recursive: true });
     try {
       const graphicsPublisher = new GraphicsPublisher();
       graphicsPublisher.validateSourceFiles();
@@ -117,7 +124,7 @@ describe('GraphicsKitPublisher validates source files', function() {
   });
 
   it('Should error if localesDir is missing default locale directory', function() {
-    fs.rmdirSync('locales/en/', { recursive: true });
+    fs.rmSync('locales/en/', { recursive: true });
     try {
       const graphicsPublisher = new GraphicsPublisher();
       graphicsPublisher.validateSourceFiles();

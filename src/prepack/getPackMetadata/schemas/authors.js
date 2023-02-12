@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import getProfileProp from '../../../utils/getProfileProp';
 import ordinal from 'ordinal';
 
-export default {
+export default () => ({
   type: 'array',
   items: {
     type: 'object',
@@ -40,4 +40,4 @@ export default {
       return chalk`Would you like to add any additional {green authors} (currently ${authors})?`;
     },
   },
-};
+});

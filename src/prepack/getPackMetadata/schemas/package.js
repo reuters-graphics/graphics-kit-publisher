@@ -1,22 +1,22 @@
-import authors from './authors';
-import contact from './contact';
-import desk from './desk';
+import getAuthorsSchema from './authors';
+import getContactSchema from './contact';
+import getDeskSchema from './desk';
 import published from './published';
 import slugs from './slugs';
 
-export default {
+export default () => ({
   type: 'object',
   properties: {
     reuters: {
       type: 'object',
       properties: {
-        contact,
+        contact: getContactSchema(),
         graphic: {
           type: 'object',
           properties: {
-            desk,
+            desk: getDeskSchema(),
             slugs,
-            authors,
+            authors: getAuthorsSchema(),
             published,
           },
           required: ['desk', 'slugs', 'authors', 'published'],
@@ -26,4 +26,4 @@ export default {
     },
   },
   required: ['reuters'],
-};
+});
