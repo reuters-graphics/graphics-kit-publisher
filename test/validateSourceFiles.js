@@ -40,7 +40,7 @@ describe('GraphicsKitPublisher validates source files', function() {
   });
 
   it('Should error if imagesDir does not exist', function() {
-    fs.rmdirSync('src/statics/images/', { recursive: true });
+    fs.rmSync('src/statics/images/', { recursive: true });
     try {
       const graphicsPublisher = new GraphicsPublisher();
       graphicsPublisher.validateSourceFiles();
@@ -52,7 +52,7 @@ describe('GraphicsKitPublisher validates source files', function() {
   });
 
   it('Should error if assetsDir does not exist', function() {
-    fs.rmdirSync('media-assets');
+    fs.rmSync('media-assets', { recursive: true });
     try {
       const graphicsPublisher = new GraphicsPublisher();
       graphicsPublisher.validateSourceFiles();
@@ -100,7 +100,7 @@ describe('GraphicsKitPublisher validates source files', function() {
   });
 
   it('Should error if localesDir does not exist', function() {
-    fs.rmdirSync('locales', { recursive: true });
+    fs.rmSync('locales', { recursive: true });
     try {
       const graphicsPublisher = new GraphicsPublisher();
       graphicsPublisher.validateSourceFiles();
@@ -124,7 +124,7 @@ describe('GraphicsKitPublisher validates source files', function() {
   });
 
   it('Should error if localesDir is missing default locale directory', function() {
-    fs.rmdirSync('locales/en/', { recursive: true });
+    fs.rmSync('locales/en/', { recursive: true });
     try {
       const graphicsPublisher = new GraphicsPublisher();
       graphicsPublisher.validateSourceFiles();
