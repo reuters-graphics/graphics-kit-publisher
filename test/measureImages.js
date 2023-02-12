@@ -7,6 +7,7 @@ const sinon = require('sinon');
 const prompts = require('prompts');
 const imgSize = require('image-size');
 const { promisify } = require('util');
+const os = require('os');
 
 const asyncImgSize = promisify(imgSize);
 
@@ -15,6 +16,12 @@ describe('GraphicsKitPublisher measures images', function() {
 
   beforeEach(function() {
     mock({
+      [path.join(os.homedir(), '.reuters-graphics/profile.json')]: JSON.stringify({
+        name: 'Graphics Staff',
+        email: 'all.graphics@thomsonreuters.com',
+        url: 'https://www.reuters.com',
+        desk: 'london',
+      }),
       'src/statics/images/share.jpg': mock.load(path.resolve(__dirname, 'img.jpg')),
       'src/statics/images/oversize.jpg': mock.load(path.resolve(__dirname, 'oversize.jpg')),
       'src/statics/images/oversize.png': mock.load(path.resolve(__dirname, 'oversize.png')),

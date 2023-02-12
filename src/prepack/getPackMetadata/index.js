@@ -3,9 +3,9 @@ import askJSON from 'ask-json';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import get from 'lodash/get';
+import getPackageSchema from './schemas/package';
 import getPkg from '../../utils/getPkg';
 import isServerless from '../../utils/isServerless';
-import packageSchema from './schemas/package';
 import path from 'path';
 import prompts from 'prompts';
 
@@ -35,6 +35,7 @@ export default {
   },
   async getPackageMetadata() {
     const packageJson = getPkg();
+    const packageSchema = getPackageSchema();
     const validPackageJson = await askJSON(packageSchema, packageJson, { askToAddItems: !isServerless() });
     fs.writeFileSync(path.join(this.CWD, 'package.json'), JSON.stringify(validPackageJson, null, 2));
     await this.setUpdatedTime();

@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const sinon = require('sinon');
 const prompts = require('prompts');
+const os = require('os');
 
 let PKG;
 
@@ -13,6 +14,12 @@ describe('GraphicsKitPublisher prepacks project', function() {
 
   beforeEach(function() {
     mock({
+      [path.join(os.homedir(), '.reuters-graphics/profile.json')]: JSON.stringify({
+        name: 'Graphics Staff',
+        email: 'all.graphics@thomsonreuters.com',
+        url: 'https://www.reuters.com',
+        desk: 'london',
+      }),
       'src/statics/images/share.jpg': mock.load(path.resolve(__dirname, 'img.jpg')),
       'locales/en/content.json': JSON.stringify({ SEOTitle: 'title', SEODescription: 'description' }),
       'media-assets': {},

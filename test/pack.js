@@ -6,12 +6,19 @@ const path = require('path');
 const chalk = require('chalk');
 const PNG = require('pngjs').PNG;
 const pixelmatch = require('pixelmatch');
+const os = require('os');
 
 describe('GraphicsKitPublisher packs project', function() {
   this.timeout(30000);
 
   beforeEach(function() {
     mock({
+      [path.join(os.homedir(), '.reuters-graphics/profile.json')]: JSON.stringify({
+        name: 'Graphics Staff',
+        email: 'all.graphics@thomsonreuters.com',
+        url: 'https://www.reuters.com',
+        desk: 'london',
+      }),
       'CLIENT_README.txt': 'Custom client docs',
       'oversize.jpg': mock.load(path.resolve(__dirname, 'oversize.jpg')),
       'src/statics/images/share.jpg': mock.load(path.resolve(__dirname, 'img.jpg')),

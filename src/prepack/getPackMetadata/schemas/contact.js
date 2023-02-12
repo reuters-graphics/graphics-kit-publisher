@@ -1,6 +1,6 @@
 import getProfileProp from '../../../utils/getProfileProp';
 
-export default {
+export default () => ({
   type: 'object',
   properties: {
     name: {
@@ -21,4 +21,4 @@ export default {
     },
   },
   required: ['name', 'email'],
-};
+});

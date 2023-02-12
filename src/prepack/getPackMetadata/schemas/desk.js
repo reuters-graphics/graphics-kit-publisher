@@ -2,7 +2,7 @@ import getProfileProp from '../../../utils/getProfileProp';
 
 const desks = ['bengaluru', 'london', 'new york', 'singapore'];
 
-export default {
+export default () => ({
   type: 'string',
   enum: desks,
   prompt: {
@@ -23,4 +23,4 @@ export default {
     }],
     initial: desks.indexOf(getProfileProp('desk')),
   },
-};
+});
