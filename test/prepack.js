@@ -182,11 +182,11 @@ describe('GraphicsKitPublisher prepacks project', function() {
     delete PKG.reuters.graphic.slugs.root;
     fs.writeFileSync('package.json', JSON.stringify(PKG));
     const graphicsPublisher = new GraphicsPublisher();
-    const fake = sinon.fake.returns(Promise.resolve({ 'reuters.graphic.slugs.root': 'HEALTH-CORONAVIRUS' }));
+    const fake = sinon.fake.returns(Promise.resolve({ 'reuters.graphic.slugs.root': 'NEW ZEALAND-WEATHER' }));
     sinon.replace(prompts, 'prompt', fake);
     await graphicsPublisher.getPackageMetadata();
     const pkg = JSON.parse(fs.readFileSync('package.json'));
-    expect(pkg.reuters.graphic.slugs.root).to.be('HEALTH-CORONAVIRUS');
+    expect(pkg.reuters.graphic.slugs.root).to.be('NEW ZEALAND-WEATHER');
   });
 
   it('Should ask for publish date', async function() {
