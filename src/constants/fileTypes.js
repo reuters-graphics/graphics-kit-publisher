@@ -3,6 +3,7 @@ export const VALID_FILE_TYPES = [
   '.ai',
   '.avi',
   '.babelrc',
+  '.bin',
   '.bmp',
   '.bowerrc',
   '.css',
@@ -15,6 +16,8 @@ export const VALID_FILE_TYPES = [
   '.fla',
   '.gif',
   '.gitignore',
+  '.glb',
+  '.gltf',
   '.htm',
   '.html',
   '.ico',
@@ -56,5 +59,6 @@ export const VALID_FILE_TYPES = [
   '.xml',
   '.xsl',
   '.xslt',
+  '.webp',
   '.zip',
 ];
