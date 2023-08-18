@@ -79,6 +79,32 @@ describe('GraphicsKitPublisher validates built files', function() {
     }
   });
 
+  it('Should error if embed page is not slugified', function() {
+    fs.mkdirSync('dist/embeds/en/not_slugged', { recursive: true });
+    fs.writeFileSync('dist/embeds/en/not_slugged/index.html', 'zzz');
+    try {
+      const graphicsPublisher = new GraphicsPublisher();
+      graphicsPublisher.validateBuiltFiles();
+      expect(false).to.be(true);
+    } catch (e) {
+      expect(e.name).to.be('FileSystemError');
+      expect(e.message).to.contain(chalk`Embed pages should be slugified. Maybe rename {cyan embeds/en/not_slugged} to {green embeds/en/not-slugged}?`);
+    }
+    fs.rmdirSync('dist/embeds/en/not_slugged', { recursive: true });
+
+    fs.mkdirSync('dist/embeds/en/notLowerCased', { recursive: true });
+    fs.writeFileSync('dist/embeds/en/notLowerCased/index.html', 'zzz');
+    try {
+      const graphicsPublisher = new GraphicsPublisher();
+      graphicsPublisher.validateBuiltFiles();
+      expect(false).to.be(true);
+    } catch (e) {
+      expect(e.name).to.be('FileSystemError');
+      expect(e.message).to.contain(chalk`Embed pages should be slugified. Maybe rename {cyan embeds/en/notLowerCased} to {green embeds/en/notlowercased}?`);
+    }
+    fs.rmdirSync('dist/embeds/en/notLowerCased', { recursive: true });
+  });
+
   it('Should error if there is an invalid filetype in dist', function() {
     fs.writeFileSync('dist/embeds/en/chart/badfile.shp', 'zzz');
     try {
