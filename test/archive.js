@@ -4,6 +4,7 @@ const mock = require('mock-fs');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const unzipper = require('unzipper');
 
 describe('GraphicsKitPublisher archives src files', function() {
   this.timeout(30000);
@@ -39,6 +40,17 @@ describe('GraphicsKitPublisher archives src files', function() {
   it('Should create src archive', async function() {
     const graphicsPublisher = new GraphicsPublisher();
     await graphicsPublisher.makeSrcArchive(true);
+
     expect(fs.existsSync('graphics-pack/app.zip')).to.be(true);
+
+    await new Promise((resolve) => {
+      fs.createReadStream('graphics-pack/app.zip')
+        .pipe(
+          unzipper.Extract({ path: 'graphics-pack' })
+            .on('close', resolve)
+        );
+    });
+    // _app.zip is the output of this projects git archive
+    expect(fs.existsSync('graphics-pack/app/README.md')).to.be(true);
   });
 });
