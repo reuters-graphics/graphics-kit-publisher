@@ -33,7 +33,7 @@ jobs:
 
       - id: lint
         name: Lint code
-        run: pnpm eslint ./src/ --ext .js --debug
+        run: pnpm eslint ./src/ --ext .ts --debug
 
   test:
     name: Test
