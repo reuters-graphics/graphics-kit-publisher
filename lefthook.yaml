@@ -3,7 +3,7 @@ pre-commit:
     eslint:
       glob: "*.{ts,js}"
       exclude: "docs/*"
-      run: npx eslint {staged_files} --fix && git add .
+      run: npx eslint {staged_files} && git add .
     prettier:
       glob: "*.{ts,js}"
       exclude: "docs/*"
