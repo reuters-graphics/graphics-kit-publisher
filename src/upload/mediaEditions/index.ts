@@ -1,7 +1,8 @@
+import { findIndex, uniq } from 'lodash-es';
+
 import { ConfigType } from '../../setConfig';
 import { VALID_LOCALES } from '../../constants/locales';
 import askJSON from 'ask-json';
-import { findIndex, uniq } from 'lodash-es';
 import fs from 'fs-extra';
 import getPackMetadata from '../../prepack/getPackMetadata';
 import getPkg from '../../utils/getPkg';

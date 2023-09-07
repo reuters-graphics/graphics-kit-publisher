@@ -8,7 +8,7 @@
     "node": true,
     "mocha": true
   },
-  "extends": ["standard", "eslint:recommended"],
+  "extends": ["standard", "eslint:recommended", "prettier"],
   "parserOptions": {
     "requireConfigFile": false
   },
