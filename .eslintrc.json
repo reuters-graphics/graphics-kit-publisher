@@ -23,8 +23,6 @@
         "exports": "never",
         "functions": "never"
       }
-    ],
-    "operator-linebreak": ["error", "after"],
-    "space-before-function-paren": ["error", "never"]
+    ]
   }
 }
