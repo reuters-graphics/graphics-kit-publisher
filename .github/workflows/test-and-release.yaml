@@ -19,15 +19,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'yarn'
+          cache: 'pnpm'
 
       - id: install-deps
         name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - id: lint
         name: Lint code
-        run: yarn run eslint ./src/ --ext .js --debug
+        run: pnpm eslint ./src/ --ext .js --debug
 
   test:
     name: Test
@@ -46,15 +46,15 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
+          cache: 'pnpm'
 
       - id: install-deps
         name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - id: tests
         name: Run tests
-        run: yarn test
+        run: pnpm test
 
   release:
     name: Release
@@ -88,7 +88,7 @@ jobs:
 
       - id: install-deps
         name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - id: version
         name: Version
