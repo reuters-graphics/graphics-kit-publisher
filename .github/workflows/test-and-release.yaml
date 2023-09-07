@@ -13,6 +13,12 @@ jobs:
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@v3
+      
+      - id: setup-pnpm
+        name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - id: setup-node
         name: Setup Node.JS
@@ -40,6 +46,12 @@ jobs:
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@v3
+      
+      - id: setup-pnpm
+        name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - id: setup-node
         name: Setup Node.JS
@@ -77,6 +89,12 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.repository.default_branch }}
+        
+      - id: setup-pnpm
+        name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - id: setup-node
         name: Setup Node.JS
