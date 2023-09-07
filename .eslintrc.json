@@ -25,6 +25,6 @@
       }
     ],
     "operator-linebreak": ["error", "after"],
-    "space-before-function-paren": ["error", "never"]
+    "space-before-function-paren": ["error", "always"]
   }
 }
