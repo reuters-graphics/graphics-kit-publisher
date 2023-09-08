@@ -13,21 +13,27 @@ jobs:
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@v3
+      
+      - id: setup-pnpm
+        name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - id: setup-node
         name: Setup Node.JS
         uses: actions/setup-node@v3
         with:
           node-version: 16
-          cache: 'yarn'
+          cache: 'pnpm'
 
       - id: install-deps
         name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - id: lint
         name: Lint code
-        run: yarn run eslint ./src/ --ext .js --debug
+        run: pnpm eslint ./src/ --ext .ts --debug
 
   test:
     name: Test
@@ -40,21 +46,27 @@ jobs:
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@v3
+      
+      - id: setup-pnpm
+        name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - id: setup-node
         name: Setup Node.JS
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
+          cache: 'pnpm'
 
       - id: install-deps
         name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - id: tests
         name: Run tests
-        run: yarn test
+        run: pnpm test
 
   release:
     name: Release
@@ -77,6 +89,12 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.repository.default_branch }}
+        
+      - id: setup-pnpm
+        name: Setup PNPM
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
 
       - id: setup-node
         name: Setup Node.JS
@@ -88,7 +106,7 @@ jobs:
 
       - id: install-deps
         name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - id: version
         name: Version

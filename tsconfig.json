@@ -1,0 +1,33 @@
+{
+  "extends": "@tsconfig/recommended/tsconfig.json",
+  "include": ["types/*", "src/*", "test/*.js", "src/@types/index.d.ts"],
+  "exclude": ["dist"],
+  "compilerOptions": {
+    "rootDir": "./src",
+    "moduleResolution": "node",
+    "module": "ESNext",
+    "outDir": "dist",
+    "declaration": true,
+    "declarationDir": "dist",
+    "noEmitOnError": true,
+    "resolveJsonModule": true,
+    "target": "ESNext",
+    "allowSyntheticDefaultImports": true,
+    "typeRoots": ["src/@types", "./node_modules/@types"]
+  },
+  "typedocOptions": {
+    "entryPoints": ["src/index.ts"],
+    "out": "docs",
+    "cleanOutputDir": true,
+    "darkHighlightTheme": "github-dark",
+    "lightHighlightTheme": "github-light",
+    "sort": ["required-first"],
+    "disableSources": true,
+    "titleLink": "https://reuters-graphics.github.io/graphics-kit-publisher/",
+    "navigationLinks": {
+      "GitHub": "https://github.com/reuters-graphics/graphics-kit-publisher/",
+      "npm": "https://www.npmjs.com/package/@reuters-graphics/graphics-kit-publisher/"
+    },
+    "readme": "HOME.md"
+  }
+}

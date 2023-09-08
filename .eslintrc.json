@@ -1,9 +1,28 @@
 {
   "root": true,
-  "extends": "@reuters-graphics/eslint-config",
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint"
+  ],
   "env": {
-    "browser": true,
     "node": true,
     "mocha": true
+  },
+  "extends": ["standard", "eslint:recommended", "prettier"],
+  "parserOptions": {
+    "requireConfigFile": false
+  },
+  "rules": {
+    "semi": ["error", "always"],
+    "comma-dangle": [
+      "error",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "always-multiline",
+        "exports": "never",
+        "functions": "never"
+      }
+    ]
   }
 }

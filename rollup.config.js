@@ -1,28 +1,26 @@
 import externals from 'rollup-plugin-node-externals';
 import json from '@rollup/plugin-json';
-import resolve from '@rollup/plugin-node-resolve';
-import { sizeSnapshot } from 'rollup-plugin-size-snapshot';
+import typescript from '@rollup/plugin-typescript';
 
-const plugins = [
-  resolve({ preferBuiltins: true, modulesOnly: true }),
-  json(),
-  externals({ deps: true }),
-  sizeSnapshot(),
-];
+const plugins = [json(), externals({ deps: true }), typescript()];
 
 const output = {
   dir: 'dist',
-  format: 'cjs',
+  format: 'es',
+  sourcemap: true,
   paths: { '@reuters-graphics/graphics-publisher': './index.js' },
 };
 
-export default [{
-  input: 'src/index.js',
-  output,
-  plugins,
-}, {
-  input: 'src/cli.js',
-  output: { ...output, ...{ banner: '#!/usr/bin/env node' } },
-  plugins,
-  external: ['@reuters-graphics/graphics-publisher'],
-}];
+export default [
+  {
+    input: 'src/index.ts',
+    output,
+    plugins,
+  },
+  {
+    input: 'src/cli.ts',
+    output: { ...output, ...{ banner: '#!/usr/bin/env node' } },
+    plugins,
+    external: ['sade', '@reuters-graphics/graphics-publisher'],
+  },
+];
