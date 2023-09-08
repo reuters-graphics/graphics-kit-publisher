@@ -13,7 +13,11 @@ We do that by presuming a certain _filesystem structure_ that the graphics-publi
 ## Quickstart
 
 ```bash
-yarn add @reuters-graphics/graphics-kit-publisher
+pnpm install -D @reuters-graphics/graphics-kit-publisher
+```
+
+```bash
+yarn add -D @reuters-graphics/graphics-kit-publisher
 ```
 
 ### CLI
