@@ -60,6 +60,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "expect.js": "^0.3.1",
+    "json-schema-to-ts": "^2.9.2",
     "lefthook": "^1.4.10",
     "live-server": "1.2.1",
     "mocha": "^10.2.0",

@@ -62,7 +62,7 @@ const getPackageMetadata = async () => {
     JSON.stringify(validPackageJson, null, 2)
   );
   await setUpdatedTime();
-  return validPackageJson.reuters as PackageMetadata;
+  return validPackageJson.reuters as Omit<PackageMetadata, 'preview'>;
 };
 
 /**

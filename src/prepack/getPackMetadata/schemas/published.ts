@@ -14,4 +14,4 @@ export default {
     },
     format: (value: Date) => value.toISOString(),
   },
-};
+} as const;
