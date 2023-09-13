@@ -1,6 +1,6 @@
 {
   "extends": "@tsconfig/recommended/tsconfig.json",
-  "include": ["types/*", "src/*", "test/*.js", "src/@types/index.d.ts"],
+  "include": ["src/*", "test/*.js", "src/@types/index.d.ts"],
   "exclude": ["dist"],
   "compilerOptions": {
     "rootDir": "./src",

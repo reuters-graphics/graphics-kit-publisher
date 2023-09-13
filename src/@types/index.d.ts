@@ -89,13 +89,15 @@ declare module '@reuters-graphics/server-client' {
 }
 
 declare module 'ask-json' {
-  function askJson(
-    jsonSchema: any,
+  import { FromSchema } from 'json-schema-to-ts';
+
+  function askJson<T>(
+    jsonSchema: T,
     rawData: any,
     config?: {
       askToAddItems: boolean;
     }
-  ): Promise<any>;
+  ): Promise<FromSchema<T>>;
 
   export default askJson;
 }

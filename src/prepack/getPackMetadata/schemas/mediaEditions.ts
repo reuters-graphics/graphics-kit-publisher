@@ -12,4 +12,4 @@ export default {
     },
     required: ['slug', 'url', 'title', 'description'],
   },
-};
+} as const;

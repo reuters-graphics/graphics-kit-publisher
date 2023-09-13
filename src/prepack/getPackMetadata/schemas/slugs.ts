@@ -24,4 +24,4 @@ export default {
     },
   },
   required: ['root', 'wild'],
-};
+} as const;
