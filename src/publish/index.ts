@@ -5,7 +5,6 @@ import type { PromptObject } from 'prompts';
 import chalk from 'chalk';
 import getPackMetadata from '../prepack/getPackMetadata';
 import getPkg from '../utils/getPkg';
-import getServerClient from '../utils/getServerClient';
 import prompts from 'prompts';
 import updateGraphicPack from '../prepack/updateGraphicPack';
 
@@ -17,8 +16,6 @@ export default async (config: ConfigType) => {
     return;
   }
 
-  const SERVER_CLIENT = getServerClient();
-
   if (process.env.GRAPHICS_SERVER_PUBLISH) {
     const MEDIA = process.env.GRAPHICS_SERVER_PUBLISH_TO_MEDIA
       ? ['media-interactive', 'EPS']
@@ -28,9 +25,9 @@ export default async (config: ConfigType) => {
       : false;
 
     const packMetadata = await getPackMetadata(config);
-    await updateGraphicPack(packMetadata, config);
+    const serverClient = await updateGraphicPack(packMetadata, config);
 
-    await SERVER_CLIENT.publishGraphic([], MEDIA, LYNX, false);
+    await serverClient.publishGraphic([], MEDIA, LYNX, false);
   } else {
     const questions = [
       {
@@ -62,9 +59,9 @@ export default async (config: ConfigType) => {
     const LYNX = publishToLynx ? ['interactive', 'JPG'] : false;
 
     const packMetadata = await getPackMetadata(config);
-    await updateGraphicPack(packMetadata, config);
+    const serverClient = await updateGraphicPack(packMetadata, config);
 
-    await SERVER_CLIENT.publishGraphic([], MEDIA, LYNX, isCorrection);
+    await serverClient.publishGraphic([], MEDIA, LYNX, isCorrection);
   }
 
   console.log(chalk`\n\nPublished to: {green ${pkg.homepage}}\n`);

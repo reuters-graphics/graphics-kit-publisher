@@ -1,12 +1,11 @@
 import { ConfigType } from '../../setConfig';
+import type ServerClient from '@reuters-graphics/server-client';
 import fs from 'fs-extra';
 import getPackMetadata from '../../prepack/getPackMetadata';
-import getServerClient from '../../utils/getServerClient';
 import path from 'path';
 
-export default async (config: ConfigType) => {
+export default async (config: ConfigType, serverClient: ServerClient) => {
   const { title, description } = await getPackMetadata(config);
-  const SERVER_CLIENT = getServerClient();
 
   const editionMetadata = {
     language: config.PACK_LOCALE,
@@ -16,5 +15,5 @@ export default async (config: ConfigType) => {
 
   const fileBuffer = fs.readFileSync(path.join(config.PACK_DIR, 'public.zip'));
 
-  await SERVER_CLIENT.updateEditions('public.zip', fileBuffer, editionMetadata);
+  await serverClient.updateEditions('public.zip', fileBuffer, editionMetadata);
 };

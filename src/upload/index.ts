@@ -16,9 +16,9 @@ export default async (config: ConfigType, opts = defaultOptions) => {
   const { fast: publishPublicOnly } = opts;
   const measureImages = new MeasureImages(config.IMAGES_DIR);
   await measureImages.measureImages(opts);
-  await prepack(config);
+  const serverClient = await prepack(config);
   await pack(config);
-  await uploadPublicEdition(config);
-  if (!publishPublicOnly) await uploadMediaEditions(config);
+  await uploadPublicEdition(config, serverClient);
+  if (!publishPublicOnly) await uploadMediaEditions(config, serverClient);
   console.log(chalk`\n\n🏁 {green Finished uploading pack.}\n`);
 };
