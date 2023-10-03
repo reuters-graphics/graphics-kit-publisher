@@ -1,13 +1,13 @@
 import { findIndex, uniq } from 'lodash-es';
 
 import { ConfigType } from '../../setConfig';
+import type ServerClient from '@reuters-graphics/server-client';
 import { VALID_LOCALES } from '../../constants/locales';
 import askJSON from 'ask-json';
 import fs from 'fs-extra';
 import getPackMetadata from '../../prepack/getPackMetadata';
 import getPkg from '../../utils/getPkg';
 import getSchema from './getSchema';
-import getServerClient from '../../utils/getServerClient';
 import glob from 'glob';
 import path from 'path';
 import { pymCodeFromTemplate } from '../../constants/embedCodes';
@@ -54,10 +54,9 @@ const updateMediaEditionMetadata = (metadata: {
   );
 };
 
-export default async (config: ConfigType) => {
+export default async (config: ConfigType, serverClient: ServerClient) => {
   const { title, description } = await getPackMetadata(config);
   const { homepage } = getPkg();
-  const SERVER_CLIENT = getServerClient();
 
   const mediaArchives = glob.sync('media-*.zip', { cwd: config.PACK_DIR });
 
@@ -97,19 +96,19 @@ export default async (config: ConfigType) => {
     );
 
     const existingArchives = uniq(
-      SERVER_CLIENT?.graphic?.editions.map((e) => e.file.fileName)
+      serverClient?.graphic?.editions.map((e) => e.file.fileName)
     );
 
     const exists = existingArchives.includes(mediaArchive);
 
     if (exists) {
-      await SERVER_CLIENT.updateEditions(
+      await serverClient.updateEditions(
         mediaArchive,
         fileBuffer,
         editionMetadata
       );
     } else {
-      await SERVER_CLIENT.createEditions(
+      await serverClient.createEditions(
         mediaArchive,
         fileBuffer,
         editionMetadata

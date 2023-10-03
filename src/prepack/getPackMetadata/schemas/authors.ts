@@ -34,7 +34,7 @@ export default () =>
                 index
               )} author ${chalk.grey(`(${variablePath})`)}?`;
             },
-            initial: getProfileProp('url'),
+            initial: 'https://www.reuters.com/authors/',
           },
         },
       },

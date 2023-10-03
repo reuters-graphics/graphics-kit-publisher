@@ -10,7 +10,7 @@ import zipDir from '../../utils/zipDir';
  * Create a graphic pack
  */
 export default async (metadata: PackMetadataType, config: ConfigType) => {
-  const SERVER_CLIENT = getServerClient();
+  const serverClient = getServerClient();
 
   const packMetadata = {
     rootSlug: metadata.graphic.slugs.root,
@@ -22,9 +22,6 @@ export default async (metadata: PackMetadataType, config: ConfigType) => {
     byline: metadata.contact.name,
     contactEmail: metadata.contact.email,
   };
-  // if (metadata.graphic.slugs.wild && metadata.graphic.slugs.wild !== '') {
-  //   packMetadata.wildSlug = metadata.graphic.slugs.wild;
-  // }
 
   const editionMetadata = {
     language: config.PACK_LOCALE,
@@ -32,9 +29,9 @@ export default async (metadata: PackMetadataType, config: ConfigType) => {
     description: metadata.description,
   };
 
-  await SERVER_CLIENT.createGraphic(packMetadata);
-  const pack = SERVER_CLIENT?.graphic?.id;
-  if (!pack) return;
+  await serverClient.createGraphic(packMetadata);
+  const pack = serverClient?.graphic?.id;
+  if (!pack) throw new Error('Did not get a graphic ID from the RNGS server');
 
   const PUBLIC_EDITION_DIR = path.join(config.PACK_DIR, 'public/interactive');
   fs.ensureDirSync(PUBLIC_EDITION_DIR);
@@ -46,7 +43,7 @@ export default async (metadata: PackMetadataType, config: ConfigType) => {
   await zipDir(path.join(config.PACK_DIR, 'public'));
   const fileBuffer = fs.readFileSync(path.join(config.PACK_DIR, 'public.zip'));
 
-  const editions = await SERVER_CLIENT.createEditions(
+  const editions = await serverClient.createEditions(
     'public.zip',
     fileBuffer,
     editionMetadata
@@ -70,5 +67,5 @@ export default async (metadata: PackMetadataType, config: ConfigType) => {
 
   fs.unlinkSync(path.join(config.PACK_DIR, 'public.zip'));
 
-  return { pack, url: standardisedURL };
+  return serverClient;
 };

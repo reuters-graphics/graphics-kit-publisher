@@ -9,7 +9,7 @@ import getServerClient from '../../utils/getServerClient';
  * Update a graphic pack
  */
 export default async (metadata: PackMetadataType, config: ConfigType) => {
-  const SERVER_CLIENT = getServerClient(metadata.graphic.pack);
+  const serverClient = getServerClient(metadata.graphic.pack);
 
   const packMetadata = {
     rootSlug: metadata.graphic.slugs.root,
@@ -21,12 +21,8 @@ export default async (metadata: PackMetadataType, config: ConfigType) => {
     byline: metadata.contact.name,
     contactEmail: metadata.contact.email,
   };
-  // if (metadata.graphic.slugs.wild && metadata.graphic.slugs.wild !== '') {
-  //   packMetadata.wildSlug = metadata.graphic.slugs.wild;
-  // }
 
-  await SERVER_CLIENT.updateGraphic(packMetadata);
-  const pack = SERVER_CLIENT?.graphic?.id;
+  await serverClient.updateGraphic(packMetadata);
   const { homepage: url } = getPkg();
   if (!url) {
     throw new PackageMetadataError(
@@ -34,5 +30,5 @@ export default async (metadata: PackMetadataType, config: ConfigType) => {
     );
   }
 
-  return { pack, url } as { pack: string; url: string };
+  return serverClient;
 };

@@ -6,8 +6,8 @@ import updateGraphicPack from './updateGraphicPack';
 export default async (config: ConfigType) => {
   const packMetadata = await getPackMetadata(config);
   if (!packMetadata.graphic.pack) {
-    await createGraphicPack(packMetadata, config);
+    return createGraphicPack(packMetadata, config);
   } else {
-    await updateGraphicPack(packMetadata, config);
+    return updateGraphicPack(packMetadata, config);
   }
 };
