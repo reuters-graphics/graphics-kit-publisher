@@ -232,6 +232,20 @@ src/
 
 The publisher will create a `manifest.json` file in the root of the images directory with dimensions for every image in that directory. You can use it to set the dimensions of images in your project.
 
+### Referrals
+
+Sometimes we want to publish embeds that are only used on Reuters' website, i.e., never made available to clients in Reuters Connect. The most common use case for these is to make simple referrals that can be embedded in another Reuters dotcom page and direct readers to our graphics page.
+
+Within the embeddables directory, you can nest any valid embed page under a `referral/` directory and that page will automatically be made **only** available in Lynx, and **excluded** from Connect.
+
+```
+dist/
+  embeds/
+    en/
+      referral/
+        index.html
+```
+
 ### package.json
 
 The publisher will fill out your [homepage](https://docs.npmjs.com/cli/v7/configuring-npm/package-json#homepage) prop in package.json with the URL where the root `index.html` file in the dist directory will be served from when it's published through the RNGS server.

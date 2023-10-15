@@ -3,6 +3,7 @@ import { Elements, TeamsKlaxon } from '@reuters-graphics/teams-klaxon';
 import type { ConfigType } from '../setConfig';
 import type { PromptObject } from 'prompts';
 import chalk from 'chalk';
+import getEmbedEditionSlugs from '../utils/getEmbedEditionSlugs';
 import getPackMetadata from '../prepack/getPackMetadata';
 import getPkg from '../utils/getPkg';
 import prompts from 'prompts';
@@ -16,6 +17,33 @@ export default async (config: ConfigType) => {
     return;
   }
 
+  const embedEditionSlugs = getEmbedEditionSlugs(config);
+
+  /**
+   * Referrals are simply denoted with the last part of their
+   * page path named "-referral". For example, a page like
+   * "embeds/en/referral/index.html" turns into "media-en-referral".
+   */
+  const referralEmbedArchives = embedEditionSlugs
+    .filter((slug) => /-referral$/.test(slug))
+    .map((slug) => `${slug}.zip`);
+  /**
+   * Client embeds are simply not referrals.
+   */
+  const clientEmbedArchives = embedEditionSlugs
+    .filter((slug) => !/-referral$/.test(slug))
+    .map((slug) => `${slug}.zip`);
+  /**
+   * Public archives go outside the building, either
+   * as the public pages or through Connect.
+   */
+  const publicArchives = [
+    'public.zip', // Public archive always exists.
+    ...clientEmbedArchives,
+  ];
+
+  let serverClient;
+
   if (process.env.GRAPHICS_SERVER_PUBLISH) {
     const MEDIA = process.env.GRAPHICS_SERVER_PUBLISH_TO_MEDIA
       ? ['media-interactive', 'EPS']
@@ -25,9 +53,10 @@ export default async (config: ConfigType) => {
       : false;
 
     const packMetadata = await getPackMetadata(config);
-    const serverClient = await updateGraphicPack(packMetadata, config);
 
-    await serverClient.publishGraphic([], MEDIA, LYNX, false);
+    serverClient = await updateGraphicPack(packMetadata, config);
+
+    await serverClient.publishGraphic(publicArchives, MEDIA, LYNX, false);
   } else {
     const questions = [
       {
@@ -59,9 +88,25 @@ export default async (config: ConfigType) => {
     const LYNX = publishToLynx ? ['interactive', 'JPG'] : false;
 
     const packMetadata = await getPackMetadata(config);
-    const serverClient = await updateGraphicPack(packMetadata, config);
 
-    await serverClient.publishGraphic([], MEDIA, LYNX, isCorrection);
+    serverClient = await updateGraphicPack(packMetadata, config);
+
+    await serverClient.publishGraphic(
+      publicArchives,
+      MEDIA,
+      LYNX,
+      isCorrection
+    );
+  }
+
+  if (referralEmbedArchives.length) {
+    // Any referrals are always published to Lynx and never to Connect.
+    await serverClient.publishGraphic(
+      referralEmbedArchives,
+      false,
+      true,
+      false
+    );
   }
 
   console.log(chalk`\n\nPublished to: {green ${pkg.homepage}}\n`);
