@@ -100,13 +100,14 @@ export default async (config: ConfigType) => {
   }
 
   if (referralEmbedArchives.length) {
+    // KILL THIS per https://github.com/reuters-graphics/graphics-kit-publisher/issues/62
     // Any referrals are always published to Lynx and never to Connect.
-    await serverClient.publishGraphic(
-      referralEmbedArchives,
-      false,
-      true,
-      false
-    );
+    // await serverClient.publishGraphic(
+    //   referralEmbedArchives,
+    //   false,
+    //   true,
+    //   false
+    // );
   }
 
   console.log(chalk`\n\nPublished to: {green ${pkg.homepage}}\n`);
