@@ -1,7 +1,11 @@
+import type {
+  Edition,
+  RNGS,
+  ServerClient,
+} from '@reuters-graphics/server-client';
 import { findIndex, uniq } from 'lodash-es';
 
 import { ConfigType } from '../../setConfig';
-import type ServerClient from '@reuters-graphics/server-client';
 import { VALID_LOCALES } from '../../constants/locales';
 import askJSON from 'ask-json';
 import fs from 'fs-extra';
@@ -77,8 +81,8 @@ export default async (config: ConfigType, serverClient: ServerClient) => {
       description,
     });
 
-    const editionMetadata = {
-      language: locale,
+    const editionMetadata: Edition.EditionMetadata = {
+      language: locale as RNGS.Language,
       title: metadata.title,
       description: metadata.description,
       embed: {
@@ -96,7 +100,7 @@ export default async (config: ConfigType, serverClient: ServerClient) => {
     );
 
     const existingArchives = uniq(
-      serverClient?.graphic?.editions.map((e) => e.file.fileName)
+      serverClient.pack.graphic?.editions?.map((e) => e.file.fileName)
     );
 
     const exists = existingArchives.includes(mediaArchive);

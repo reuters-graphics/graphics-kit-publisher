@@ -1,4 +1,4 @@
-import ServerClient from '@reuters-graphics/server-client';
+import { ServerClient } from '@reuters-graphics/server-client';
 import getServerCredentials from './getServerCredentials';
 
 export default (pack: null | string = null) => {
@@ -8,9 +8,7 @@ export default (pack: null | string = null) => {
         username,
         password,
         apiKey,
-        graphic: {
-          id: pack,
-        },
+        graphic: pack,
       })
     : new ServerClient({
         username,

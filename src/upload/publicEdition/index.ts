@@ -1,5 +1,10 @@
+import type {
+  Edition,
+  RNGS,
+  ServerClient,
+} from '@reuters-graphics/server-client';
+
 import { ConfigType } from '../../setConfig';
-import type ServerClient from '@reuters-graphics/server-client';
 import fs from 'fs-extra';
 import getPackMetadata from '../../prepack/getPackMetadata';
 import path from 'path';
@@ -7,8 +12,8 @@ import path from 'path';
 export default async (config: ConfigType, serverClient: ServerClient) => {
   const { title, description } = await getPackMetadata(config);
 
-  const editionMetadata = {
-    language: config.PACK_LOCALE,
+  const editionMetadata: Edition.EditionMetadata = {
+    language: config.PACK_LOCALE as RNGS.Language,
     title,
     description,
   };

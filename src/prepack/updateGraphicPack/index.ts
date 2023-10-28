@@ -1,3 +1,5 @@
+import { Graphic, RNGS } from '@reuters-graphics/server-client';
+
 import type { ConfigType } from '../../setConfig';
 import type { PackMetadataType } from '../getPackMetadata';
 import { PackageMetadataError } from '../../exceptions/errors';
@@ -14,8 +16,8 @@ export default async (metadata: PackMetadataType, config: ConfigType) => {
   const packMetadata = {
     rootSlug: metadata.graphic.slugs.root,
     wildSlug: metadata.graphic.slugs.wild || undefined,
-    desk: metadata.graphic.desk,
-    language: config.PACK_LOCALE,
+    desk: metadata.graphic.desk as Graphic.Desk,
+    language: config.PACK_LOCALE as RNGS.Language,
     title: metadata.title,
     description: metadata.description,
     byline: metadata.contact.name,

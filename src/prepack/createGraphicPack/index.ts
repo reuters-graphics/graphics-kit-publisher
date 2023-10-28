@@ -1,3 +1,5 @@
+import { Edition, Graphic, RNGS } from '@reuters-graphics/server-client';
+
 import type { ConfigType } from '../../setConfig';
 import type { PackMetadataType } from '../getPackMetadata';
 import fs from 'fs-extra';
@@ -15,22 +17,22 @@ export default async (metadata: PackMetadataType, config: ConfigType) => {
   const packMetadata = {
     rootSlug: metadata.graphic.slugs.root,
     wildSlug: metadata.graphic.slugs.wild || undefined,
-    desk: metadata.graphic.desk,
-    language: config.PACK_LOCALE,
+    desk: metadata.graphic.desk as Graphic.Desk,
+    language: config.PACK_LOCALE as RNGS.Language,
     title: metadata.title,
     description: metadata.description,
     byline: metadata.contact.name,
     contactEmail: metadata.contact.email,
   };
 
-  const editionMetadata = {
-    language: config.PACK_LOCALE,
+  const editionMetadata: Edition.EditionMetadata = {
+    language: config.PACK_LOCALE as RNGS.Language,
     title: metadata.title,
     description: metadata.description,
   };
 
   await serverClient.createGraphic(packMetadata);
-  const pack = serverClient?.graphic?.id;
+  const pack = serverClient.pack.graphic?.id;
   if (!pack) throw new Error('Did not get a graphic ID from the RNGS server');
 
   const PUBLIC_EDITION_DIR = path.join(config.PACK_DIR, 'public/interactive');
