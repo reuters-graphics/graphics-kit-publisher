@@ -27,18 +27,21 @@ export const defaultOptions = {
    * - Additional pages can be named whatever they need to be as long as they don't collide with `embeds` or the static assets directory.
    *
    * ```bash
-   * dist/
-   *   cdn/
-   *     js/ ...
-   *     css/ ...
-   *     images/ ...
-   *   index.html
-   *   a-second-page/
-   *     index.html
-   *   embeds/
-   *     en/
-   *       chart/
-   *         index.html
+   * 📂 dist/
+   *   📂 cdn/
+   *     📂 js/
+   *       - ...
+   *     📂 css/
+   *       - ...
+   *     📂 images/
+   *       - ...
+   *   - index.html
+   *   📂 a-second-page/
+   *     - index.html
+   *   📂 embeds/
+   *     📂 en/
+   *       📂 chart/
+   *         - index.html
    * ```
    *
    * @defaultValue `dist`
@@ -48,10 +51,10 @@ export const defaultOptions = {
    * Relative path to a temporary directory where the publisher can create the `zip` archives that make up the graphics pack for the RNGS server.
    *
    * ```bash
-   * graphics-pack/
-   *   public.zip
-   *   media-en-chart.zip
-   *   media-en-map.zip
+   * 📂 graphics-pack/
+   *   - public.zip
+   *   - media-en-chart.zip
+   *   - media-en-map.zip
    * ```
    *
    * @defaultValue `graphics-pack`
@@ -61,31 +64,31 @@ export const defaultOptions = {
    * Relative path to a media assets directory containing flat JPG and EPS files that will be included with the media editions uploaded to the RNGS server. They must be structured using the same directory scheme as embeds in the dist directory -- a folder for a valid locale and for a unique slug within the locale. The JPG and EPS filenames can be whatever you want them to be.
    *
    * ```bash
-   * media-assets/
-   *   en/
-   *     chart/
-   *       chart.eps
-   *       chart.jpg
-   *     map/
-   *       my-map.eps
-   *       map-preview.jpg
+   * 📂 media-assets/
+   *   📂 en/
+   *     📂 chart/
+   *       - chart.eps
+   *       - chart.jpg
+   *     📂 map/
+   *       - my-map.eps
+   *       - map-preview.jpg
    * ```
    *
    * If you have an embeddable page using the same locale/slug scheme as a set of flat assets, the publisher will upload the JPG and EPS file _with_ the embeddable version of the same graphic.
    *
    * ```bash
-   * dist/
-   *   embeds/
-   *     en/
-   *       chart/
-   *         index.html
-   * media-assets/
-   *   en/
-   *     chart/
-   *       chart.eps
-   *       chart.jpg
-   * graphics-pack/
-   *   media-en-chart.zip  👈 Contains both embeddable graphic and flats
+   * 📂 dist/
+   *   📂 embeds/
+   *     📂 en/
+   *       📂 chart/
+   *         - index.html
+   * 📂 media-assets/
+   *   📂 en/
+   *     📂 chart/
+   *       - chart.eps
+   *       - chart.jpg
+   * 📂 graphics-pack/
+   *   - media-en-chart.zip # 👈 Contains both embeddable graphic and flats
    * ```
    *
    * @defaultValue `media-assets`
@@ -95,10 +98,10 @@ export const defaultOptions = {
    * Relative path to an images directory containing at least the share image referenced in the metatag in the root `index.html` file in the dist directory.
    *
    * ```bash
-   * src/
-   *   statics/
-   *     images/
-   *       share-card.jpg
+   * 📂 src/
+   *   📂 statics/
+   *     📂 images/
+   *       - share-card.jpg
    * ```
    *
    * @defaultValue `src/statics/images`
@@ -110,9 +113,9 @@ export const defaultOptions = {
    * Otherwise, the publisher assumes one JSON file (`packMetadataFile`) within this default locale sub-directory contains a title (`packTitleProp`) and description (`packDescriptionProp`) for the pack.
    *
    * ```bash
-   * locales/
-   *   en/
-   *     content.json
+   * 📂 locales/
+   *   📂 en/
+   *     - content.json
    * ```
    *
    * @defaultValue `locales`
