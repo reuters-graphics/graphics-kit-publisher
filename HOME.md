@@ -1,3 +1,5 @@
+# 📦 graphics-kit-publisher
+
 [![npm version](https://badge.fury.io/js/%40reuters-graphics%2Fgraphics-kit-publisher.svg)](https://badge.fury.io/js/%40reuters-graphics%2Fgraphics-kit-publisher) [![Reuters open source software](https://badgen.net/badge/Reuters/open%20source/?color=ff8000)](https://github.com/reuters-graphics/)
 
 A filesystem-based publisher for Reuters Graphics projects.
@@ -13,11 +15,7 @@ We do that by presuming a certain _filesystem structure_ that the graphics-publi
 ## Quickstart
 
 ```bash
-pnpm install -D @reuters-graphics/graphics-kit-publisher
-```
-
-```bash
-yarn add -D @reuters-graphics/graphics-kit-publisher
+npm i -D @reuters-graphics/graphics-kit-publisher
 ```
 
 ### CLI
@@ -147,30 +145,33 @@ A dist directory is the output from your page builder.
 - All embeddable graphic pages are contained in a root-level directory named `embeds/` and placed in folders representing a valid locale code and a unique slug within that locale, e.g., `en/chart/index.html` below.
 - Additional pages can be named whatever they need to be as long as they don't collide with `embeds` or the static assets directory.
 
-```
-dist/
-  cdn/
-    js/ ...
-    css/ ...
-    images/ ...
-  index.html
-  a-second-page/
-    index.html
-  embeds/
-    en/
-      chart/
-        index.html
+```bash
+📂 dist/
+  📂 cdn/
+    📂 js/
+      - ...
+    📂 css/ 
+      - ...
+    📂 images/
+      - ...
+  - index.html
+  📂 a-second-page/
+    - index.html
+  📂 embeds/
+    📂 en/
+      📂 chart/
+        - index.html
 ```
 
 ### pack directory (`packDir`)
 
 A directory will be created containing the different `zip` archives used to build out your graphics pack.
 
-```
-graphics-pack/
-  public.zip
-  media-en-chart.zip
-  media-en-map.zip
+```bash
+📂 graphics-pack/
+  - public.zip
+  - media-en-chart.zip
+  - media-en-map.zip
 ```
 
 See [this issue](https://github.com/reuters-graphics/bluprint_graphics-kit/issues/1#issuecomment-812350299) for more information on the structure of the files sent to the RNGS server.
@@ -179,32 +180,32 @@ See [this issue](https://github.com/reuters-graphics/bluprint_graphics-kit/issue
 
 The media assets directory contains flat JPG and EPS files that will be included with the media editions uploaded to the server. They must be structured using the same directory scheme as embeds in the dist directory -- a folder for a valid locale and for a unique slug within the locale. The JPG and EPS filenames can be whatever you want them to be.
 
-```
-media-assets/
-  en/
-    chart/
-      chart.eps
-      chart.jpg
-    map/
-      my-map.eps
-      map-preview.jpg
+```bash
+📂 media-assets/
+  📂 en/
+    📂 chart/
+      - chart.eps
+      - chart.jpg
+    📂 map/
+      - my-map.eps
+      - map-preview.jpg
 ```
 
 If you have an embeddable page using the same locale/slug scheme as a set of flat assets, the publisher will upload the JPG and EPS file _with_ the embeddable version of the same graphic.
 
-```
-dist/
-  embeds/
-    en/
-      chart/
-        index.html
-media-assets/
-  en/
-    chart/
-      chart.eps
-      chart.jpg
-graphics-pack/
-  media-en-chart.zip  👈 Contains both embeddable graphic and flats
+```bash
+📂 dist/
+  📂 embeds/
+    📂 en/
+      📂 chart/
+        - index.html
+📂 media-assets/
+  📂 en/
+    📂 chart/
+      - chart.eps
+      - chart.jpg
+📂 graphics-pack/
+  - media-en-chart.zip # 👈 Contains both embeddable graphic and flats
 ```
 
 ### locales directory (`localesDir`)
@@ -213,21 +214,21 @@ The locales directory contains structured data used to translate the content of 
 
 Otherwise, the publisher assumes one JSON file (`packMetadataFile`) within this default locale sub-directory contains a title (`packTitleProp`) and description (`packDescriptionProp`) for the pack.
 
-```
-locales/
-  en/
-    content.json
+```bash
+📂 locales/
+  📂 en/
+    - content.json
 ```
 
 ### images directory (`imagesDir`)
 
 An images directory contains at least the share image referenced in the metatag in the root `index.html` file in the dist directory.
 
-```
-src/
-  statics/
-    images/
-      share-card.jpg
+```bash
+📂 src/
+  📂 statics/
+    📂 images/
+      - share-card.jpg
 ```
 
 The publisher will create a `manifest.json` file in the root of the images directory with dimensions for every image in that directory. You can use it to set the dimensions of images in your project.
@@ -238,12 +239,12 @@ Sometimes we want to publish embeds that are only used on Reuters' website, i.e.
 
 Within the embeddables directory, you can nest any valid embed page under a `referral/` directory and that page will automatically be made **only** available in Lynx, and **excluded** from Connect.
 
-```
-dist/
-  embeds/
-    en/
-      referral/
-        index.html
+```bash
+📂 dist/
+  📂 embeds/
+    📂 en/
+      📂 referral/
+        - index.html
 ```
 
 ### package.json
