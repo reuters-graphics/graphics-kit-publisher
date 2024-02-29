@@ -48,7 +48,7 @@ export const setUpdatedTime = async () => {
 
 /**
  * Ask any missing package metadata and write to package.json
- * @param prompt Whether to prompt for missing or additional metadata
+ * @param prompt Whether to prompt for additional metadata
  * @returns
  */
 const getPackageMetadata = async (prompt = true) => {
@@ -100,7 +100,7 @@ const getDefaultLocaleMetadata = async (config: ConfigType) => {
 /**
  * Get graphic pack metadata
  * @param config Graphics pack config
- * @param prompt Whether to prompt for missing or additional metadata
+ * @param prompt Whether to prompt for additional metadata
  */
 const getPackMetadata = async (config: ConfigType, prompt = true) => {
   const packageMetadata = await getPackageMetadata(prompt);

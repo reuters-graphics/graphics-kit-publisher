@@ -132,7 +132,7 @@ export default async (config: ConfigType) => {
     const MEDIA = publishToMedia ? archivesToMedia : false;
     const LYNX = publishToLynx ? archivesToLynx : false;
 
-    const packMetadata = await getPackMetadata(config);
+    const packMetadata = await getPackMetadata(config, false);
 
     serverClient = await updateGraphicPack(packMetadata, config);
 
