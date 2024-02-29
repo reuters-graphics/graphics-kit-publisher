@@ -82,7 +82,7 @@ export default async (config: ConfigType) => {
       ? archivesToLynx
       : false;
 
-    const packMetadata = await getPackMetadata(config);
+    const packMetadata = await getPackMetadata(config, false);
 
     serverClient = await updateGraphicPack(packMetadata, config);
 

@@ -59,7 +59,7 @@ const updateMediaEditionMetadata = (metadata: {
 };
 
 export default async (config: ConfigType, serverClient: ServerClient) => {
-  const { title, description } = await getPackMetadata(config);
+  const { title, description } = await getPackMetadata(config, false);
   const { homepage } = getPkg();
 
   const mediaArchives = glob.sync('media-*.zip', { cwd: config.PACK_DIR });
