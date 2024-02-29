@@ -10,7 +10,7 @@ import getPackMetadata from '../../prepack/getPackMetadata';
 import path from 'path';
 
 export default async (config: ConfigType, serverClient: ServerClient) => {
-  const { title, description } = await getPackMetadata(config);
+  const { title, description } = await getPackMetadata(config, false);
 
   const editionMetadata: Edition.EditionMetadata = {
     language: config.PACK_LOCALE as RNGS.Language,

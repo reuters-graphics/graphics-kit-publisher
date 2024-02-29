@@ -48,20 +48,21 @@ export const setUpdatedTime = async () => {
 
 /**
  * Ask any missing package metadata and write to package.json
+ * @param prompt Whether to prompt for missing or additional metadata
  * @returns
  */
-const getPackageMetadata = async () => {
+const getPackageMetadata = async (prompt = true) => {
   const CWD = getPkgRoot();
   const packageJson = getPkg();
   const packageSchema = getPackageSchema();
   const validPackageJson = await askJSON(packageSchema, packageJson, {
-    askToAddItems: !isServerless(),
+    askToAddItems: prompt && !isServerless(),
   });
   fs.writeFileSync(
     path.join(CWD, 'package.json'),
     JSON.stringify(validPackageJson, null, 2)
   );
-  await setUpdatedTime();
+  if (prompt) await setUpdatedTime();
   return validPackageJson.reuters as Omit<PackageMetadata, 'preview'>;
 };
 
@@ -98,9 +99,11 @@ const getDefaultLocaleMetadata = async (config: ConfigType) => {
 
 /**
  * Get graphic pack metadata
+ * @param config Graphics pack config
+ * @param prompt Whether to prompt for missing or additional metadata
  */
-const getPackMetadata = async (config: ConfigType) => {
-  const packageMetadata = await getPackageMetadata();
+const getPackMetadata = async (config: ConfigType, prompt = true) => {
+  const packageMetadata = await getPackageMetadata(prompt);
   const defaultLocaleMetadata = await getDefaultLocaleMetadata(config);
   return { ...packageMetadata, ...defaultLocaleMetadata };
 };
