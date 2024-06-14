@@ -63,7 +63,7 @@ export class GraphicsPublisher {
    * @param opts Upload options
    */
   async upload(opts = defaultUploadOptions) {
-    await upload(this.config);
+    await upload(this.config, opts);
   }
 
   /**
