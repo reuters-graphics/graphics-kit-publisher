@@ -15,6 +15,7 @@ import {
 import { DEFAULT_WARN_IMAGE_SIZE } from './constants/images';
 // @ts-ignore
 import { GraphicsPublisher } from '@reuters-graphics/graphics-publisher';
+import { handleError } from './exceptions/errors';
 import sade from 'sade';
 // @ts-ignore
 import { version } from '../package.json';
@@ -66,13 +67,21 @@ prog
   );
 
 prog.command('prepack').action(async (opts) => {
-  const graphicsPublisher = new GraphicsPublisher(opts);
-  await graphicsPublisher.prepack();
+  try {
+    const graphicsPublisher = new GraphicsPublisher(opts);
+    await graphicsPublisher.prepack();
+  } catch (error) {
+    handleError(error);
+  }
 });
 
 prog.command('pack').action(async (opts) => {
-  const graphicsPublisher = new GraphicsPublisher(opts);
-  await graphicsPublisher.pack();
+  try {
+    const graphicsPublisher = new GraphicsPublisher(opts);
+    await graphicsPublisher.pack();
+  } catch (error) {
+    handleError(error);
+  }
 });
 
 prog
@@ -83,8 +92,12 @@ prog
     DEFAULT_WARN_IMAGE_SIZE
   )
   .action(async (opts) => {
-    const graphicsPublisher = new GraphicsPublisher(opts);
-    await graphicsPublisher.measureImages(opts);
+    try {
+      const graphicsPublisher = new GraphicsPublisher(opts);
+      await graphicsPublisher.measureImages(opts);
+    } catch (error) {
+      handleError(error);
+    }
   });
 
 prog
@@ -96,18 +109,30 @@ prog
   )
   .option('--fast', 'Upload just the public edition, ignoring media embeds')
   .action(async (opts) => {
-    const graphicsPublisher = new GraphicsPublisher(opts);
-    await graphicsPublisher.upload(opts);
+    try {
+      const graphicsPublisher = new GraphicsPublisher(opts);
+      await graphicsPublisher.upload(opts);
+    } catch (error) {
+      handleError(error);
+    }
   });
 
 prog.command('publish').action(async (opts) => {
-  const graphicsPublisher = new GraphicsPublisher(opts);
-  await graphicsPublisher.publish();
+  try {
+    const graphicsPublisher = new GraphicsPublisher(opts);
+    await graphicsPublisher.publish();
+  } catch (error) {
+    handleError(error);
+  }
 });
 
 prog.command('preview').action(async (opts) => {
-  const graphicsPublisher = new GraphicsPublisher(opts);
-  await graphicsPublisher.preview();
+  try {
+    const graphicsPublisher = new GraphicsPublisher(opts);
+    await graphicsPublisher.preview();
+  } catch (error) {
+    handleError(error);
+  }
 });
 
 prog.parse(process.argv);
