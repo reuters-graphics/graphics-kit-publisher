@@ -9,8 +9,9 @@
     "graphics-publisher": "./dist/cli.js"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
+  "packageManager": "pnpm@9.6.0",
   "repository": "https://github.com/reuters-graphics/graphics-kit-publisher",
   "author": "Jon McClure <jon.r.mcclure@gmail.com>",
   "license": "MIT",
@@ -27,13 +28,15 @@
     ]
   },
   "scripts": {
-    "prepublishOnly": "npm run build",
     "build": "rollup --config rollup.config.js",
-    "docs:build": "typedoc",
+    "build:docs": "typedoc",
     "docs:preview": "live-server ./docs",
-    "test": "npm run build && c8 mocha"
+    "test": "npm run build && c8 mocha",
+    "changeset:version": "changeset version",
+    "changeset:publish": "git add --all && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.9",
     "@rollup/plugin-json": "^6.0.0",
     "@rollup/plugin-typescript": "^11.1.3",
     "@tsconfig/recommended": "^1.0.2",

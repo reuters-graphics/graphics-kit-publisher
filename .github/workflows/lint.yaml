@@ -1,0 +1,11 @@
+name: Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    uses: reuters-graphics/action-workflows/.github/workflows/lint.yaml@main
+    secrets: inherit
