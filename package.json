@@ -14,7 +14,6 @@
   "packageManager": "pnpm@9.6.0",
   "repository": "https://github.com/reuters-graphics/graphics-kit-publisher",
   "author": "Jon McClure <jon.r.mcclure@gmail.com>",
-  "license": "MIT",
   "private": false,
   "keywords": [],
   "files": [
@@ -31,7 +30,7 @@
     "build": "rollup --config rollup.config.js",
     "build:docs": "typedoc",
     "docs:preview": "live-server ./docs",
-    "test": "npm run build && c8 mocha",
+    "test": "c8 mocha",
     "changeset:version": "changeset version",
     "changeset:publish": "git add --all && changeset publish"
   },
@@ -80,11 +79,12 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.688.0",
+    "@reuters-graphics/graphics-bin": "^1.0.1",
     "@reuters-graphics/server-client": "^2.0.0",
     "@reuters-graphics/teams-klaxon": "^1.0.0",
     "archiver": "^5.3.0",
     "ask-json": "^0.1.9",
-    "aws-sdk": "^2.879.0",
     "chalk": "^4.1.0",
     "cli-progress": "^3.10.0",
     "crypto-random-string": "^5.0.0",
