@@ -4,7 +4,7 @@ import type {
   ServerClient,
 } from '@reuters-graphics/server-client';
 
-import { ConfigType } from '../../setConfig';
+import type { ConfigType } from '../../setConfig';
 import fs from 'fs-extra';
 import getPackMetadata from '../../prepack/getPackMetadata';
 import path from 'path';

@@ -1,6 +1,6 @@
 import { PREVIEW_ORIGIN } from '../../constants/preview';
 
-import { ConfigType } from '../../setConfig';
+import type { ConfigType } from '../../setConfig';
 import getPreviewURL from '../getPreviewURL';
 import open from 'open';
 import { S3Client, utils } from '@reuters-graphics/graphics-bin';

@@ -1,4 +1,4 @@
-import { ConfigType } from '../setConfig';
+import type { ConfigType } from '../setConfig';
 import { DEFAULT_WARN_IMAGE_SIZE } from '../constants/images';
 import { MeasureImages } from '../measureImages';
 import chalk from 'chalk';

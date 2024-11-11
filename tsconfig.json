@@ -1,18 +1,11 @@
 {
-  "extends": "@tsconfig/recommended/tsconfig.json",
-  "include": ["src/*", "test/*.js", "src/@types/index.d.ts"],
+  "extends": "@reuters-graphics/yaks-ts/base",
+  "include": ["src/**/*.ts", "src/@types/index.d.ts"],
   "exclude": ["dist"],
   "compilerOptions": {
     "rootDir": "./src",
-    "moduleResolution": "node",
-    "module": "ESNext",
     "outDir": "dist",
-    "declaration": true,
     "declarationDir": "dist",
-    "noEmitOnError": true,
-    "resolveJsonModule": true,
-    "target": "ESNext",
-    "allowSyntheticDefaultImports": true,
     "typeRoots": ["src/@types", "./node_modules/@types"]
   },
   "typedocOptions": {

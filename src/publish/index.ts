@@ -2,7 +2,7 @@ import { Elements, TeamsKlaxon } from '@reuters-graphics/teams-klaxon';
 
 import type { ConfigType } from '../setConfig';
 import type { PromptObject } from 'prompts';
-import { Publishing } from '@reuters-graphics/server-client';
+import type { Publishing } from '@reuters-graphics/server-client';
 import chalk from 'chalk';
 import { flatten } from 'lodash-es';
 import getEmbedEditionSlugs from '../utils/getEmbedEditionSlugs';
@@ -75,12 +75,10 @@ export default async (config: ConfigType) => {
   let revisionType: Publishing.PublishRevisionType = 'Refresh';
 
   if (process.env.GRAPHICS_SERVER_PUBLISH) {
-    const MEDIA = process.env.GRAPHICS_SERVER_PUBLISH_TO_MEDIA
-      ? archivesToMedia
-      : false;
-    const LYNX = process.env.GRAPHICS_SERVER_PUBLISH_TO_LYNX
-      ? archivesToLynx
-      : false;
+    const MEDIA =
+      process.env.GRAPHICS_SERVER_PUBLISH_TO_MEDIA ? archivesToMedia : false;
+    const LYNX =
+      process.env.GRAPHICS_SERVER_PUBLISH_TO_LYNX ? archivesToLynx : false;
 
     const packMetadata = await getPackMetadata(config, false);
 
