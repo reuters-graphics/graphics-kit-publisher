@@ -1,60 +1,58 @@
 import * as url from 'url';
 
-import { GraphicsPublisher } from '../dist/index.js';
-import expect from 'expect.js';
+import { GraphicsPublisher } from '..';
+import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import imgSize from 'image-size';
 import mock from 'mock-fs';
-import os from 'os';
 import path from 'path';
 import { promisify } from 'util';
 import prompts from 'prompts';
 import sinon from 'sinon';
+import type { ISizeCalculationResult } from 'image-size/dist/types/interface';
+import {
+  contentEn,
+  graphicsProfile,
+  mediaAssets,
+  nodeModules,
+  packageJson,
+} from './utils/mockFs';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-const asyncImgSize = promisify(imgSize);
+const asyncImgSize = promisify(imgSize) as (
+  img: string
+) => Promise<ISizeCalculationResult>;
 
-describe('GraphicsKitPublisher measures images', function () {
-  this.timeout(200000);
+beforeEach(() => {
+  mock(
+    {
+      ...graphicsProfile,
+      ...contentEn,
+      ...nodeModules,
+      ...packageJson,
+      ...mediaAssets,
+      'src/statics/images/share.jpg': mock.load(
+        path.resolve(__dirname, 'img.jpg')
+      ),
+      'src/statics/images/oversize.jpg': mock.load(
+        path.resolve(__dirname, 'oversize.jpg')
+      ),
+      'src/statics/images/oversize.png': mock.load(
+        path.resolve(__dirname, 'oversize.png')
+      ),
+    },
+    { createCwd: false }
+  );
+});
 
-  beforeEach(function () {
-    mock(
-      {
-        [path.join(os.homedir(), '.reuters-graphics/profile.json')]:
-          JSON.stringify({
-            name: 'Graphics Staff',
-            email: 'all.graphics@thomsonreuters.com',
-            url: 'https://www.reuters.com',
-            desk: 'london',
-          }),
-        'src/statics/images/share.jpg': mock.load(
-          path.resolve(__dirname, 'img.jpg')
-        ),
-        'src/statics/images/oversize.jpg': mock.load(
-          path.resolve(__dirname, 'oversize.jpg')
-        ),
-        'src/statics/images/oversize.png': mock.load(
-          path.resolve(__dirname, 'oversize.png')
-        ),
-        'locales/en/content.json': JSON.stringify({
-          SEOTitle: 'title',
-          SEODescription: 'description',
-        }),
-        'media-assets': {},
-        node_modules: mock.load(path.resolve(__dirname, '../node_modules')),
-        'package.json': JSON.stringify({ scripts: { build: '' } }),
-      },
-      { createCwd: false }
-    );
-  });
+afterEach(() => {
+  mock.restore();
+  sinon.restore();
+});
 
-  afterEach(function () {
-    mock.restore();
-    sinon.restore();
-  });
-
-  it('Should optimise an image', async function () {
+describe('GraphicsKitPublisher measures images', () => {
+  it('Should optimise an image', async () => {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(
       Promise.resolve({
@@ -81,11 +79,11 @@ describe('GraphicsKitPublisher measures images', function () {
       fs.statSync('src/statics/images/oversize.png').size / 1024
     );
 
-    expect(resizeJPG).to.be.lessThan(sizeJPG);
-    expect(resizePNG).to.be.lessThan(sizePNG);
+    expect(resizeJPG).toBeLessThan(sizeJPG);
+    expect(resizePNG).toBeLessThan(sizePNG);
   });
 
-  it('Should resize an image', async function () {
+  it('Should resize an image', async () => {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(
       Promise.resolve({
@@ -112,8 +110,8 @@ describe('GraphicsKitPublisher measures images', function () {
       fs.statSync('src/statics/images/oversize.png').size / 1024
     );
 
-    expect(resizeJPG).to.be.lessThan(sizeJPG);
-    expect(resizePNG).to.be.lessThan(sizePNG);
+    expect(resizeJPG).toBeLessThan(sizeJPG);
+    expect(resizePNG).toBeLessThan(sizePNG);
   });
 
   it('Should optimise an image in bulk', async function () {
@@ -142,11 +140,11 @@ describe('GraphicsKitPublisher measures images', function () {
       fs.statSync('src/statics/images/oversize.png').size / 1024
     );
 
-    expect(resizeJPG).to.be.lessThan(sizeJPG);
-    expect(resizePNG).to.be.lessThan(sizePNG);
+    expect(resizeJPG).toBeLessThan(sizeJPG);
+    expect(resizePNG).toBeLessThan(sizePNG);
   });
 
-  it('Should resize and optimise an image', async function () {
+  it('Should resize and optimise an image', async () => {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(
       Promise.resolve({
@@ -162,14 +160,14 @@ describe('GraphicsKitPublisher measures images', function () {
     const { width: widthJPG } = await asyncImgSize(
       'src/statics/images/oversize.jpg'
     );
-    expect(widthJPG).to.be(1200);
+    expect(widthJPG).toBe(1200);
     const { width: widthPNG } = await asyncImgSize(
       'src/statics/images/oversize.png'
     );
-    expect(widthPNG).to.be(1200);
+    expect(widthPNG).toBe(1200);
   });
 
-  it('Should skip an image if previously declined to optimize', async function () {
+  it('Should skip an image if previously declined to optimize', async () => {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(
       Promise.resolve({
@@ -201,18 +199,18 @@ describe('GraphicsKitPublisher measures images', function () {
       'src/statics/images/oversize.jpg'
     );
 
-    expect(ogWidth).to.be(newWidth);
+    expect(ogWidth).toBe(newWidth);
 
     const manifest = JSON.parse(
-      fs.readFileSync('src/statics/images/manifest.json')
+      fs.readFileSync('src/statics/images/manifest.json', 'utf8')
     );
 
-    expect(manifest['oversize.jpg'].optimised).to.be(false);
-    expect(manifest['oversize.png'].optimised).to.be(false);
-    expect(manifest['share.jpg'].optimised).to.be(undefined);
+    expect(manifest['oversize.jpg'].optimised).toBe(false);
+    expect(manifest['oversize.png'].optimised).toBe(false);
+    expect(manifest['share.jpg'].optimised).toBeUndefined();
   });
 
-  it('Should write an image manifest', async function () {
+  it('Should write an image manifest', async () => {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(
       Promise.resolve({
@@ -225,7 +223,7 @@ describe('GraphicsKitPublisher measures images', function () {
     await graphicsPublisher.measureImages();
 
     const manifest = JSON.parse(
-      fs.readFileSync('src/statics/images/manifest.json')
+      fs.readFileSync('src/statics/images/manifest.json', 'utf8')
     );
 
     expect(manifest).to.eql({
@@ -249,7 +247,7 @@ describe('GraphicsKitPublisher measures images', function () {
     });
   });
 
-  it('Should update an image manifest after resize', async function () {
+  it('Should update an image manifest after resize', async () => {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(
       Promise.resolve({
@@ -263,7 +261,7 @@ describe('GraphicsKitPublisher measures images', function () {
     await graphicsPublisher.measureImages();
 
     const manifest = JSON.parse(
-      fs.readFileSync('src/statics/images/manifest.json')
+      fs.readFileSync('src/statics/images/manifest.json', 'utf8')
     );
 
     expect(manifest['oversize.jpg']).to.eql({
@@ -281,7 +279,7 @@ describe('GraphicsKitPublisher measures images', function () {
     });
   });
 
-  it('Should not prompt for an image if user does not want to optimise', async function () {
+  it('Should not prompt for an image if user does not want to optimise', async () => {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(
       Promise.resolve({
@@ -293,13 +291,13 @@ describe('GraphicsKitPublisher measures images', function () {
     await graphicsPublisher.measureImages();
 
     const manifest = JSON.parse(
-      fs.readFileSync('src/statics/images/manifest.json')
+      fs.readFileSync('src/statics/images/manifest.json', 'utf8')
     );
 
-    expect(manifest['oversize.jpg'].width).to.be(2240);
+    expect(manifest['oversize.jpg'].width).toBe(2240);
   });
 
-  it('Should not prompt for an image if in serverless environment', async function () {
+  it('Should not prompt for an image if in serverless environment', async () => {
     process.env.GRAPHICS_SERVER_USERNAME = 'tk';
     process.env.GRAPHICS_SERVER_PASSWORD = 'tk';
     process.env.GRAPHICS_SERVER_API_KEY = 'tk';
@@ -316,17 +314,17 @@ describe('GraphicsKitPublisher measures images', function () {
     await graphicsPublisher.measureImages();
 
     const manifest = JSON.parse(
-      fs.readFileSync('src/statics/images/manifest.json')
+      fs.readFileSync('src/statics/images/manifest.json', 'utf8')
     );
 
-    expect(manifest['oversize.jpg'].width).to.be(2240);
+    expect(manifest['oversize.jpg'].width).toBe(2240);
 
     delete process.env.GRAPHICS_SERVER_USERNAME;
     delete process.env.GRAPHICS_SERVER_PASSWORD;
     delete process.env.GRAPHICS_SERVER_API_KEY;
   });
 
-  it('Speed test with an image', async function () {
+  it('Speed test with an image', async () => {
     const graphicsPublisher = new GraphicsPublisher();
     const fake = sinon.fake.returns(
       Promise.resolve({
@@ -348,6 +346,6 @@ describe('GraphicsKitPublisher measures images', function () {
     await graphicsPublisher.measureImages();
 
     const timeElapsed = (new Date().getTime() - start) / 1000;
-    expect(timeElapsed).to.be.lessThan(60);
+    expect(timeElapsed).toBeLessThan(60);
   });
-});
+}, 200_000);

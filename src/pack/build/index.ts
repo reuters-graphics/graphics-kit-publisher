@@ -1,4 +1,4 @@
-import { ConfigType } from '../../setConfig';
+import type { ConfigType } from '../../setConfig';
 import { PackageConfigError } from '../../exceptions/errors';
 import chalk from 'chalk';
 import fs from 'fs-extra';

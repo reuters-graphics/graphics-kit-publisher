@@ -22,9 +22,8 @@ export default async (config: ConfigType) => {
 
   const CLIENT_README = path.join(cwd, 'CLIENT_README.txt');
 
-  const CUSTOM_README = fs.existsSync(CLIENT_README)
-    ? fs.readFileSync(CLIENT_README, 'utf8')
-    : '';
+  const CUSTOM_README =
+    fs.existsSync(CLIENT_README) ? fs.readFileSync(CLIENT_README, 'utf8') : '';
 
   for (const embedLocale of embedLocales) {
     const locale = embedLocale.replace('/', '');

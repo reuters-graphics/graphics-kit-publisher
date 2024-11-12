@@ -13,11 +13,11 @@ import {
 } from './constants/pack';
 
 import { DEFAULT_WARN_IMAGE_SIZE } from './constants/images';
-// @ts-ignore
+// @ts-ignore lib
 import { GraphicsPublisher } from '@reuters-graphics/graphics-publisher';
 import { handleError } from './exceptions/errors';
 import sade from 'sade';
-// @ts-ignore
+// @ts-ignore pkg
 import { version } from '../package.json';
 
 const prog = sade('graphics-publisher');

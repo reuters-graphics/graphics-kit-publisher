@@ -32,8 +32,9 @@ export const setUpdatedTime = async () => {
     const { confirm } = await prompts.prompt({
       type: 'confirm',
       name: 'confirm',
-      message: packageJson.reuters.graphic.updated
-        ? 'Should we reset the updated time?'
+      message:
+        packageJson.reuters.graphic.updated ?
+          'Should we reset the updated time?'
         : 'Should we set the updated time?',
       initial: true,
     });

@@ -1,4 +1,4 @@
-import { ConfigType } from '../../setConfig';
+import type { ConfigType } from '../../setConfig';
 import fs from 'fs-extra';
 import { rimrafSync } from 'rimraf';
 

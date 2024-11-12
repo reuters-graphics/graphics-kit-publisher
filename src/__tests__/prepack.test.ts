@@ -1,74 +1,85 @@
 import * as url from 'url';
 
-import { GraphicsPublisher } from '../dist/index.js';
-import expect from 'expect.js';
+import { GraphicsPublisher } from '..';
+import { expect, describe, it, beforeEach, afterEach } from 'vitest';
 import fs from 'fs';
 import mock from 'mock-fs';
-import os from 'os';
 import path from 'path';
 import prompts from 'prompts';
 import sinon from 'sinon';
+import {
+  contentEn,
+  graphicsProfile,
+  mediaAssets,
+  nodeModules,
+} from './utils/mockFs';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
-let PKG;
-
-describe('GraphicsKitPublisher prepacks project', function () {
-  this.timeout(20000);
-
-  beforeEach(function () {
-    mock(
-      {
-        [path.join(os.homedir(), '.reuters-graphics/profile.json')]:
-          JSON.stringify({
-            name: 'Graphics Staff',
-            email: 'all.graphics@thomsonreuters.com',
-            url: 'https://www.reuters.com',
-            desk: 'london',
-          }),
-        'src/statics/images/share.jpg': mock.load(
-          path.resolve(__dirname, 'img.jpg')
-        ),
-        'locales/en/content.json': JSON.stringify({
-          SEOTitle: 'title',
-          SEODescription: 'description',
-        }),
-        'media-assets': {},
-        node_modules: mock.load(path.resolve(__dirname, '../node_modules')),
-        'package.json': JSON.stringify({ scripts: { build: '' } }),
-        dist: {
-          'index.html': '<html></html>',
-          embeds: { en: { chart: { 'index.html': '<html></html>' } } },
-        },
-      },
-      { createCwd: false }
-    );
-    PKG = {
-      reuters: {
-        contact: {
-          name: 'Jon',
-          email: 'j@gmail.com',
-        },
-        graphic: {
-          desk: 'london',
-          slugs: {
-            root: 'HEALTH-CORONAVIRUS',
-            wild: '',
-          },
-          authors: [{ name: 'Jon', link: 'https://jm.co' }],
-          published: new Date().toISOString(),
-        },
-      },
-      homepage: 'https://www.google.com',
+let PKG: {
+  reuters: {
+    contact: {
+      name?: string;
+      email?: string;
     };
-  });
+    graphic: {
+      desk?: string;
+      slugs: {
+        root?: string;
+        wild?: string;
+      };
+      authors: { name: string; link: string }[];
+      published?: string;
+    };
+  };
+  homepage: string;
+};
 
-  afterEach(function () {
-    mock.restore();
-    sinon.restore();
-  });
+beforeEach(() => {
+  mock(
+    {
+      ...graphicsProfile,
+      ...nodeModules,
+      ...contentEn,
+      ...mediaAssets,
+      'src/statics/images/share.jpg': mock.load(
+        path.resolve(__dirname, 'img.jpg')
+      ),
+      'package.json': JSON.stringify({ scripts: { build: '' } }),
+      dist: {
+        'index.html': '<html></html>',
+        embeds: { en: { chart: { 'index.html': '<html></html>' } } },
+      },
+    },
+    { createCwd: false }
+  );
+  PKG = {
+    reuters: {
+      contact: {
+        name: 'Jon',
+        email: 'j@gmail.com',
+      },
+      graphic: {
+        desk: 'london',
+        slugs: {
+          root: 'HEALTH-CORONAVIRUS',
+          wild: '',
+        },
+        authors: [{ name: 'Jon', link: 'https://jm.co' }],
+        published: new Date().toISOString(),
+      },
+    },
+    homepage: 'https://www.google.com',
+  };
+});
 
-  it('Should set updated date in serverless', async function () {
+afterEach(() => {
+  mock.restore();
+  sinon.restore();
+});
+
+describe('GraphicsKitPublisher prepacks project', () => {
+  it('Should set updated date in serverless', async () => {
     process.env.GRAPHICS_SERVER_USERNAME = 'tk';
     process.env.GRAPHICS_SERVER_PASSWORD = 'tk';
     process.env.GRAPHICS_SERVER_API_KEY = 'tk';
@@ -87,16 +98,18 @@ describe('GraphicsKitPublisher prepacks project', function () {
     );
     const graphicsPublisher = new GraphicsPublisher();
     await graphicsPublisher.setUpdatedTime();
-    const pkg = JSON.parse(fs.readFileSync('package.json'));
-    expect(pkg.reuters.graphic.updated).not.to.be(undefined);
-    expect(new Date(pkg.reuters.graphic.updated)).to.be.an(Date);
-    expect(new Date(pkg.reuters.graphic.updated)).to.be.greaterThan(pubDate);
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    expect(pkg.reuters.graphic.updated).not.toBeUndefined();
+    expect(new Date(pkg.reuters.graphic.updated)).toBeInstanceOf(Date);
+    expect(new Date(pkg.reuters.graphic.updated).getTime()).toBeGreaterThan(
+      pubDate.getTime()
+    );
     delete process.env.GRAPHICS_SERVER_USERNAME;
     delete process.env.GRAPHICS_SERVER_PASSWORD;
     delete process.env.GRAPHICS_SERVER_API_KEY;
   });
 
-  it('Should not set updated date in serverless if homepage not set', async function () {
+  it('Should not set updated date in serverless if homepage not set', async () => {
     process.env.GRAPHICS_SERVER_USERNAME = 'tk';
     process.env.GRAPHICS_SERVER_PASSWORD = 'tk';
     process.env.GRAPHICS_SERVER_API_KEY = 'tk';
@@ -112,14 +125,14 @@ describe('GraphicsKitPublisher prepacks project', function () {
     );
     const graphicsPublisher = new GraphicsPublisher();
     await graphicsPublisher.setUpdatedTime();
-    const pkg = JSON.parse(fs.readFileSync('package.json'));
-    expect(pkg.reuters.graphic.updated).to.be(undefined);
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    expect(pkg.reuters.graphic.updated).toBeUndefined();
     delete process.env.GRAPHICS_SERVER_USERNAME;
     delete process.env.GRAPHICS_SERVER_PASSWORD;
     delete process.env.GRAPHICS_SERVER_API_KEY;
   });
 
-  it('Should not set updated date in serverless if published date is in the future', async function () {
+  it('Should not set updated date in serverless if published date is in the future', async () => {
     process.env.GRAPHICS_SERVER_USERNAME = 'tk';
     process.env.GRAPHICS_SERVER_PASSWORD = 'tk';
     process.env.GRAPHICS_SERVER_API_KEY = 'tk';
@@ -138,14 +151,14 @@ describe('GraphicsKitPublisher prepacks project', function () {
     );
     const graphicsPublisher = new GraphicsPublisher();
     await graphicsPublisher.setUpdatedTime();
-    const pkg = JSON.parse(fs.readFileSync('package.json'));
-    expect(pkg.reuters.graphic.updated).to.be(undefined);
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    expect(pkg.reuters.graphic.updated).toBeUndefined();
     delete process.env.GRAPHICS_SERVER_USERNAME;
     delete process.env.GRAPHICS_SERVER_PASSWORD;
     delete process.env.GRAPHICS_SERVER_API_KEY;
   });
 
-  it('Should ask to set updated date', async function () {
+  it('Should ask to set updated date', async () => {
     const pubDate = new Date();
     pubDate.setDate(pubDate.getDate() - 1);
     fs.writeFileSync(
@@ -163,12 +176,12 @@ describe('GraphicsKitPublisher prepacks project', function () {
     const fake = sinon.fake.returns(Promise.resolve({ confirm: true }));
     sinon.replace(prompts, 'prompt', fake);
     await graphicsPublisher.setUpdatedTime();
-    const pkg = JSON.parse(fs.readFileSync('package.json'));
-    expect(pkg.reuters.graphic.updated).not.to.be(undefined);
-    expect(new Date(pkg.reuters.graphic.updated)).to.be.an(Date);
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    expect(pkg.reuters.graphic.updated).not.toBeUndefined();
+    expect(new Date(pkg.reuters.graphic.updated)).toBeInstanceOf(Date);
   });
 
-  it('Should ask for missing contact name', async function () {
+  it('Should ask for missing contact name', async () => {
     delete PKG.reuters.contact.name;
     fs.writeFileSync('package.json', JSON.stringify(PKG));
     const graphicsPublisher = new GraphicsPublisher();
@@ -177,11 +190,11 @@ describe('GraphicsKitPublisher prepacks project', function () {
     );
     sinon.replace(prompts, 'prompt', fake);
     await graphicsPublisher.getPackMetadata();
-    const pkg = JSON.parse(fs.readFileSync('package.json'));
-    expect(pkg.reuters.contact.name).to.be('Jon');
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    expect(pkg.reuters.contact.name).toBe('Jon');
   });
 
-  it('Should ask for missing contact email', async function () {
+  it('Should ask for missing contact email', async () => {
     delete PKG.reuters.contact.email;
     fs.writeFileSync('package.json', JSON.stringify(PKG));
     const graphicsPublisher = new GraphicsPublisher();
@@ -190,11 +203,11 @@ describe('GraphicsKitPublisher prepacks project', function () {
     );
     sinon.replace(prompts, 'prompt', fake);
     await graphicsPublisher.getPackMetadata();
-    const pkg = JSON.parse(fs.readFileSync('package.json'));
-    expect(pkg.reuters.contact.email).to.be('jon@gmail.com');
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    expect(pkg.reuters.contact.email).toBe('jon@gmail.com');
   });
 
-  it('Should ask for missing desk', async function () {
+  it('Should ask for missing desk', async () => {
     delete PKG.reuters.graphic.desk;
     fs.writeFileSync('package.json', JSON.stringify(PKG));
     const graphicsPublisher = new GraphicsPublisher();
@@ -203,11 +216,11 @@ describe('GraphicsKitPublisher prepacks project', function () {
     );
     sinon.replace(prompts, 'prompt', fake);
     await graphicsPublisher.getPackMetadata();
-    const pkg = JSON.parse(fs.readFileSync('package.json'));
-    expect(pkg.reuters.graphic.desk).to.be('london');
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    expect(pkg.reuters.graphic.desk).toBe('london');
   });
 
-  it('Should ask for missing root slug', async function () {
+  it('Should ask for missing root slug', async () => {
     delete PKG.reuters.graphic.slugs.root;
     fs.writeFileSync('package.json', JSON.stringify(PKG));
     const graphicsPublisher = new GraphicsPublisher();
@@ -216,11 +229,11 @@ describe('GraphicsKitPublisher prepacks project', function () {
     );
     sinon.replace(prompts, 'prompt', fake);
     await graphicsPublisher.getPackMetadata();
-    const pkg = JSON.parse(fs.readFileSync('package.json'));
-    expect(pkg.reuters.graphic.slugs.root).to.be('NEW ZEALAND-WEATHER');
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    expect(pkg.reuters.graphic.slugs.root).toBe('NEW ZEALAND-WEATHER');
   });
 
-  it('Should ask for publish date', async function () {
+  it('Should ask for publish date', async () => {
     delete PKG.reuters.graphic.published;
     fs.writeFileSync('package.json', JSON.stringify(PKG));
     const now = new Date().toISOString();
@@ -230,7 +243,7 @@ describe('GraphicsKitPublisher prepacks project', function () {
     );
     sinon.replace(prompts, 'prompt', fake);
     await graphicsPublisher.getPackMetadata();
-    const pkg = JSON.parse(fs.readFileSync('package.json'));
-    expect(pkg.reuters.graphic.published).to.be(now);
+    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+    expect(pkg.reuters.graphic.published).toBe(now);
   });
-});
+}, 20_000);

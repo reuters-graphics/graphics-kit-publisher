@@ -12,7 +12,7 @@ type OpenGraphScraped = ogs.OpenGraphProperties & {
 export default async (localFilePath: string): Promise<OpenGraphScraped> => {
   const html = fs.readFileSync(localFilePath, 'utf-8');
   return new Promise((resolve, reject) => {
-    // @ts-ignore
+    // @ts-ignore OK html
     ogs({ html }).then((data) => {
       const { error, result } = data;
       if (error) reject(error);

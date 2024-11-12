@@ -37,7 +37,7 @@ export class MeasureImages {
     return fs.readJSONSync(MANIFEST_PATH);
   }
 
-  writeImgManifest(manifest: any) {
+  writeImgManifest(manifest: unknown) {
     const MANIFEST_PATH = path.join(this.IMAGES_DIR, 'manifest.json');
     fs.writeJSONSync(MANIFEST_PATH, manifest);
   }
@@ -171,8 +171,9 @@ export class MeasureImages {
         const IMG_PATH = path.join(this.IMAGES_DIR, image);
         const OPTIMISED_IMG_PATH = uniqifyBasename(IMG_PATH);
 
-        const buffer = isPNG(image)
-          ? await sharp(fs.readFileSync(IMG_PATH)).png({ quality }).toBuffer()
+        const buffer =
+          isPNG(image) ?
+            await sharp(fs.readFileSync(IMG_PATH)).png({ quality }).toBuffer()
           : await sharp(fs.readFileSync(IMG_PATH))
               .jpeg({ quality, progressive: true })
               .toBuffer();
@@ -244,8 +245,9 @@ export class MeasureImages {
             max: 100,
           });
 
-          const buffer = isPNG(image)
-            ? await sharp(fs.readFileSync(IMG_PATH)).png({ quality }).toBuffer()
+          const buffer =
+            isPNG(image) ?
+              await sharp(fs.readFileSync(IMG_PATH)).png({ quality }).toBuffer()
             : await sharp(fs.readFileSync(IMG_PATH))
                 .jpeg({ quality, progressive: true })
                 .toBuffer();

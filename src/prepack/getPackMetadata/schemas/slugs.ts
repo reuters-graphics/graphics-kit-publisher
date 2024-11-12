@@ -15,7 +15,7 @@ export default {
     wild: {
       type: 'string',
       pattern:
-        "^([A-Z0-9\\&\\.\\\\ \\s\\-\\']*)(\\s?\\([A-Z0-9\\&]+(,\\s[A-Z0-9\\&]+)*\\))?$", // eslint-disable-line no-useless-escape
+        "^([A-Z0-9\\&\\.\\\\ \\s\\-\\']*)(\\s?\\([A-Z0-9\\&]+(,\\s[A-Z0-9\\&]+)*\\))?$",
       prompt: {
         message:
           "What's the wild slug for this locale, i.e., a more specific page slug?",

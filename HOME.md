@@ -85,22 +85,22 @@ npm i -D @reuters-graphics/graphics-kit-publisher
 
 ```javascript
 const defaultConfig = {
-  distDir: "dist",
-  packDir: "graphics-pack",
-  assetsDir: "media-assets",
-  imagesDir: "src/statics/images",
-  localesDir: "locales",
-  packLocale: "en",
-  packMetadataFile: "content.json",
-  packTitleProp: "SEOTitle",
-  packDescriptionProp: "SEODescription",
+  distDir: 'dist',
+  packDir: 'graphics-pack',
+  assetsDir: 'media-assets',
+  imagesDir: 'src/statics/images',
+  localesDir: 'locales',
+  packLocale: 'en',
+  packMetadataFile: 'content.json',
+  packTitleProp: 'SEOTitle',
+  packDescriptionProp: 'SEODescription',
 };
 ```
 
 #### upload
 
 ```javascript
-import GraphicsPublisher from "@reuters-graphics/graphics-kit-publisher";
+import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
 const graphicsPublisher = new GraphicsPublisher(defaultConfig);
 
@@ -115,7 +115,7 @@ await graphicsPublisher.upload(defaultUploadOptions);
 #### publish
 
 ```javascript
-import GraphicsPublisher from "@reuters-graphics/graphics-kit-publisher";
+import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
 const graphicsPublisher = new GraphicsPublisher(defaultConfig);
 
@@ -125,7 +125,7 @@ await graphicsPublisher.publish();
 #### preview
 
 ```javascript
-import GraphicsPublisher from "@reuters-graphics/graphics-kit-publisher";
+import GraphicsPublisher from '@reuters-graphics/graphics-kit-publisher';
 
 const graphicsPublisher = new GraphicsPublisher(defaultConfig);
 
@@ -150,7 +150,7 @@ A dist directory is the output from your page builder.
   📂 cdn/
     📂 js/
       - ...
-    📂 css/ 
+    📂 css/
       - ...
     📂 images/
       - ...

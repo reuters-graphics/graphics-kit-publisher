@@ -42,7 +42,7 @@ export default () =>
     },
     minItems: 1,
     prompt: {
-      addMessage: (dataPath: string, currentAuthors: { name: string }[]) => {
+      addMessage: (_dataPath: string, currentAuthors: { name: string }[]) => {
         if (currentAuthors.length === 0) {
           return chalk`Would you like to add any additional {green authors}?`;
         }
