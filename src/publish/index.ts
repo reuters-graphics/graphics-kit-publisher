@@ -10,6 +10,8 @@ import getPackMetadata from '../prepack/getPackMetadata';
 import getPkg from '../utils/getPkg';
 import prompts from 'prompts';
 import updateGraphicPack from '../prepack/updateGraphicPack';
+import { S3Client } from '@reuters-graphics/graphics-bin';
+import { PREVIEW_ORIGIN } from '../constants/preview';
 
 export default async (config: ConfigType) => {
   const pkg = getPkg();
@@ -140,6 +142,15 @@ export default async (config: ConfigType) => {
       LYNX,
       revisionType
     );
+  }
+
+  const { preview } = pkg.reuters;
+
+  if (preview) {
+    const s3Client = new S3Client();
+    const bucketPath = preview.replace(PREVIEW_ORIGIN, '');
+    console.log('🧹Cleaning up preview link ...');
+    await s3Client.dangerouslyDeleteS3Directory(bucketPath, true);
   }
 
   console.log(chalk`\n\nPublished to: {green ${pkg.homepage}}\n`);
