@@ -5,6 +5,5 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
     setupFiles: './vitest.setup.ts',
-    testTimeout: 5_000,
   },
 });
