@@ -1,4 +1,4 @@
-import { Graphic, RNGS } from '@reuters-graphics/server-client';
+import type { Graphic, RNGS } from '@reuters-graphics/server-client';
 
 import type { ConfigType } from '../../setConfig';
 import type { PackMetadataType } from '../getPackMetadata';

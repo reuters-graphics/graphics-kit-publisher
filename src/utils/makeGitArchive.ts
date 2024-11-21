@@ -9,7 +9,7 @@ export default async () => {
   try {
     await git.add('.');
     await git.commit('Pre-archive', { '--allow-empty': null });
-  } catch (e) {
+  } catch {
     console.log('Could not git commit changes. Maybe nothing changed?');
   }
 

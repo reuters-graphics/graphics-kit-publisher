@@ -1,0 +1,13 @@
+name: Test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    uses: reuters-graphics/action-workflows/.github/workflows/test.yaml@main
+    secrets: inherit
+    with:
+      node_versions: '[18,20,22]'

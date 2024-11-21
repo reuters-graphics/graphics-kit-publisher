@@ -2,7 +2,7 @@ import { Elements, TeamsKlaxon } from '@reuters-graphics/teams-klaxon';
 
 import type { ConfigType } from '../setConfig';
 import type { PromptObject } from 'prompts';
-import { Publishing } from '@reuters-graphics/server-client';
+import type { Publishing } from '@reuters-graphics/server-client';
 import chalk from 'chalk';
 import { flatten } from 'lodash-es';
 import getEmbedEditionSlugs from '../utils/getEmbedEditionSlugs';
@@ -10,6 +10,8 @@ import getPackMetadata from '../prepack/getPackMetadata';
 import getPkg from '../utils/getPkg';
 import prompts from 'prompts';
 import updateGraphicPack from '../prepack/updateGraphicPack';
+import { S3Client } from '@reuters-graphics/graphics-bin';
+import { PREVIEW_ORIGIN } from '../constants/preview';
 
 export default async (config: ConfigType) => {
   const pkg = getPkg();
@@ -75,12 +77,10 @@ export default async (config: ConfigType) => {
   let revisionType: Publishing.PublishRevisionType = 'Refresh';
 
   if (process.env.GRAPHICS_SERVER_PUBLISH) {
-    const MEDIA = process.env.GRAPHICS_SERVER_PUBLISH_TO_MEDIA
-      ? archivesToMedia
-      : false;
-    const LYNX = process.env.GRAPHICS_SERVER_PUBLISH_TO_LYNX
-      ? archivesToLynx
-      : false;
+    const MEDIA =
+      process.env.GRAPHICS_SERVER_PUBLISH_TO_MEDIA ? archivesToMedia : false;
+    const LYNX =
+      process.env.GRAPHICS_SERVER_PUBLISH_TO_LYNX ? archivesToLynx : false;
 
     const packMetadata = await getPackMetadata(config, false);
 
@@ -142,6 +142,15 @@ export default async (config: ConfigType) => {
       LYNX,
       revisionType
     );
+  }
+
+  const { preview } = pkg.reuters;
+
+  if (preview) {
+    const s3Client = new S3Client();
+    const bucketPath = preview.replace(PREVIEW_ORIGIN, '');
+    console.log('🧹Cleaning up preview link ...');
+    await s3Client.dangerouslyDeleteS3Directory(bucketPath, true);
   }
 
   console.log(chalk`\n\nPublished to: {green ${pkg.homepage}}\n`);

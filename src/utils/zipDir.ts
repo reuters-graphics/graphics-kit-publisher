@@ -8,7 +8,7 @@ const createZip = (localDir: string): Promise<Buffer> => {
   const writer = new Stream.Writable();
   const chunks: Buffer[] = [];
 
-  writer._write = (chunk, encoding, next) => {
+  writer._write = (chunk: Buffer, _encoding, next) => {
     chunks.push(chunk);
     next();
   };

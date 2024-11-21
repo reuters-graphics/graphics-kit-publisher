@@ -3,7 +3,7 @@ declare module 'ask-json' {
 
   function askJson<T>(
     jsonSchema: T,
-    rawData: any,
+    rawData: unknown,
     config?: {
       askToAddItems: boolean;
     }

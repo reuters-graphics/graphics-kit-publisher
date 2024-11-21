@@ -4,7 +4,7 @@ import {
   PackageMetadataError,
 } from '../../exceptions/errors';
 
-import { ConfigType } from '../../setConfig';
+import type { ConfigType } from '../../setConfig';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import { getHomepage } from '../../metadata';
@@ -35,9 +35,8 @@ export default async (config: ConfigType) => {
       )}}`
     );
   }
-  const shareImageUrl = Array.isArray(shareImage)
-    ? shareImage[0].url
-    : shareImage.url;
+  const shareImageUrl =
+    Array.isArray(shareImage) ? shareImage[0].url : shareImage.url;
   if (
     !VALID_SHARE_IMAGE_FORMATS.includes(
       path.extname(shareImageUrl).toLowerCase()
@@ -101,9 +100,8 @@ export default async (config: ConfigType) => {
         path.join(LOCALE_DIR, embed)
       );
       if (shareImage) {
-        const shareImageUrl = Array.isArray(shareImage)
-          ? shareImage[0].url
-          : shareImage.url;
+        const shareImageUrl =
+          Array.isArray(shareImage) ? shareImage[0].url : shareImage.url;
         // Ensure share image is valid format
         if (
           VALID_SHARE_IMAGE_FORMATS.includes(

@@ -1,4 +1,4 @@
-import { ConfigType } from '../../setConfig';
+import type { ConfigType } from '../../setConfig';
 import fs from 'fs-extra';
 import glob from 'glob';
 import path from 'path';

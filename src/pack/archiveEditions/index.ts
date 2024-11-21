@@ -1,4 +1,4 @@
-import { ConfigType } from '../../setConfig';
+import type { ConfigType } from '../../setConfig';
 import { EditionArchiveError } from '../../exceptions/errors';
 import { MAX_ARCHIVE_MB_SIZE } from '../../constants/archives';
 import chalk from 'chalk';

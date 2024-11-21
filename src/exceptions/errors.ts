@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import chalk from 'chalk';
 
 export class LocationError extends Error {
@@ -65,9 +66,10 @@ export class EditionArchiveError extends Error {
 }
 
 const coalesceToError = (err: unknown) => {
-  return err instanceof Error ||
-    (err && (err as any).name && (err as any).message)
-    ? (err as Error)
+  return (
+      err instanceof Error || (err && (err as any).name && (err as any).message)
+    ) ?
+      (err as Error)
     : new Error(JSON.stringify(err));
 };
 

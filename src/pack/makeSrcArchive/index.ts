@@ -1,4 +1,4 @@
-import { ConfigType } from '../../setConfig';
+import type { ConfigType } from '../../setConfig';
 import fs from 'fs-extra';
 import getPkgRoot from '../../utils/getPkgRoot';
 import path from 'path';
@@ -21,7 +21,7 @@ export default async (config: ConfigType, testing = false) => {
     try {
       await git.add('.');
       await git.commit('Build for publish', { '--allow-empty': null });
-    } catch (e) {
+    } catch {
       console.log('Could not git commit changes. Maybe nothing changed?');
     }
     spawnSync(

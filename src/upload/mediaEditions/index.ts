@@ -5,7 +5,7 @@ import type {
 } from '@reuters-graphics/server-client';
 import { findIndex, uniq } from 'lodash-es';
 
-import { ConfigType } from '../../setConfig';
+import type { ConfigType } from '../../setConfig';
 import { VALID_LOCALES } from '../../constants/locales';
 import askJSON from 'ask-json';
 import fs from 'fs-extra';
@@ -31,8 +31,8 @@ const getMediaEditionMetadata = async ({
   const mediaEdition = pkg.reuters.graphic.mediaEditions.find(
     (e) => e.slug === slug
   );
-  return mediaEdition
-    ? askJSON(getSchema({ slug, title, description }), mediaEdition)
+  return mediaEdition ?
+      askJSON(getSchema({ slug, title, description }), mediaEdition)
     : askJSON(getSchema({ slug, title, description }), { slug });
 };
 

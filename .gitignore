@@ -156,5 +156,6 @@ dist
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,node,linux
 
+docs/
 dist/
 .size-snapshot.json
