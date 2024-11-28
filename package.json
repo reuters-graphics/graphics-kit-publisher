@@ -77,7 +77,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.688.0",
-    "@reuters-graphics/graphics-bin": "^1.0.6",
+    "@reuters-graphics/graphics-bin": "^1.0.9",
     "@reuters-graphics/server-client": "^2.0.1",
     "@reuters-graphics/teams-klaxon": "^1.0.0",
     "archiver": "^7.0.1",
