@@ -1,5 +1,11 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 2.0.1
+
+### Patch Changes
+
+- c8bc092: Bumps graphics-bin
+
 ## 2.0.0
 
 ### Major Changes
