@@ -6,6 +6,7 @@ import getPkg from '../../utils/getPkg';
 import getPkgRoot from '../../utils/getPkgRoot';
 import { rimrafSync } from 'rimraf';
 import { spawnSync } from 'child_process';
+import { deleteZeroLengthFilesRecursive } from '../../utils/deleteEmptyFiles';
 
 /**
  * Runs project's npm build:preview script, which should run whatever bundler
@@ -25,4 +26,5 @@ export default (config: ConfigType) => {
     stdio: ['pipe', process.stdout, process.stderr],
     cwd: CWD,
   });
+  deleteZeroLengthFilesRecursive(config.DIST_DIR);
 };
