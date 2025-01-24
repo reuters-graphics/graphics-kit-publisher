@@ -1,5 +1,11 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 2.1.1
+
+### Patch Changes
+
+- f3bda68: Hotfix: Removes empty files from dist directory after build to avoid graphics server validation error.
+
 ## 2.1.0
 
 ### Minor Changes
