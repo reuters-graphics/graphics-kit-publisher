@@ -1,7 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import chalk from 'chalk';
 
+export class ConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 export class LocationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class BuildError extends Error {
   constructor(message: string) {
     super(message);
     this.name = this.constructor.name;
@@ -41,7 +57,23 @@ export class PackageMetadataError extends Error {
   }
 }
 
+export class PageMetadataError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 export class PackageConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class PromptCancelError extends Error {
   constructor(message: string) {
     super(message);
     this.name = this.constructor.name;

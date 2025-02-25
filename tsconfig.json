@@ -1,12 +1,13 @@
 {
   "extends": "@reuters-graphics/yaks-ts/base",
-  "include": ["src/**/*.ts", "src/@types/index.d.ts"],
+  "include": ["src/**/*.ts", "src/__archive__/@types/index.d.ts"],
   "exclude": ["dist"],
   "compilerOptions": {
+    "experimentalDecorators": true,
     "rootDir": "./src",
     "outDir": "dist",
     "declarationDir": "dist",
-    "typeRoots": ["src/@types", "./node_modules/@types"]
+    "typeRoots": ["src/__archive__/@types", "./node_modules/@types"]
   },
   "typedocOptions": {
     "entryPoints": ["src/index.ts"],

@@ -30,7 +30,7 @@ const createZip = (localDir: string): Promise<Buffer> => {
   });
 };
 
-export default async (localDir: string) => {
+export const zipDir = async (localDir: string) => {
   const archive = await createZip(localDir);
   fs.writeFileSync(`${localDir.replace(/\/$/, '')}.zip`, archive);
   rimrafSync(localDir);

@@ -1,29 +1,30 @@
 import { PREVIEW_ORIGIN } from '../../constants/preview';
 
-import type { ConfigType } from '../../setConfig';
-import getPreviewURL from '../getPreviewURL';
+import { getPreviewURL } from '../previewURL';
 import open from 'open';
 import { S3Client, utils } from '@reuters-graphics/graphics-bin';
 import type { PutObjectCommandInput } from '@aws-sdk/client-s3';
+import { context } from '../../context';
+import path from 'path';
 
 /**
  * Publish built files in DIST directory to AWS S3
  */
-const publishToAWS = async (config: ConfigType) => {
-  const URL = getPreviewURL();
+export const publishToAWS = async () => {
+  const url = getPreviewURL();
 
-  const bucketDirPath = URL.replace(PREVIEW_ORIGIN + '/', '');
+  const bucketDirPath = url.replace(PREVIEW_ORIGIN + '/', '');
 
   const s3 = new S3Client();
   const uploaded = await s3.uploadLocalDirectory(
-    config.DIST_DIR,
+    path.join(context.cwd, context.config.build.outDir),
     bucketDirPath
   );
 
   if (utils.environment.isTestingEnvironment()) {
     return uploaded as PutObjectCommandInput[];
   }
-  await open(URL);
+  if (!utils.environment.isCiEnvironment()) {
+    await open(url);
+  }
 };
-
-export default publishToAWS;
