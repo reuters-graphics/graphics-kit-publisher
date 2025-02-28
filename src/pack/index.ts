@@ -74,11 +74,11 @@ export class Pack {
     utils.setPkgProp('reuters.graphic.pack', packId);
   }
 
-  public packUp() {
+  async packUp() {
     this.discoverEditions();
     utils.fs.ensureDir(this.packRoot);
     for (const archive of this.archives) {
-      archive.packUp();
+      await archive.packUp();
     }
   }
 

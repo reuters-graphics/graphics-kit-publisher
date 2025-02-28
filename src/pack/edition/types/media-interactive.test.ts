@@ -6,6 +6,7 @@ import { MediaInteractive } from './media-interactive';
 import { Pack } from '../..';
 import dedent from 'dedent';
 import { dirname } from 'node:path';
+import unzipper from 'unzipper';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -27,6 +28,14 @@ describe('MediaInteractive edition', async () => {
       'dist/cdn/images/my-image.jpg': mockFs.load(
         path.join(__dirname, 'test.jpg')
       ),
+      '.gitignore': dedent`
+      dist/
+      `,
+      src: {
+        components: {
+          'App.svelte': '<div></div>',
+        },
+      },
     });
 
     const pack = new Pack();
@@ -44,5 +53,39 @@ describe('MediaInteractive edition', async () => {
         'graphics-pack/media-en-page/media-interactive/_gfxpreview.png'
       )
     ).toBe(true);
+
+    expect(
+      fs.existsSync('graphics-pack/media-en-page/media-interactive/README.txt')
+    ).toBe(true);
+
+    expect(
+      fs.readFileSync(
+        'graphics-pack/media-en-page/media-interactive/README.txt',
+        'utf8'
+      )
+    ).toMatchInlineSnapshot(
+      `"https://www.reuters.com/graphics/my-project/embeds/en/page/"`
+    );
+
+    expect(
+      fs.existsSync('graphics-pack/media-en-page/media-interactive/app.zip')
+    ).toBe(true);
+
+    const includedFiles: string[] = [];
+    await new Promise<void>((resolve, reject) => {
+      fs.createReadStream(
+        'graphics-pack/media-en-page/media-interactive/app.zip'
+      )
+        .pipe(unzipper.Parse())
+        .on('entry', (entry) => {
+          includedFiles.push(entry.path);
+          entry.autodrain();
+        })
+        .on('error', reject)
+        .on('close', resolve);
+    });
+
+    expect(includedFiles).toContain('src/components/App.svelte');
+    expect(includedFiles).not.toContain('dist/embeds/en/page/index.html');
   });
 });

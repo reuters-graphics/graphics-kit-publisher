@@ -174,8 +174,8 @@ export type DocsValue =
   | string
   | ((docsArgs: {
       embedUrl: string;
-      embedSlug: string;
-      year: string;
+      embedSlug?: string;
+      year?: string;
     }) => string);
 
 export interface ArchiveEditions {

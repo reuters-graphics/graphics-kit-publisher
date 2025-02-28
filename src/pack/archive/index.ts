@@ -37,11 +37,11 @@ export class Archive {
     return this.metadata as ArchiveEditionsMetadata;
   }
 
-  packUp() {
+  async packUp() {
     const archiveDir = path.join(this.pack.packRoot, this.id, '');
     utils.fs.ensureDir(archiveDir);
     for (const edition of this.editions) {
-      edition.packUp(archiveDir);
+      await edition.packUp(archiveDir);
     }
   }
 }
