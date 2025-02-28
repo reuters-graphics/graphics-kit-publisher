@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 import glob from 'glob';
 import path from 'path';
 import { context } from '../context';
-import { note } from '../clack';
+import { note } from '@reuters-graphics/clack';
 import dedent from 'dedent';
 import type { spinner } from '@clack/prompts';
 import { logs } from '../logging';

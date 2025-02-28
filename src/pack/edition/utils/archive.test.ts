@@ -76,30 +76,33 @@ describe('srcArchive', () => {
 
       expect(includedFiles).toContain('file1.txt');
       expect(includedFiles).toContain('src/index.js');
+      expect(includedFiles).toContain('project-files/config.json');
       expect(includedFiles).toContain('src/components/App.svelte');
 
       expect(includedFiles).not.toContain('dist/dist-file.js');
       expect(includedFiles).not.toContain('file2.log');
       expect(includedFiles).not.toContain('keys.secret.js');
-      expect(includedFiles).not.toContain('project-files/config.json');
       expect(includedFiles).not.toContain('.graphics-kit/config.json');
     });
 
     it('should not recreate the archive if already archived', async () => {
       const outZip = '/myOutput/app.zip';
+      const tmpZip = '.graphics-kit/archive/app.zip';
       await srcArchive.makeArchive(outZip);
 
       expect(fs.existsSync(outZip)).toBe(true);
 
-      const firstStat = fs.statSync(outZip);
+      const firstStat = fs.statSync(tmpZip);
       const firstMtimeMs = firstStat.mtimeMs;
+
+      await new Promise((res) => setTimeout(res, 1000));
 
       await srcArchive.makeArchive(outZip);
 
-      const secondStat = fs.statSync(outZip);
+      const secondStat = fs.statSync(tmpZip);
       const secondMtimeMs = secondStat.mtimeMs;
 
-      expect(secondMtimeMs).toBe(firstMtimeMs);
+      expect(secondMtimeMs).toStrictEqual(firstMtimeMs);
     });
   });
 });

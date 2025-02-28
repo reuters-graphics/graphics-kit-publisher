@@ -184,13 +184,10 @@ export interface ArchiveEditions {
     [filePath: string]: DocsValue;
   };
   /**
-   * Strategy for creating the zip archive.
-   *
-   * `project` archive is created from the project's Git repository.
-   *
-   * `edition` archive is created from the edition embeddable source files.
+   * When creating the archive for clients, ignore these files in addition to
+   * those already ignored via .gitignore.
    */
-  archiveMode: 'project' | 'edition';
+  ignore: string[];
 }
 
 export interface EditionPublishingLocations {

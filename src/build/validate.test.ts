@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import mockFs from 'mock-fs';
-import { note } from '../clack';
+import { note } from '@reuters-graphics/clack';
 import { validateOutDir } from './validate';
 import { FileSystemError, InvalidFileTypeError } from '../exceptions/errors';
 
@@ -29,7 +29,7 @@ vi.mock('../logging', () => ({
   },
 }));
 
-vi.mock('../clack', () => ({
+vi.mock('@reuters-graphics/clack', () => ({
   note: vi.fn(),
 }));
 

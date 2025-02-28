@@ -43,11 +43,6 @@ const Locale = {
   ru: 'ru',
 } as const;
 
-const ArchiveMode = {
-  project: 'project',
-  embed: 'embed',
-} as const;
-
 const Regex = v.custom((input) => input instanceof RegExp);
 
 export const ConfigSchema = v.required(
@@ -94,7 +89,6 @@ export const ConfigSchema = v.required(
     ),
     archiveEditions: v.required(
       v.object({
-        archiveMode: v.enum(ArchiveMode),
         docs: v.record(v.string(), v.union([v.string(), v.function()])),
       })
     ),

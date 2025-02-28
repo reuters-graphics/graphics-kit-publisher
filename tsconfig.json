@@ -1,6 +1,6 @@
 {
   "extends": "@reuters-graphics/yaks-ts/base",
-  "include": ["src/**/*.ts", "src/__archive__/@types/index.d.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["dist"],
   "compilerOptions": {
     "experimentalDecorators": true,
@@ -9,19 +9,4 @@
     "declarationDir": "dist",
     "typeRoots": ["src/__archive__/@types", "./node_modules/@types"]
   },
-  "typedocOptions": {
-    "entryPoints": ["src/index.ts"],
-    "out": "docs",
-    "cleanOutputDir": true,
-    "darkHighlightTheme": "github-dark",
-    "lightHighlightTheme": "github-light",
-    "sort": ["required-first"],
-    "disableSources": true,
-    "titleLink": "https://reuters-graphics.github.io/graphics-kit-publisher/",
-    "navigationLinks": {
-      "GitHub": "https://github.com/reuters-graphics/graphics-kit-publisher/",
-      "npm": "https://www.npmjs.com/package/@reuters-graphics/graphics-kit-publisher/"
-    },
-    "readme": "HOME.md"
-  }
 }

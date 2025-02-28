@@ -7,7 +7,7 @@ import { spinner } from '@clack/prompts';
 import { cleanOutDir, deleteZeroLengthFiles } from './clean';
 import { validateOutDir } from './validate';
 import { logs } from '../logging';
-import { note } from '../clack';
+import { note } from '@reuters-graphics/clack';
 import dedent from 'dedent';
 import picocolors from 'picocolors';
 

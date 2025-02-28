@@ -1,0 +1,45 @@
+---
+title: Pack metadata
+sidebar:
+  order: 19
+---
+
+After uploading your project, pack metadata from the graphics server is saved in your project's `package.json` -- most under the `"reuters"` key.
+
+```jsonc
+// package.json
+{
+  "reuters": {
+    "contact": {
+      "name": "Jane Doe",
+      "email": "jane.doe@thomsonreuters.com"
+    },
+    "graphic": {
+      // Graphics server pack ID
+      "pack": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+      // Publishing desk
+      "desk": "london",
+      "slugs": {
+        "root": "ROOT-SLUG",
+        "wild": "WILD"
+      },
+      "authors": [
+        {
+          "name": "Jane Doe",
+          "link": "https://www.reuters.com/authors/jane-doe/"
+        }
+      ],
+      "published": "2025-02-23T00:00:00.000Z",
+      "updated": "2025-02-24T00:00:00.000Z"
+    },
+    // Preview link
+    "preview": "https://graphics.thomsonreuters.com/.../"
+  },
+  // Published link on reuters.com
+  "homepage": "https://www.reuters.com/graphics/.../"
+}
+```
+
+Most of this data is directly editable in your `package.json`. Changes will update the pack in the graphics server when uploaded. 
+
+That said, you probably shouldn't edit things like the `"pack"` ID or `"homepage"` URL unless you're sure you know what you're doing. (For example, abandoning a malformed graphics pack and creating a new one.)

@@ -44,7 +44,7 @@ export class MediaInteractive extends Edition {
 
     if (!ogUrl)
       throw new PageMetadataError(
-        `Missing canonical URL in ${path.relative(context.cwd, this.path)}`
+        `Missing canonical link element in file: ${path.relative(context.cwd, this.path)}`
       );
 
     const docContext = {
@@ -63,7 +63,7 @@ export class MediaInteractive extends Edition {
       const absDocPath = utils.path.absolute(docValue, context.cwd);
       if (!fs.existsSync(absDocPath))
         throw new FileNotFoundError(
-          `Could not find file "${docValue}" referenced in publisher.config.ts.`
+          `Could not find file "${docValue}" referenced in publisher.config.ts > archiveEditions.docs settings.`
         );
       const docString = mustache.render(
         fs.readFileSync(absDocPath, 'utf8'),

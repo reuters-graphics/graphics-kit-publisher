@@ -64,7 +64,7 @@ export const defaultConfig: Config = {
       'README.txt': ({ embedUrl }) => `${embedUrl}`,
       'EMBED.txt': ({ embedUrl }) => `${embedUrl}`,
     },
-    archiveMode: 'project',
+    ignore: [],
   },
   publishingLocations: [],
 };

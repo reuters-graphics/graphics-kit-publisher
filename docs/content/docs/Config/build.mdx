@@ -1,0 +1,47 @@
+---
+title: Build
+sidebar:
+  order: 11
+---
+
+Options controlling how the publisher runs and reads from your project's built files.
+
+## build.scripts
+
+- **Type:** `{ preview: string; production: string; }`
+- **Default:** `'modules'`
+
+The keys of npm scripts used to build preview and production versions of your project.
+
+```typescript
+// publisher.config.ts
+import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
+export default defineConfig({
+  build: {
+    scripts: {
+      preview: 'build:preview',
+      production: 'build',
+    },
+  },
+});
+```
+
+... which might correspond to npm scripts like:
+
+```json
+// package.json
+{
+  "scripts": {
+    "build:preview": "PREVIEW=true vite build",
+    "build": "vite build"
+  }
+}
+```
+
+## build.outDir
+
+- **Type:** `string`
+- **Default:** `'dist/'`
+
+The directory your build system is configured to build your app to.

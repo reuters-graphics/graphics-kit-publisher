@@ -8,11 +8,7 @@ import glob from 'glob';
 import archiver from 'archiver';
 import { FileNotFoundError } from '../../../exceptions/errors';
 
-const SPECIALLY_IGNORED_FILES = [
-  'project-files/*',
-  '*.secret.*',
-  '.graphics-kit/*',
-];
+const SPECIALLY_IGNORED_FILES = ['*.secret.*', '.graphics-kit/*'];
 
 class SrcArchive {
   private hasArchived = false;
@@ -37,12 +33,15 @@ class SrcArchive {
       );
 
     const gitignoreFilter = ignore()
-      .add(SPECIALLY_IGNORED_FILES)
+      .add([
+        ...SPECIALLY_IGNORED_FILES,
+        ...context.config.archiveEditions.ignore,
+      ])
       .add(fs.readFileSync(ignoreFile, 'utf8'))
       .createFilter();
 
     const files = glob
-      .sync('**/*', { cwd, nodir: true })
+      .sync('**/*', { cwd, nodir: true, ignore: ['**/node_modules/**'] })
       .filter(gitignoreFilter);
 
     const output = fs.createWriteStream(this.archivePath);

@@ -1,0 +1,121 @@
+---
+title: Archive editions
+sidebar:
+  order: 14
+---
+
+import { Aside, FileTree } from '@astrojs/starlight/components';
+
+Archive editions options tell the publisher how to create source archives for clients, which are published to connect.
+
+## docs 
+- **Type:** `Record<string, string | function>`
+
+Docs create files in the root of [`media-interactive`](/graphics-kit-publisher/sphinx/#media-interactive-editions) editions.
+
+### keys
+
+Each key represents a file to create in the root of [`media-interactive`](/graphics-kit-publisher/sphinx/#media-interactive-editions) editions.
+
+For example, a key of `EMBED.txt` would create the following file in the media-interactive edition folder:
+
+<FileTree>
+- media-en-map
+  - media-interactive
+    - **EMBED.txt**
+</FileTree>
+
+<Aside type="caution">
+You **must** define a `README.txt` key, which creates the [root file](/graphics-kit-publisher/sphinx/#root-files) for the media-interactive edition.
+</Aside>
+
+### values
+
+Values represent the content of the file created.
+
+#### `string`
+
+A string represents the path to a local file that will be copied to the created file. Files will be rendered as [mustache](https://github.com/janl/mustache.js) templates with the following context:
+
+```typescript
+{
+  embedUrl: 'https://...',
+  embedSlug: 'media-en-map',
+  year: '2024',
+}
+```
+
+For example:
+
+```typescript
+// publisher.config.ts
+import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
+export default defineConfig({
+  archiveEditions: {
+    docs: {
+      'EMBED.html': 'src/docs/embed.html',
+    },
+  },
+});
+```
+
+```html
+<!-- src/docs/embed.html -->
+<script type="text/javascript" src="https://graphics.thomsonreuters.com/cdn/pym.v1.min.js"></script>
+<script>
+  var pymParent = new pym.Parent('{{ embedSlug }}', '{{ embedUrl }}', {});
+</script>
+<div id="{{ embedSlug }}"></div>
+```
+
+... would render as:
+
+```html
+<!-- EMBED.html -->
+<script type="text/javascript" src="https://graphics.thomsonreuters.com/cdn/pym.v1.min.js"></script>
+<script>
+  var pymParent = new pym.Parent('media-en-map', 'https://...', {});
+</script>
+<div id="media-en-map"></div>
+```
+
+#### `function`
+
+Alternatively, you can define the value as a function that returns the string contents of the file.
+
+```typescript
+// publisher.config.ts
+import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
+export default defineConfig({
+  archiveEditions: {
+    docs: {
+      'EMBED.html': ({ embedUrl, embedSlug }) => `<div id="${embedUrl}" data:embed="${embedUrl}"></div>`
+    },
+  },
+});
+```
+
+## ignore
+
+- **Type:** `string[]`
+- **Default:** `[]`
+
+An array of files to ignore -- in addition to those ignored in your project's `.gitignore` -- when creating the ZIP archive of source files that is shared with clients on Reuters Connect.
+
+Strings should be in [gitignore pattern format](https://git-scm.com/docs/gitignore#_pattern_format).
+
+```typescript
+// publisher.config.ts
+import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
+export default defineConfig({
+  archiveEditions: {
+    ignore: [
+      'project-files/',
+    ],
+  },
+});
+```
+
