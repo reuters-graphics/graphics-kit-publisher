@@ -8,6 +8,8 @@ import dedent from 'dedent';
 import { dirname } from 'node:path';
 import unzipper from 'unzipper';
 import { fileURLToPath } from 'node:url';
+import { context } from '../../../context';
+import { srcArchive } from '../utils/archive';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -87,5 +89,58 @@ describe('MediaInteractive edition', async () => {
 
     expect(includedFiles).toContain('src/components/App.svelte');
     expect(includedFiles).not.toContain('dist/embeds/en/page/index.html');
+  });
+
+  it('should make doc with mustache template', async () => {
+    // @ts-ignore Ok in test
+    srcArchive.hasArchived = false;
+    const originalValue = context.config.archiveEditions.docs['README.txt'];
+    context.config.archiveEditions.docs['README.txt'] = 'template.txt';
+    mockFs({
+      'dist/embeds/en/page/index.html': dedent`<html>
+      <head>
+      <link rel="canonical" href="https://www.reuters.com/graphics/my-project/embeds/en/page/" />
+      <meta property="og:image" content="https://www.reuters.com/graphics/my-project/cdn/images/my-image.jpg" />
+      </head>
+      </html>`,
+      'dist/cdn/scripts/app.js': '',
+      'dist/cdn/images/my-image.jpg': mockFs.load(
+        path.join(__dirname, 'test.jpg')
+      ),
+      '.gitignore': dedent`
+      dist/
+      `,
+      src: {
+        components: {
+          'App.svelte': '<div></div>',
+        },
+      },
+      'template.txt': '{{ embedSlug }} : {{{ embedUrl }}} : {{ year }}',
+    });
+
+    const pack = new Pack();
+    const edition = new MediaInteractive(
+      pack,
+      './dist/embeds/en/page/index.html',
+      'en',
+      'page'
+    );
+
+    await edition.packUp('graphics-pack/media-en-page/');
+
+    context.config.archiveEditions.docs['README.txt'] = originalValue;
+
+    expect(
+      fs.existsSync('graphics-pack/media-en-page/media-interactive/README.txt')
+    ).toBe(true);
+
+    expect(
+      fs.readFileSync(
+        'graphics-pack/media-en-page/media-interactive/README.txt',
+        'utf8'
+      )
+    ).toMatchInlineSnapshot(
+      `"media-en-page : https://www.reuters.com/graphics/my-project/embeds/en/page/ : 2025"`
+    );
   });
 });
