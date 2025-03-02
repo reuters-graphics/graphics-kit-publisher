@@ -46,7 +46,7 @@ export class Finder {
     const editionPaths = utils.fs.glob<{
       locale: string;
       slug: string;
-    }>(glob, { absolute: true });
+    }>(glob, { absolute: true, nocase: true });
     return uniqBy(
       editionPaths.map((editionPath) => {
         const { path, params } = editionPath;
