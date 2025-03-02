@@ -12,14 +12,11 @@ import {
   wildSlug,
 } from './metadata';
 import { utils } from '@reuters-graphics/graphics-bin';
-import { getClient } from '../server/client';
-import { context } from '../context';
-import path from 'path';
-import { EPS, Interactive, JPG, MediaInteractive, PDF, PNG } from './edition';
+import { getServerClient } from '../server/client';
 import { isValid, pack } from '../validators';
 import { note } from '@reuters-graphics/clack';
-import slugify from 'slugify';
-import { uniqBy } from 'es-toolkit';
+import { spinner } from '@reuters-graphics/clack';
+import { Finder } from '../finder';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -60,115 +57,43 @@ export class Pack {
    */
   public async createOrUpdate() {
     const packMetadata = await this.getMetadata();
-    const client = getClient();
+    const serverClient = getServerClient();
+    const s = spinner();
 
-    if (packMetadata.id) return client.updateGraphic(packMetadata);
+    if (packMetadata.id) {
+      s.start('Updating graphic pack');
+      await serverClient.updateGraphic(packMetadata);
+      return s.stop('✅ Updated graphic pack');
+    }
+    s.start('Creating a graphic pack');
+    await serverClient.createGraphic(packMetadata);
+    await s.stop('✅ Created graphic pack');
 
-    await client.createGraphic(packMetadata);
-    const packId = client.pack.graphic?.id;
+    const packId = serverClient.pack.graphic?.id;
     if (!packId)
-      throw new Error('Did not get a graphic ID from the RNGS server');
+      throw new Error('Did not get a graphic ID from the graphics server');
 
     // Persist the ID
     this.metadata.id = packId;
     utils.setPkgProp('reuters.graphic.pack', packId);
   }
 
+  public async upload() {
+    const finder = new Finder(this);
+    finder.findEditions();
+    for (const archive of this.archives) {
+      await archive.getMetadata();
+    }
+    await this.packUp();
+  }
+
   async packUp() {
-    this.discoverEditions();
+    const s = spinner(2000);
+    s.start('Packing up graphic pack');
     utils.fs.ensureDir(this.packRoot);
     for (const archive of this.archives) {
       await archive.packUp();
     }
-  }
-
-  public discoverEditions() {
-    this._findPublicEdition();
-    this._findMediaEditions();
-    this._findJPGEditions();
-    this._findPNGEditions();
-    this._findEPSEditions();
-    this._findPDFEditions();
-  }
-
-  private _findEditionPaths(glob: string) {
-    const editionPaths = utils.fs.glob<{
-      locale: string;
-      slug: string;
-    }>(glob, { absolute: true });
-    return uniqBy(
-      editionPaths.map((editionPath) => {
-        const { path, params } = editionPath;
-        const { locale, slug } = params;
-        return {
-          path,
-          locale,
-          slug: slugify(slug, { lower: true }),
-        };
-      }),
-      (d) => d.locale + d.slug
-    );
-  }
-
-  private _findMediaEditions() {
-    if (!context.config.packLocations.embeds) return;
-    const glob = path.join(context.config.packLocations.embeds, 'index.html');
-    for (const editionPath of this._findEditionPaths(glob)) {
-      const { path, locale, slug } = editionPath;
-      new Interactive(this, path, locale as RNGS.Language, slug);
-      new MediaInteractive(this, path, locale as RNGS.Language, slug);
-    }
-  }
-
-  private _findPDFEditions() {
-    if (!context.config.packLocations.statics) return;
-    const glob = path.join(context.config.packLocations.statics, '*.pdf');
-    for (const editionPath of this._findEditionPaths(glob)) {
-      const { path, locale, slug } = editionPath;
-      new PDF(this, path, locale as RNGS.Language, slug);
-    }
-  }
-
-  private _findEPSEditions() {
-    if (!context.config.packLocations.statics) return;
-    const glob = path.join(context.config.packLocations.statics, '*.eps');
-    for (const editionPath of this._findEditionPaths(glob)) {
-      const { path, locale, slug } = editionPath;
-      const PairedImgEdition = this.archives
-        .find((a) => a.locale === locale && a.mediaSlug === slug)
-        ?.editions.find((e) => e.type === PNG.type || e.type === JPG.type);
-      // EPS editions must be accompanied by an image edition
-      if (PairedImgEdition)
-        new EPS(this, PairedImgEdition, path, locale as RNGS.Language, slug);
-    }
-  }
-
-  private _findJPGEditions() {
-    const { packLocations } = context.config;
-    if (!packLocations.statics) return;
-    const glob = path.join(packLocations.statics, '*.jpg');
-    for (const editionPath of this._findEditionPaths(glob)) {
-      const { path, locale, slug } = editionPath;
-      new JPG(this, path, locale as RNGS.Language, slug);
-    }
-  }
-
-  private _findPNGEditions() {
-    if (!context.config.packLocations.statics) return;
-    const glob = path.join(context.config.packLocations.statics, '*.png');
-    for (const editionPath of this._findEditionPaths(glob)) {
-      const { path, locale, slug } = editionPath;
-      new PNG(this, path, locale as RNGS.Language, slug);
-    }
-  }
-
-  private _findPublicEdition() {
-    if (!context.config.packLocations.dotcom) return;
-    const dotcomDir = utils.fs.glob(
-      path.join(context.config.packLocations.dotcom, 'index.html'),
-      { absolute: true }
-    )[0];
-    if (dotcomDir)
-      new Interactive(this, dotcomDir.path, this.metadata.language || 'en');
+    await s.stop('📦 All packed.');
   }
 }

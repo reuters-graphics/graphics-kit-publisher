@@ -36,7 +36,7 @@ const buildApp = (buildScript: string) => {
   }
 
   const s = spinner();
-  s.start('Building your project ...');
+  s.start('Building your project');
 
   const buildProcess = spawnSync(pkgMgr?.agent || 'npm', ['run', buildScript], {
     stdio: ['inherit', 'pipe', 'pipe'],

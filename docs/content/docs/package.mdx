@@ -6,7 +6,7 @@ sidebar:
 
 After uploading your project, pack metadata from the graphics server is saved in your project's `package.json` -- most under the `"reuters"` key.
 
-```jsonc
+```json
 // package.json
 {
   "reuters": {
@@ -15,14 +15,14 @@ After uploading your project, pack metadata from the graphics server is saved in
       "email": "jane.doe@thomsonreuters.com"
     },
     "graphic": {
-      // Graphics server pack ID
       "pack": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
-      // Publishing desk
       "desk": "london",
       "slugs": {
         "root": "ROOT-SLUG",
         "wild": "WILD"
       },
+      "title": "A title",
+      "description": "A description",
       "authors": [
         {
           "name": "Jane Doe",
@@ -30,12 +30,29 @@ After uploading your project, pack metadata from the graphics server is saved in
         }
       ],
       "published": "2025-02-23T00:00:00.000Z",
-      "updated": "2025-02-24T00:00:00.000Z"
+      "updated": "2025-02-24T00:00:00.000Z",
+      "archives": {
+        "public": {
+          "url": "https://www.reuters.com/graphics/.../",
+          "title": "A title",
+          "description": "A description",
+          "uploaded": "2025-02-24T00:00:00.000Z"
+        },
+        "media-en-page": {
+          "url": "https://www.reuters.com/graphics/.../",
+          "title": "A title",
+          "description": "A description",
+          "uploaded": "2025-02-24T00:00:00.000Z"
+        },
+        "media-de-map": {
+          "title": "A title",
+          "description": "A description",
+          "uploaded": "2025-02-24T00:00:00.000Z"
+        }
+      }
     },
-    // Preview link
     "preview": "https://graphics.thomsonreuters.com/.../"
   },
-  // Published link on reuters.com
   "homepage": "https://www.reuters.com/graphics/.../"
 }
 ```

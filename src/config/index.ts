@@ -66,5 +66,11 @@ export const defaultConfig: Config = {
     },
     ignore: [],
   },
+  embedTemplate: {
+    declaration: ({ embedUrl, embedSlug }) =>
+      `<div id="${embedSlug}"></div><script type="text/javascript">new pym.Parent("${embedSlug}", "${embedUrl}", {});</script>`,
+    dependencies: () =>
+      '<script type="text/javascript" src="//graphics.thomsonreuters.com/pym.min.js"></script>',
+  },
   publishingLocations: [],
 };

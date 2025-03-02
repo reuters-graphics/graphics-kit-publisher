@@ -87,7 +87,7 @@
     "@aws-sdk/client-s3": "^3.688.0",
     "@clack/core": "^0.4.1",
     "@clack/prompts": "^0.10.0",
-    "@reuters-graphics/clack": "^0.0.1",
+    "@reuters-graphics/clack": "^0.0.2",
     "@reuters-graphics/graphics-bin": "^1.1.5",
     "@reuters-graphics/server-client": "^2.0.1",
     "@reuters-graphics/teams-klaxon": "^1.0.0",

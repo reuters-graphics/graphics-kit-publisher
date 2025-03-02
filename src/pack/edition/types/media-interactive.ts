@@ -49,7 +49,7 @@ export class MediaInteractive extends Edition {
 
     const docContext = {
       embedUrl: ogUrl,
-      embedSlug: `media-${this.locale}-${this.mediaSlug}`,
+      embedSlug: this.archive.id,
       year: new Date().getFullYear().toString(),
     };
 

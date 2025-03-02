@@ -4,7 +4,8 @@ import { mockedNodeModules } from '../__test__/utils';
 import path from 'path';
 import fs from 'fs';
 import dedent from 'dedent';
-import { Pack } from '.';
+import { Pack } from '../pack';
+import { Finder } from '.';
 
 const CWD = process.cwd();
 
@@ -27,9 +28,9 @@ const writeFileSync = (filePath: string, data: string) => {
   fs.writeFileSync(filePath, data);
 };
 
-describe('pack', async () => {
-  describe('discoverEditions', async () => {
-    it('should discover multiple editions', async () => {
+describe('finder', async () => {
+  describe('finderEditions', async () => {
+    it('should find multiple editions', async () => {
       writeFileSync(
         './publisher.config.ts',
         dedent`import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
@@ -54,8 +55,9 @@ describe('pack', async () => {
       writeFileSync('./media-files/it/map/graphic.eps', '');
 
       const pack = new Pack();
+      const finder = new Finder(pack);
 
-      pack.discoverEditions();
+      await finder.findEditions();
       expect(pack.archives.length).toBe(5);
       expect(
         pack.archives.some(

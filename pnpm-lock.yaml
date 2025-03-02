@@ -18,8 +18,8 @@ importers:
         specifier: ^0.10.0
         version: 0.10.0
       '@reuters-graphics/clack':
-        specifier: ^0.0.1
-        version: 0.0.1
+        specifier: ^0.0.2
+        version: 0.0.2
       '@reuters-graphics/graphics-bin':
         specifier: ^1.1.5
         version: 1.1.5
@@ -1308,8 +1308,8 @@ packages:
     resolution: {integrity: sha512-cq8o4cWH0ibXh9VGi5P20Tu9XF/0fFXl9EUinr9QfTM7a7p0oTA4iJRCQWppXR1Pg8dSM0UCItCkPwsk9qWWYA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  '@reuters-graphics/clack@0.0.1':
-    resolution: {integrity: sha512-85oWQ9hV2bOdeDlzz/V2YMOIOd7cW6vYmJDBCrJa1HuyZPkkFF9e8SpVlGBUTiI6ZJantF7V6Iadx37fIY0OVw==}
+  '@reuters-graphics/clack@0.0.2':
+    resolution: {integrity: sha512-k89PsHgNBIOMcpeolamZmMfkP/GBftIpj+/goPpWoub49oE6ky+CXporzmwU08qNafr0O5tGxr8lSVxT98qxmw==}
     engines: {node: '>=18.0.0'}
 
   '@reuters-graphics/graphics-bin@1.1.5':
@@ -8112,7 +8112,7 @@ snapshots:
 
   '@pkgr/core@0.1.1': {}
 
-  '@reuters-graphics/clack@0.0.1':
+  '@reuters-graphics/clack@0.0.2':
     dependencies:
       '@clack/core': 0.4.1
       is-unicode-supported: 2.1.0

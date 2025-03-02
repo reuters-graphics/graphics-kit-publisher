@@ -9,7 +9,10 @@ import { Aside, FileTree } from '@astrojs/starlight/components';
 Archive editions options tell the publisher how to create source archives for clients, which are published to connect.
 
 ## docs 
-- **Type:** `Record<string, string | function>`
+- **Type:** 
+  ```typescript
+  Record<string, string | function>
+  ```
 
 Docs create files in the root of [`media-interactive`](/graphics-kit-publisher/sphinx/#media-interactive-editions) editions.
 
@@ -99,8 +102,14 @@ export default defineConfig({
 
 ## ignore
 
-- **Type:** `string[]`
-- **Default:** `[]`
+- **Type:** 
+  ```typescript
+  string[]
+  ```
+- **Default:**
+  ```typescript
+  []
+  ```
 
 An array of files to ignore -- in addition to those ignored in your project's `.gitignore` -- when creating the ZIP archive of source files that is shared with clients on Reuters Connect.
 

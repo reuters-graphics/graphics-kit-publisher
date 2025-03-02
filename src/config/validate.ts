@@ -92,6 +92,12 @@ export const ConfigSchema = v.required(
         docs: v.record(v.string(), v.union([v.string(), v.function()])),
       })
     ),
+    embedTemplate: v.required(
+      v.object({
+        declaration: v.function(),
+        dependencies: v.function(),
+      })
+    ),
     publishingLocations: v.array(
       v.object({
         slug: v.union([v.string(), Regex]),

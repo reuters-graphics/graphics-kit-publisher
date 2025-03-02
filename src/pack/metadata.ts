@@ -24,7 +24,7 @@ export const rootSlug = async () =>
     context.config.metadataPointers.pack.rootSlug,
     {
       message:
-        "What's the root slug for this locale, i.e., a generic topic slug?",
+        "What's the root slug for this graphic pack, i.e., a generic topic slug?",
       validate: (value) => validateOrMessage(pack.RootSlug, value),
     }
   );
@@ -35,7 +35,7 @@ export const wildSlug = async () =>
     context.config.metadataPointers.pack.wildSlug,
     {
       message:
-        "What's the wild slug for this locale, i.e., a more specific page slug?",
+        "What's the wild slug for this graphic pack, i.e., a more specific page slug?",
       validate: (value) => validateOrMessage(pack.WildSlug, value),
     }
   );
@@ -65,7 +65,7 @@ export const desk = async () =>
     'reuters.graphic.desk',
     context.config.metadataPointers.pack.desk,
     {
-      message: "What's the description for this graphic pack?",
+      message: 'What desk is publishing this graphic?',
       options: [
         { value: 'bengaluru', label: 'Bengaluru' },
         { value: 'london', label: 'London' },

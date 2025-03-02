@@ -8,8 +8,17 @@ Options controlling how the publisher runs and reads from your project's built f
 
 ## build.scripts
 
-- **Type:** `{ preview: string; production: string; }`
-- **Default:** `'modules'`
+- **Type:**
+  ```typescript
+  { preview: string; production: string; }
+  ```
+- **Default:**
+  ```typescript
+  {
+    preview: 'build:preview',
+    production: 'build',
+  }
+  ```
 
 The keys of npm scripts used to build preview and production versions of your project.
 
@@ -41,7 +50,13 @@ export default defineConfig({
 
 ## build.outDir
 
-- **Type:** `string`
-- **Default:** `'dist/'`
+- **Type:**
+  ```typescript
+  string
+  ```
+- **Default:**
+  ```typescript
+  'dist/'
+  ```
 
 The directory your build system is configured to build your app to.

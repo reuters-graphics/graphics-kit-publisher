@@ -190,6 +190,17 @@ export interface ArchiveEditions {
   ignore: string[];
 }
 
+export type EmbedTemplate = {
+  declaration: (templateArgs: {
+    embedUrl: string;
+    embedSlug: string;
+  }) => string;
+  dependencies: (templateArgs: {
+    embedUrl: string;
+    embedSlug: string;
+  }) => string;
+};
+
 export interface EditionPublishingLocations {
   slug: string | RegExp;
   availableLocations: {
@@ -205,6 +216,7 @@ export type Config = {
   packLocations: PackLocations;
   metadataPointers: MetadataPointers;
   archiveEditions: ArchiveEditions;
+  embedTemplate: EmbedTemplate;
   publishingLocations: PublishingLocations;
 };
 

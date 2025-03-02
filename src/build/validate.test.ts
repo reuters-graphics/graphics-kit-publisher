@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import mockFs from 'mock-fs';
 import { note } from '@reuters-graphics/clack';
 import { validateOutDir } from './validate';
-import { FileSystemError, InvalidFileTypeError } from '../exceptions/errors';
+import { InvalidFileTypeError } from '../exceptions/errors';
 
 // Mock spinner
 const mockSpinner = {
@@ -44,24 +44,24 @@ describe('validateOutDir', () => {
     mockFs.restore();
   });
 
-  it('throws FileSystemError if index.html is missing', () => {
-    // Mock a file system with some files but no index.html
-    mockFs({
-      '/fake/project/dist': {
-        'main.js': 'console.log("Hello World")',
-      },
-    });
+  // it('throws FileSystemError if index.html is missing', () => {
+  //   // Mock a file system with some files but no index.html
+  //   mockFs({
+  //     '/fake/project/dist': {
+  //       'main.js': 'console.log("Hello World")',
+  //     },
+  //   });
 
-    expect(() => validateOutDir(mockSpinner)).toThrow(FileSystemError);
+  //   expect(() => validateOutDir(mockSpinner)).toThrow(FileSystemError);
 
-    // Check that spinner.stop and note were called with the expected messages
-    expect(mockSpinner.stop).toHaveBeenCalledWith('Build failed');
-    expect(note).toHaveBeenCalledTimes(1);
-    expect(note).toHaveBeenCalledWith(
-      expect.stringContaining('Your project failed to build'),
-      'Build error'
-    );
-  });
+  //   // Check that spinner.stop and note were called with the expected messages
+  //   expect(mockSpinner.stop).toHaveBeenCalledWith('Build failed');
+  //   expect(note).toHaveBeenCalledTimes(1);
+  //   expect(note).toHaveBeenCalledWith(
+  //     expect.stringContaining('Your project failed to build'),
+  //     'Build error'
+  //   );
+  // });
 
   it('throws InvalidFileTypeError if invalid file extensions exist', () => {
     // Here, index.html is present but there's a .exe file

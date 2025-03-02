@@ -10,8 +10,14 @@ Pack locations tell the publisher how to find the parts of your graphics pack fr
 
 ## packLocations.dotcom
 
-- **Type:** `string | false`
-- **Default:** `'dist/'`
+- **Type:**
+  ```typescript
+  string | false
+  ```
+- **Default:**
+  ```typescript
+  'dist/'
+  ```
 
 Path from project root to a directory where HTML files for dotcom pages are built. There must be a root `index.html` in this directory.
 
@@ -19,8 +25,14 @@ Set to `false` if the project has no dotcom pages.
 
 ## packLocations.embeds
 
-- **Type:** `string | false`
-- **Default:** `'dist/embeds/{locale}/{slug}/'`
+- **Type:**
+  ```typescript
+  string | false
+  ```
+- **Default:**
+  ```typescript
+  'dist/embeds/{locale}/{slug}/'
+  ```
 
 Path pattern from project root to capture all directories where files for embeddable pages are built. There must be a root `index.html` in each directory found.
 
@@ -58,8 +70,14 @@ Set to `false` if the project has no embeddable pages.
 
 ## packLocations.statics
 
-- **Type:** `string | false`
-- **Default:** `'media-files/{locale}/{slug}/'`
+- **Type:**
+  ```typescript
+  string | false
+  ```
+- **Default:**
+  ```typescript
+  'media-files/{locale}/{slug}/'
+  ```
 
 Path from project root to all directories where static files for embeddable graphics are saved. There must be *at least* one static file in the root of each directory. Valid static files include `.eps`, `.jpg`, `.png` or `.pdf`.
 

@@ -165,23 +165,47 @@ export default defineConfig({
 
 ### pack.rootSlug
 
-- **Type:** `string | MetadataPointer<string, string>`
-- **Default:** `'locales/en/content.json?story.rootSlug'`
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>
+  ```
+- **Default:**
+  ```typescript
+  'locales/en/content.json?story.rootSlug'
+  ```
 
 ### pack.wildSlug
 
-- **Type:** `string | MetadataPointer<string, string>`
-- **Default:** `'locales/en/content.json?story.wildSlug'`
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>
+  ```
+- **Default:** 
+  ```typescript
+  'locales/en/content.json?story.wildSlug'
+  ```
 
 ### pack.desk
 
-- **Type:** `string | MetadataPointer<string, string>`
-- **Default:** `{ path: '~/.reuters-graphics/profile.json?desk', promptAsInitial: true }`
+- **Type:** 
+  ```typescript
+  string | MetadataPointer<string, string>
+  ```
+- **Default:** 
+  ```typescript
+  { path: '~/.reuters-graphics/profile.json?desk', promptAsInitial: true }
+  ```
 
 ### pack.language
 
-- **Type:** `RNGS.Language | MetadataPointer<string, string>`
-- **Default:** `'en'`
+- **Type:**
+  ```typescript
+  RNGS.Language | MetadataPointer<string, string>
+  ```
+- **Default:** 
+  ```typescript
+  'en'
+  ```
 
 <Aside>
 The shorthand syntax is not available for this pointer. Passing a string instead is assumed to be a valid [language code](https://reuters-graphics.github.io/graphics-server-client/types/RNGS.Language.html).
@@ -189,28 +213,58 @@ The shorthand syntax is not available for this pointer. Passing a string instead
 
 ### pack.title
 
-- **Type:** `string | MetadataPointer<string, string>`
-- **Default:** `'dist/index.html?title'`
+- **Type:** 
+  ```typescript
+  string | MetadataPointer<string, string>
+  ```
+- **Default:** 
+  ```typescript
+  'dist/index.html?title'
+  ```
 
 ### pack.description
 
-- **Type:** `string | MetadataPointer<string, string>`
-- **Default:** `'dist/index.html?meta.og:description'`
+- **Type:** 
+  ```typescript
+  string | MetadataPointer<string, string>
+  ```
+- **Default:**
+  ```typescript
+  'dist/index.html?meta.og:description'
+  ```
 
 ### pack.byline
 
-- **Type:** `string | MetadataPointer<string, string>`
-- **Default:** `'locales/en/content.json?story.authors'`
+- **Type:** 
+  ```typescript
+  string | MetadataPointer<string, string>
+  ```
+- **Default:**
+  ```typescript
+  'locales/en/content.json?story.authors'
+  ```
 
 ### pack.contactEmail
 
-- **Type:** `string | MetadataPointer<string, string>`
-- **Default:** `'~/.reuters-graphics/profile.json?email'`
+- **Type:** 
+  ```typescript
+  string | MetadataPointer<string, string>
+  ```
+- **Default:**
+  ```typescript
+  '~/.reuters-graphics/profile.json?email'
+  ```
 
 ### edition.title
 
-- **Type:** `string | MetadataPointer<string, string>`
-- **Default:** `'index.html?title'`
+- **Type:** 
+  ```typescript
+  string | MetadataPointer<string, string>
+  ```
+- **Default:**
+  ```typescript
+  'index.html?title'
+  ```
 
 <Aside>
 The file path part of edition `path` pointers is relative to the edition's root folder.
@@ -226,8 +280,14 @@ The file path part of edition `path` pointers is relative to the edition's root 
 
 ### edition.description
 
-- **Type:** `string | MetadataPointer<string, string>`
-- **Default:** `'index.html?meta.og:description'`
+- **Type:** 
+  ```typescript
+  string | MetadataPointer<string, string>
+  ```
+- **Default:**
+  ```typescript
+  'index.html?meta.og:description'
+  ```
 
 <Aside>
 The file path part of edition `path` pointers is relative to the edition's root folder.

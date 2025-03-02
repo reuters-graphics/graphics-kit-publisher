@@ -1,7 +1,7 @@
 ---
 title: Graphics server 101
 sidebar:
-  order: 20
+  order: 30
 ---
 
 import { Aside, FileTree } from '@astrojs/starlight/components';
@@ -97,16 +97,6 @@ The root file is `index.html`.
 In most cases, additional HTML files should be at least one directory deeper than the root edition file. CSS, JS and images _can_ be at the same level as `index.html`.
 
 A `_gfxpreview.png` or `_gfxpreview.jpg` image must also be at the root of the edition folder, which will be used to preview the edition in the graphics server, Lynx and Reuters Connect.
-
-<Aside type="caution">
-The publisher expects the root `index.html` file for all interactive editions will have a [canonical link element](https://en.wikipedia.org/wiki/Canonical_link_element) that specifies the published location of the page. Make sure one is added to the `head` section of those pages.
-
-```html
-<head>
-  <link rel="canonical" href="https://...">
-</head>
-```
-</Aside>
 
 ### Media-interactive editions
 

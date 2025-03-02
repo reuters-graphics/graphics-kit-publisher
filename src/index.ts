@@ -3,6 +3,7 @@ import { loadConfig, withIntroOutro } from './decorators';
 import { buildForPreview, buildForProduction } from './build';
 
 export { defineConfig } from './config';
+export { getBasePath } from './basePaths';
 
 export class GraphicsKitPublisher {
   /**
@@ -30,4 +31,14 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async publish() {}
+
+  /**
+   * Clear metadata to a previously uploaded graphics pack in the graphics
+   * server and re-upload.
+   */
+  @loadConfig
+  @withIntroOutro
+  async restartPack() {
+    return this.upload();
+  }
 }

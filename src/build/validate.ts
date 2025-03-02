@@ -1,14 +1,14 @@
-import { FileSystemError, InvalidFileTypeError } from '../exceptions/errors';
+import { InvalidFileTypeError } from '../exceptions/errors';
 
 import { VALID_FILE_TYPES } from '../constants/fileTypes';
-import fs from 'fs-extra';
+// import fs from 'fs-extra';
 import glob from 'glob';
 import path from 'path';
 import { context } from '../context';
 import { note } from '@reuters-graphics/clack';
 import dedent from 'dedent';
 import type { spinner } from '@clack/prompts';
-import { logs } from '../logging';
+// import { logs } from '../logging';
 import picocolors from 'picocolors';
 
 /**
@@ -40,33 +40,33 @@ const validateOutDirFileTypes = (s: ReturnType<typeof spinner>) => {
   }
 };
 
-/**
- * Errors if index.html is not in outDir
- */
-const validateOutDirIndex = (s: ReturnType<typeof spinner>) => {
-  const { outDir } = context.config.build;
-  const distDir = path.join(context.cwd, outDir);
-  const INDEX = path.join(distDir, 'index.html');
-  if (!fs.existsSync(INDEX)) {
-    s.stop('Build failed');
-    note(
-      dedent`Your project failed to build. This usually means there's an error somewhere in your app's code.
-      
-      See the logs in ${picocolors.cyan(logs.logDirName)} for details from the build process.
-      `,
-      'Build error'
-    );
-    throw new FileSystemError(
-      `Build did not create a root index.html file in ${outDir}.`
-    );
-  }
-};
+// /**
+//  * Errors if index.html is not in outDir
+//  */
+// const validateOutDirIndex = (s: ReturnType<typeof spinner>) => {
+//   const { outDir } = context.config.build;
+//   const distDir = path.join(context.cwd, outDir);
+//   const INDEX = path.join(distDir, 'index.html');
+//   if (!fs.existsSync(INDEX)) {
+//     s.stop('Build failed');
+//     note(
+//       dedent`Your project failed to build. This usually means there's an error somewhere in your app's code.
+
+//       See the logs in ${picocolors.cyan(logs.logDirName)} for details from the build process.
+//       `,
+//       'Build error'
+//     );
+//     throw new FileSystemError(
+//       `Build did not create a root index.html file in ${outDir}.`
+//     );
+//   }
+// };
 
 /**
  * Validate build process created build files compatible with the graphics server
  * @param s Spinner
  */
 export const validateOutDir = (s: ReturnType<typeof spinner>) => {
-  validateOutDirIndex(s);
+  // validateOutDirIndex(s);
   validateOutDirFileTypes(s);
 };

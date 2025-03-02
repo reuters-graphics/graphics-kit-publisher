@@ -30,7 +30,6 @@ export class EPS extends Edition {
       path.basename(relFilePath)
     );
     utils.fs.ensureDir(absDest);
-    console.log(absDest);
     fs.copyFileSync(absSrc, absDest);
     fs.copyFileSync(
       this.img.path,
