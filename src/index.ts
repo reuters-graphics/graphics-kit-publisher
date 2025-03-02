@@ -1,6 +1,8 @@
 import { uploadPreview } from './preview';
 import { loadConfig, withIntroOutro } from './decorators';
-import { buildForPreview, buildForProduction } from './build';
+import { buildForPreview } from './build';
+import { Pack } from './pack';
+import { precheck } from './precheck';
 
 export { defineConfig } from './config';
 export { getBasePath } from './basePaths';
@@ -22,7 +24,9 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async upload() {
-    buildForProduction();
+    precheck();
+    const pack = new Pack();
+    await pack.createOrUpdate();
   }
 
   /**
@@ -38,7 +42,5 @@ export class GraphicsKitPublisher {
    */
   @loadConfig
   @withIntroOutro
-  async restartPack() {
-    return this.upload();
-  }
+  async restartPack() {}
 }

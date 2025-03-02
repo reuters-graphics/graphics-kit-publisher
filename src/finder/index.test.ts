@@ -58,6 +58,7 @@ describe('finder', async () => {
       const finder = new Finder(pack);
 
       await finder.findEditions();
+      finder.logFound();
       expect(pack.archives.length).toBe(5);
       expect(
         pack.archives.some(

@@ -1,8 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import mockFs from 'mock-fs';
 import fs from 'fs';
 import unzipper from 'unzipper';
-import { FileNotFoundError } from '../../../exceptions/errors';
+import {
+  EditionArchiveError,
+  FileNotFoundError,
+} from '../../../exceptions/errors';
 import { srcArchive } from './archive';
 import dedent from 'dedent';
 
@@ -11,6 +14,7 @@ describe('srcArchive', () => {
     mockFs.restore();
     // @ts-ignore OK to access private in test
     srcArchive.hasArchived = false;
+    vi.clearAllMocks();
   });
 
   describe('when .gitignore is missing', () => {
@@ -103,6 +107,20 @@ describe('srcArchive', () => {
       const secondMtimeMs = secondStat.mtimeMs;
 
       expect(secondMtimeMs).toStrictEqual(firstMtimeMs);
+    });
+
+    it('should throw an error if archive is too large', async () => {
+      const statSyncSpy = vi.spyOn(fs, 'statSync').mockReturnValue({
+        isFile: () => true,
+        // >150 MB
+        size: 150.0000001 * 1024 * 1024,
+      } as unknown as fs.Stats);
+
+      const outZip = '/myOutput/app.zip';
+      await expect(srcArchive.makeArchive(outZip)).rejects.toThrowError(
+        EditionArchiveError
+      );
+      statSyncSpy.mockRestore();
     });
   });
 });

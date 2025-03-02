@@ -34,7 +34,7 @@ export const getPreviewImagePath = async (htmlPath: string) => {
   if (!ogImage)
     throw new PageMetadataError(`No "og:image" tag found in ${htmlPath}`);
   if (!ogUrl)
-    throw new PageMetadataError(`No canonical tag found in ${htmlPath}`);
+    throw new PageMetadataError(`No canonical link found in ${htmlPath}`);
 
   const imgUrl = Array.isArray(ogImage) ? ogImage[0].url : ogImage.url;
 

@@ -1,5 +1,3 @@
-![](badge.svg)
-
 # 📦 graphics-kit-publisher
 
 A filesystem-based publisher for Reuters Graphics projects.

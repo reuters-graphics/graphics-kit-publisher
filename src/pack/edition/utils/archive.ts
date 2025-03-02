@@ -6,9 +6,16 @@ import * as find from 'empathic/find';
 import ignore from 'ignore';
 import glob from 'glob';
 import archiver from 'archiver';
-import { FileNotFoundError } from '../../../exceptions/errors';
+import {
+  EditionArchiveError,
+  FileNotFoundError,
+} from '../../../exceptions/errors';
+import { note } from '@reuters-graphics/clack';
+import dedent from 'dedent';
+import picocolors from 'picocolors';
 
 const SPECIALLY_IGNORED_FILES = ['*.secret.*', '.graphics-kit/*'];
+const MAX_ARCHIVE_MB_SIZE = 150;
 
 class SrcArchive {
   private hasArchived = false;
@@ -72,6 +79,24 @@ class SrcArchive {
   async makeArchive(outpath: string) {
     await this.archiveProject();
     utils.fs.ensureDir(outpath);
+
+    const stats = fs.statSync(this.archivePath);
+    const fileSizeInMegabytes = stats.size / (1024 * 1024);
+    if (fileSizeInMegabytes > MAX_ARCHIVE_MB_SIZE) {
+      note(
+        dedent`The zip archive for your project is over ${MAX_ARCHIVE_MB_SIZE}MB. That's too large to upload to
+      the graphics server.
+      
+      Check the files in your project for any especially large ones and remove them
+      or add them to the ${picocolors.cyan('archiveEditions.ignore')} setting in your publisher.config.ts.
+      `,
+        'Project zip too large'
+      );
+      throw new EditionArchiveError(
+        `Project archive is over ${MAX_ARCHIVE_MB_SIZE}MB limit.`
+      );
+    }
+
     fs.copyFileSync(this.archivePath, outpath);
   }
 }

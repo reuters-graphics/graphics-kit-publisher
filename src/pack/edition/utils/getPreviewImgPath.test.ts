@@ -78,7 +78,7 @@ describe('getPreviewImgPath', async () => {
     });
 
     await expect(() => getPreviewImagePath('dist/index.html')).rejects.toThrow(
-      'No canonical tag found'
+      'No canonical link found'
     );
   });
 

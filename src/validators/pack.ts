@@ -65,12 +65,7 @@ export const WildSlug = v.pipe(
   )
 );
 
-export const AuthorName = v.pipe(
-  v.string(),
-  v.trim(),
-  v.nonEmpty(),
-  v.minLength(3)
-);
+const AuthorName = v.pipe(v.string(), v.trim(), v.nonEmpty(), v.minLength(3));
 
 export const AuthorLink = v.pipe(
   v.string(),
@@ -89,12 +84,7 @@ export const Authors = v.array(
   )
 );
 
-export const Byline = v.pipe(
-  v.string(),
-  v.trim(),
-  v.nonEmpty(),
-  v.minLength(3)
-);
+const Byline = v.pipe(v.string(), v.trim(), v.nonEmpty(), v.minLength(3));
 
 export const Title = v.pipe(
   v.string(),

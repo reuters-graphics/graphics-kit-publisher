@@ -13,10 +13,22 @@ import {
 import slugify from 'slugify';
 import { uniqBy } from 'es-toolkit';
 import type { Pack } from '../pack';
-import { spinner } from '@reuters-graphics/clack';
+import { note, spinner } from '@reuters-graphics/clack';
+import picocolors from 'picocolors';
 
 export class Finder {
   constructor(public pack: Pack) {}
+
+  public logFound() {
+    const archiveLog = this.pack.archives
+      .map(
+        (a) =>
+          `${picocolors.cyan(a.id + '.zip')}\n- ${a.editions.map((e) => e.type).join('\n- ')}`
+      )
+      .join('\n\n');
+
+    note(`${archiveLog}`, 'Your graphic pack includes:');
+  }
 
   public async findEditions() {
     const s = spinner(1200);

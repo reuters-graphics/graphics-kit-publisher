@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import chalk from 'chalk';
+import picocolors from 'picocolors';
 
 export class ConfigError extends Error {
   constructor(message: string) {
@@ -41,6 +41,14 @@ export class FileSystemError extends Error {
   }
 }
 
+export class InvalidLocaleError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 export class InvalidFileTypeError extends Error {
   constructor(message: string) {
     super(message);
@@ -66,14 +74,6 @@ export class PageMetadataError extends Error {
 }
 
 export class PackageConfigError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
-export class PromptCancelError extends Error {
   constructor(message: string) {
     super(message);
     this.name = this.constructor.name;
@@ -111,11 +111,13 @@ const coalesceToError = (err: unknown) => {
  */
 export const handleError = (e: unknown) => {
   const error = coalesceToError(e);
-  const prefix = chalk.bold.red('> Publisher ERROR:');
+  const prefix = picocolors.red(picocolors.bold('> Publisher ERROR:'));
   if (error.message) {
     console.error(`${prefix} ${error.message}\n`);
     if (error.stack) {
-      console.error(chalk.gray(error.stack.split('\n').slice(1).join('\n')));
+      console.error(
+        picocolors.gray(error.stack.split('\n').slice(1).join('\n'))
+      );
     }
   } else {
     console.error(`${prefix} ${error}`);

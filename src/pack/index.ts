@@ -17,6 +17,7 @@ import { isValid, pack } from '../validators';
 import { note } from '@reuters-graphics/clack';
 import { spinner } from '@reuters-graphics/clack';
 import { Finder } from '../finder';
+import { buildForProduction } from '../build';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -79,12 +80,20 @@ export class Pack {
   }
 
   public async upload() {
+    await this.getMetadata();
+    await this.createOrUpdate();
+    buildForProduction();
     const finder = new Finder(this);
     finder.findEditions();
+    finder.logFound();
     for (const archive of this.archives) {
       await archive.getMetadata();
     }
+    buildForProduction();
     await this.packUp();
+    for (const archive of this.archives) {
+      await archive.createOrUpdate();
+    }
   }
 
   async packUp() {

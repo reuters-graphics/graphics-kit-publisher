@@ -45,7 +45,7 @@ const Locale = {
 
 const Regex = v.custom((input) => input instanceof RegExp);
 
-export const ConfigSchema = v.required(
+const ConfigSchema = v.required(
   v.object({
     build: v.required(
       v.object({

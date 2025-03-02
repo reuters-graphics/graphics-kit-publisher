@@ -1,11 +1,15 @@
 import fs from 'fs';
-import { FileSystemError } from '../../../exceptions/errors';
+import {
+  FileSystemError,
+  InvalidLocaleError,
+} from '../../../exceptions/errors';
 import type { Pack } from '../..';
 import type { Archive } from '../../archive';
 import type { RNGS } from '@reuters-graphics/server-client';
 import path from 'path';
 import { utils } from '@reuters-graphics/graphics-bin';
 import { context } from '../../../context';
+import { VALID_LOCALES } from '../../../constants/locales';
 
 type EditionType =
   | 'interactive'
@@ -34,11 +38,14 @@ export class Edition {
   ) {
     this.archive = this.pack.getOrCreateArchive(locale, mediaSlug);
     this.archive.editions.push(this);
-    if (!fs.existsSync(path)) {
+    if (!fs.existsSync(path))
       throw new FileSystemError(
         `Local path for edition detected but not found on file system: ${path}`
       );
-    }
+    if (!VALID_LOCALES.includes(locale))
+      throw new InvalidLocaleError(
+        `Found invalid locale "${locale}" for edition at: ${this.path}`
+      );
   }
 
   async packUp(archiveDir: string) {

@@ -1,17 +1,16 @@
 import path from 'path';
-import fs from 'fs-extra';
 import { context } from '../context';
+import { utils } from '@reuters-graphics/graphics-bin';
 
 class Logs {
-  logDirName = '.graphics-kit/' as const;
+  logDirName = '.graphics-kit/logs/' as const;
   private get logDir() {
     return path.join(context.cwd, this.logDirName);
   }
 
   private write(filePath: string, logContents: string) {
-    fs.ensureDirSync(this.logDir);
     const prefix = `----- ${new Date().toISOString()} -----\n\n`;
-    fs.writeFileSync(filePath, prefix + logContents, 'utf8');
+    utils.fs.ensureWriteFile(filePath, prefix + logContents);
   }
 
   writeOutLog(logContents: string) {

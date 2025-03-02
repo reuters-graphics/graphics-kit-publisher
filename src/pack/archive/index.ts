@@ -32,7 +32,7 @@ export class Archive {
     return `${this.type}-${this.locale}-${this.mediaSlug}`;
   }
 
-  private async getMetadata() {
+  public async getMetadata() {
     if (isValid(archiveEdition.Metadata, this.metadata))
       return this.metadata as ArchiveEditionsMetadata;
 
@@ -72,12 +72,13 @@ export class Archive {
    * Pack up all editions and zip the archive directory
    * @returns The path to the zipped archive
    */
-  private async packUp() {
+  async packUp() {
     const archiveDir = path.join(
       utils.path.absolute(this.pack.packRoot),
       this.id
     );
-    utils.fs.ensureDir(path.join(archiveDir, 'fakeFile'));
+    if (!fs.existsSync(archiveDir))
+      fs.mkdirSync(archiveDir, { recursive: true });
     for (const edition of this.editions) {
       await edition.packUp(archiveDir);
     }

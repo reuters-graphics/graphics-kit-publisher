@@ -70,8 +70,7 @@ const buildApp = (buildScript: string) => {
 
   /**
    * Validates outDir and throws an error if:
-   * 1. There is no index.html in the outDir root after build
-   * 2. There are files with invalid file types in the outDir after build
+   * 1. There are files with invalid file types in the outDir after build
    */
   validateOutDir(s);
 

@@ -5,22 +5,17 @@ import path from 'path';
 
 import { cleanOutDir, deleteZeroLengthFiles } from './clean';
 
-// We want to watch for log.warn calls
 vi.mock('@clack/prompts', () => ({
   log: {
-    // We only test warn in these functions, but you could also mock info, error, etc.
     warn: vi.fn(),
   },
 }));
 
-// We’ll re-import log to verify calls
 import { log } from '@clack/prompts';
 
 describe('cleanOutDir', () => {
   beforeEach(() => {
-    // Setup a mock file system for each test
     mockFs({
-      // Suppose we have an existing outDir with files
       'existing-outDir': {
         'file1.txt': 'Some content',
       },
@@ -28,7 +23,6 @@ describe('cleanOutDir', () => {
   });
 
   afterEach(() => {
-    // Reset the filesystem after each test
     mockFs.restore();
     vi.clearAllMocks();
   });

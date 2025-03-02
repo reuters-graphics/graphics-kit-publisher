@@ -1,6 +1,6 @@
 import type { RNGS } from '@reuters-graphics/server-client';
 
-export type Build = {
+type Build = {
   scripts: {
     preview: string;
     production: string;
@@ -8,19 +8,7 @@ export type Build = {
   outDir: string;
 };
 
-export type Author = {
-  /**
-   * Author's byline.
-   */
-  name: string;
-  /**
-   * Author's link. For Reuters staff, this should be the
-   * link to their author page on reuters.com.
-   */
-  link: string;
-};
-
-export interface PackLocations {
+interface PackLocations {
   /**
    * Path from project root to a directory where files
    * for dotcom pages are built.
@@ -78,7 +66,7 @@ export interface PackLocations {
  *
  * See more examples at [@reuters-graphics/graphics-bin](https://reuters-graphics.github.io/graphics-bin/functions/utils.fs.get.html).
  */
-export type MetadataPointerPath = string;
+type MetadataPointerPath = string;
 
 /**
  * Metadata pointer with additional options to format the value
@@ -141,7 +129,7 @@ export type MetadataPointer<I = any, O = any> =
  * Metadata pointers define files and paths to data within them
  * which fill in essential metadata for the graphics pack and editions.
  */
-export interface MetadataPointers {
+interface MetadataPointers {
   /**
    * Pointers to metadata for the graphic pack.
    */
@@ -170,7 +158,7 @@ export interface MetadataPointers {
   };
 }
 
-export type DocsValue =
+type DocsValue =
   | string
   | ((docsArgs: {
       embedUrl: string;
@@ -178,7 +166,7 @@ export type DocsValue =
       year?: string;
     }) => string);
 
-export interface ArchiveEditions {
+interface ArchiveEditions {
   docs: {
     'README.txt': DocsValue;
     [filePath: string]: DocsValue;
@@ -190,7 +178,7 @@ export interface ArchiveEditions {
   ignore: string[];
 }
 
-export type EmbedTemplate = {
+type EmbedTemplate = {
   declaration: (templateArgs: {
     embedUrl: string;
     embedSlug: string;
@@ -201,7 +189,7 @@ export type EmbedTemplate = {
   }) => string;
 };
 
-export interface EditionPublishingLocations {
+interface EditionPublishingLocations {
   slug: string | RegExp;
   availableLocations: {
     lynx: boolean;
@@ -209,7 +197,7 @@ export interface EditionPublishingLocations {
   };
 }
 
-export type PublishingLocations = EditionPublishingLocations[];
+type PublishingLocations = EditionPublishingLocations[];
 
 export type Config = {
   build: Build;

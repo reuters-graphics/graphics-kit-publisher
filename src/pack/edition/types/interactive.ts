@@ -34,9 +34,10 @@ export class Interactive extends Edition {
    * @returns Edition URL
    */
   async getUrl() {
-    const packageJsonEditionUrlKey = `reuters.graphic.archives.${this.archive.id}.url`;
+    const archiveUrlKey = `reuters.graphic.archives.${this.archive.id}.url`;
+    const archiveUploadedKey = `reuters.graphic.archives.${this.archive.id}.uploaded`;
 
-    const existingUrl = utils.getPkgProp(packageJsonEditionUrlKey);
+    const existingUrl = utils.getPkgProp(archiveUrlKey);
     if (existingUrl) return existingUrl as string;
 
     if (!this.pack.metadata.id)
@@ -76,7 +77,18 @@ export class Interactive extends Edition {
 
     const { url } = editions[`${this.archive.id}.zip`].interactive;
 
-    utils.setPkgProp(packageJsonEditionUrlKey, url);
+    /**
+     * TEMP: Force graphics.reuters.com URLs from RNGS
+     * to be www.reuters.com/graphics/ until RNGS gives
+     * us back the correct URL.
+     */
+    const standardisedURL = url.replace(
+      'graphics.reuters.com',
+      'www.reuters.com/graphics'
+    );
+
+    utils.setPkgProp(archiveUrlKey, standardisedURL);
+    utils.setPkgProp(archiveUploadedKey, new Date().toISOString());
 
     fs.rmSync(zipPath);
     return url;
