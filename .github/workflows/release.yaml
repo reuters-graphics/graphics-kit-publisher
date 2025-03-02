@@ -12,3 +12,4 @@ jobs:
     with:
       node_version: '20'
       publish_docs: true
+      docs_directory: './dist'

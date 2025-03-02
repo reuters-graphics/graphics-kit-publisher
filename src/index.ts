@@ -24,7 +24,7 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async upload() {
-    precheck();
+    await precheck();
     const pack = new Pack();
     await pack.createOrUpdate();
   }
