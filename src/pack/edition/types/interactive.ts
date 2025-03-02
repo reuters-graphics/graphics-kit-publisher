@@ -91,7 +91,7 @@ export class Interactive extends Edition {
     utils.setPkgProp(archiveUploadedKey, new Date().toISOString());
 
     fs.rmSync(zipPath);
-    return url;
+    return standardisedURL;
   }
 
   async packUp(archiveDir: string) {
