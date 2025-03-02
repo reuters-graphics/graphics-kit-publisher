@@ -42,5 +42,15 @@ export class GraphicsKitPublisher {
    */
   @loadConfig
   @withIntroOutro
-  async restartPack() {}
+  async resetData() {
+    const pack = new Pack();
+    pack.resetPackData();
+  }
+
+  @loadConfig
+  @withIntroOutro
+  async delete() {
+    const pack = new Pack();
+    pack.delete();
+  }
 }

@@ -37,7 +37,16 @@ prog.command('publish').action(async () => {
 prog.command('restart').action(async () => {
   try {
     const graphicsPublisher = new GraphicsKitPublisher();
-    await graphicsPublisher.restartPack();
+    await graphicsPublisher.resetData();
+  } catch (error) {
+    handleError(error);
+  }
+});
+
+prog.command('delete').action(async () => {
+  try {
+    const graphicsPublisher = new GraphicsKitPublisher();
+    await graphicsPublisher.delete();
   } catch (error) {
     handleError(error);
   }

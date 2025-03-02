@@ -18,6 +18,8 @@ import { note } from '@reuters-graphics/clack';
 import { spinner } from '@reuters-graphics/clack';
 import { Finder } from '../finder';
 import { buildForProduction } from '../build';
+import { log } from '@clack/prompts';
+import { confirm } from '../prompts';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -104,5 +106,53 @@ export class Pack {
       await archive.packUp();
     }
     await s.stop('📦 All packed.');
+  }
+
+  async resetPackData(askToConfirm = true) {
+    const confirmed =
+      askToConfirm ?
+        await confirm({
+          message:
+            'This will reset your pack, which means uploading again will create a new one in the graphics server. Are you sure?',
+        })
+      : true;
+    if (!confirmed) return;
+    const pkg = utils.getPkg();
+    const archives = Object.keys(pkg.reuters.graphic.archives);
+    // Reset pack ID
+    utils.setPkgProp('reuters.graphic.pack', '');
+    // Reset all URLs
+    utils.setPkgProp('homepage', '');
+    for (const archive of archives) {
+      utils.setPkgProp(`reuters.graphic.archives.${archive}.url`, '');
+    }
+  }
+
+  async delete() {
+    this.metadata.id = utils.getPkgProp('reuters.graphic.id');
+    if (!this.metadata.id) {
+      log.error(
+        "Can't find an ID for this graphic pack to delete it. Have you uploaded the pack yet?"
+      );
+      return;
+    }
+    const serverClient = getServerClient(this.metadata.id);
+    const confirmed = await confirm({
+      message: 'Are you sure you want to delete this pack?',
+    });
+    if (!confirmed) return;
+    const s = spinner();
+    s.start('Deleting pack');
+    try {
+      await serverClient.deleteGraphic();
+      if (!serverClient.pack.hasGraphic) {
+        await s.stop('Deleted pack');
+        await this.resetPackData(false);
+      } else {
+        await s.stop('Unable to delete');
+      }
+    } catch {
+      await s.stop('Unable to delete');
+    }
   }
 }
