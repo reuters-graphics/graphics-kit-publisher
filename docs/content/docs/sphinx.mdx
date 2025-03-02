@@ -17,14 +17,21 @@ Graphics in the Sphinx graphics server are composed of three parts:
 Within the graphics server, a graphic pack looks like a collection of ZIP files with nested folders. ZIP files are **archives** and folders nested below them, **editions**.
 
 <FileTree>
-  - public.zip <small>Archive</small>- interactive <small>Edition</small>-
-  media-interactive <small>Edition</small>- media-en-page.zip{' '}
-  <small>Archive</small>- interactive <small>Edition</small>- media-interactive{' '}
-  <small>Edition</small>- media-en-map.zip <small>Archive</small>- interactive{' '}
-  <small>Edition</small>- media-interactive <small>Edition</small>- PNG{' '}
-  <small>Edition</small>- EPS <small>Edition</small>- media-es-map.zip{' '}
-  <small>Archive</small>- interactive <small>Edition</small>- media-interactive{' '}
-  <small>Edition</small>- JPG <small>Edition</small>- EPS <small>Edition</small>
+- public.zip <small>Archive</small>
+  - interactive <small>Edition</small>
+- media-en-page.zip <small>Archive</small>
+  - interactive <small>Edition</small>
+  - media-interactive <small>Edition</small>
+- media-en-map.zip <small>Archive</small>
+  - interactive <small>Edition</small>
+  - media-interactive <small>Edition</small>
+  - PNG <small>Edition</small>
+  - EPS <small>Edition</small>
+- media-es-map.zip <small>Archive</small>
+  - interactive <small>Edition</small>
+  - media-interactive <small>Edition</small>
+  - JPG <small>Edition</small>
+  - EPS <small>Edition</small>
 </FileTree>
 
 ## Archives
@@ -32,15 +39,19 @@ Within the graphics server, a graphic pack looks like a collection of ZIP files 
 Generally, archives represent individual graphics or a collection of HMTL pages that are published to one of the [available publishing locations](http://localhost:4321/graphics-kit-publisher/sphinx/#where-editions-are-published). An archive must contain at least one edition.
 
 <FileTree>
-  - media-en-page.zip <small>Archive</small>- interactive <small>Edition</small>
+- media-en-page.zip <small>Archive</small>
+  - interactive <small>Edition</small>
   - media-interactive <small>Edition</small>
 </FileTree>
 
 On your local file system, archives are structured with an **archive** folder and one or more nested **editon** folders:
 
 <FileTree>
-  - media-en-page <small>Archive</small>- interactive <small>Edition</small>-
-  ... - media-interactive <small>Edition</small>- ...
+- media-en-page <small>Archive</small>
+  - interactive <small>Edition</small>
+  - ...
+- media-interactive <small>Edition</small>
+  - ...
 </FileTree>
 
 When using the publisher, archives will be named according to one of the following conventions:
@@ -65,10 +76,16 @@ When determining what is the edition's root file, `.html` files take precedence.
 ### Interactive editions
 
 <FileTree>
-  - public <small>Archive</small>- interactive <small>Edition</small>-
-  **index.html** <small>Root file</small>- more-pages - index.html - ... -
-  assets - styles.css - scripts.js - _gfxpreview.png{' '}
-  <small>Preview image</small>
+- public <small>Archive</small>
+  - interactive <small>Edition</small>
+    - **index.html** <small>Root file</small>
+    - more-pages
+      - index.html 
+      - ... 
+    - assets
+      - styles.css
+      - scripts.js 
+    - _gfxpreview.png <small>Preview image</small>
 </FileTree>
 
 Interactive editions contain one or more HTML pages to be published on reuters.com.
@@ -82,9 +99,11 @@ A `_gfxpreview.png` or `_gfxpreview.jpg` image must also be at the root of the e
 ### Media-interactive editions
 
 <FileTree>
-  - media-en-page <small>Archive</small>- media-interactive{' '}
-  <small>Edition</small>- **README.txt** <small>Root file</small>- app.zip -
-  _gfxpreview.png
+- media-en-page <small>Archive</small>
+  - media-interactive <small>Edition</small>
+    - **README.txt** <small>Root file</small>
+    - app.zip
+    - _gfxpreview.png
 </FileTree>
 
 Media-interactive editions contain a ZIP archive of the project and represent a embeddable graphic that can be purchased on Reuters Connect or embedded into a reuters.com story in Lynx or Arc.
@@ -96,11 +115,16 @@ A `_gfxpreview.png` or `_gfxpreview.jpg` image must also be at the root of the e
 ### Static file editions
 
 <FileTree>
-  - media-en-page <small>Archive</small>- JPG <small>Edition</small>-
-  **map.jpg** <small>Root file</small>- PNG <small>Edition</small>- **map.png**{' '}
-  <small>Root file</small>- EPS <small>Edition</small>- **my-map.eps**{' '}
-  <small>Root file</small>- map.jpg - PDF <small>Edition</small>- **my-map.pdf**{' '}
-  <small>Root file</small>
+- media-en-page <small>Archive</small>
+  - JPG <small>Edition</small>
+    - **map.jpg** <small>Root file</small>
+  - PNG <small>Edition</small>
+    - **map.png** <small>Root file</small>
+  - EPS <small>Edition</small>
+    - **my-map.eps** <small>Root file</small>
+    - map.jpg
+  - PDF <small>Edition</small>
+    - **my-map.pdf** <small>Root file</small>
 </FileTree>
 
 Static file editions represent static image versions of graphics, like JPEGs and PNGs, or editable versions like EPS or PDF files.
@@ -146,5 +170,4 @@ Editions can also be made **Searchable in Lynx**, which makes them available to 
 Only [media interactive editions](#media-interactive-editions) and [static file editions](#static-file-editions) should be made searchable in Lynx.
 
 The publisher handles this for you if you publish your project from the terminal.
-
 </Aside>

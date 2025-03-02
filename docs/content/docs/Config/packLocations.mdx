@@ -54,8 +54,16 @@ export default defineConfig({
 ... would capture the following editions from your local file system:
 
 <FileTree>
-  - dist - embeds - en \{locale}- page \{slug}- index.html - map \{slug}-
-  index.html - de \{locale}- map \{slug}- index.html
+- dist
+  - embeds
+    - en \{locale}
+      - page \{slug}
+        - index.html 
+      - map \{slug}
+        - index.html
+    - de \{locale}
+      - map \{slug}
+        - index.html
 </FileTree>
 
 Set to `false` if the project has no embeddable pages.
@@ -91,8 +99,15 @@ export default defineConfig({
 ... would capture the following editions from your local file system:
 
 <FileTree>
-  - media-files - en \{locale}- map \{slug}- map.eps EPS edition - map.jpg JPG
-  edition - de \{locale}- map \{slug}- map.jpg JPG edition - map.pdf PDF edition
+- media-files
+  - en \{locale}
+    - map \{slug}
+      - map.eps EPS edition
+      - map.jpg JPG edition
+  - de \{locale}
+    - map \{slug}
+      - map.jpg JPG edition
+      - map.pdf PDF edition
 </FileTree>
 
 Set to `false` if the project has no static files.
