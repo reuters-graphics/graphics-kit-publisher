@@ -72,7 +72,7 @@ See more examples at [@reuters-graphics/graphics-bin](https://reuters-graphics.g
 A metadata pointer can also be defined as just the `path` string.
 
 ```javascript
-'locales/en/content.json?story.title'
+'locales/en/content.json?story.title';
 ```
 
 ### format
@@ -96,10 +96,7 @@ For example:
 // locales/en/content.json
 {
   "story": {
-    "authors": [
-      "Jane Doe",
-      "John Doe"
-    ]
+    "authors": ["Jane Doe", "John Doe"]
   }
 }
 ```
@@ -130,9 +127,6 @@ If the pointer finds a value, use it as the initial value in a prompt to the use
   promptAsInitial: true,
 }
 ```
-
-
-
 
 ## Pointers
 
@@ -167,31 +161,31 @@ export default defineConfig({
 
 - **Type:**
   ```typescript
-  string | MetadataPointer<string, string>
+  string | MetadataPointer<string, string>;
   ```
 - **Default:**
   ```typescript
-  'locales/en/content.json?story.rootSlug'
+  'locales/en/content.json?story.rootSlug';
   ```
 
 ### pack.wildSlug
 
 - **Type:**
   ```typescript
-  string | MetadataPointer<string, string>
+  string | MetadataPointer<string, string>;
   ```
-- **Default:** 
+- **Default:**
   ```typescript
-  'locales/en/content.json?story.wildSlug'
+  'locales/en/content.json?story.wildSlug';
   ```
 
 ### pack.desk
 
-- **Type:** 
+- **Type:**
   ```typescript
-  string | MetadataPointer<string, string>
+  string | MetadataPointer<string, string>;
   ```
-- **Default:** 
+- **Default:**
   ```typescript
   { path: '~/.reuters-graphics/profile.json?desk', promptAsInitial: true }
   ```
@@ -200,70 +194,72 @@ export default defineConfig({
 
 - **Type:**
   ```typescript
-  RNGS.Language | MetadataPointer<string, string>
+  RNGS.Language | MetadataPointer<string, string>;
   ```
-- **Default:** 
+- **Default:**
   ```typescript
-  'en'
+  'en';
   ```
 
 <Aside>
-The shorthand syntax is not available for this pointer. Passing a string instead is assumed to be a valid [language code](https://reuters-graphics.github.io/graphics-server-client/types/RNGS.Language.html).
+  The shorthand syntax is not available for this pointer. Passing a string
+  instead is assumed to be a valid [language
+  code](https://reuters-graphics.github.io/graphics-server-client/types/RNGS.Language.html).
 </Aside>
 
 ### pack.title
 
-- **Type:** 
+- **Type:**
   ```typescript
-  string | MetadataPointer<string, string>
+  string | MetadataPointer<string, string>;
   ```
-- **Default:** 
+- **Default:**
   ```typescript
-  'dist/index.html?title'
+  'dist/index.html?title';
   ```
 
 ### pack.description
 
-- **Type:** 
+- **Type:**
   ```typescript
-  string | MetadataPointer<string, string>
+  string | MetadataPointer<string, string>;
   ```
 - **Default:**
   ```typescript
-  'dist/index.html?meta.og:description'
+  'dist/index.html?meta.og:description';
   ```
 
 ### pack.byline
 
-- **Type:** 
+- **Type:**
   ```typescript
-  string | MetadataPointer<string, string>
+  string | MetadataPointer<string, string>;
   ```
 - **Default:**
   ```typescript
-  'locales/en/content.json?story.authors'
+  'locales/en/content.json?story.authors';
   ```
 
 ### pack.contactEmail
 
-- **Type:** 
+- **Type:**
   ```typescript
-  string | MetadataPointer<string, string>
+  string | MetadataPointer<string, string>;
   ```
 - **Default:**
   ```typescript
-  '~/.reuters-graphics/profile.json?email'
+  '~/.reuters-graphics/profile.json?email';
   ```
 
 ### edition.title
 
-- **Type:** 
+- **Type:**
   ```typescript
-  string | MetadataPointer<string, string>
+  string | MetadataPointer<string, string>;
   ```
 - **Default:**
   ```typescript
-  'index.html?title'
+  'index.html?title';
   ```
 
 <Aside>
@@ -280,13 +276,13 @@ The file path part of edition `path` pointers is relative to the edition's root 
 
 ### edition.description
 
-- **Type:** 
+- **Type:**
   ```typescript
-  string | MetadataPointer<string, string>
+  string | MetadataPointer<string, string>;
   ```
 - **Default:**
   ```typescript
-  'index.html?meta.og:description'
+  'index.html?meta.og:description';
   ```
 
 <Aside>

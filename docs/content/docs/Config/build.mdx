@@ -10,7 +10,10 @@ Options controlling how the publisher runs and reads from your project's built f
 
 - **Type:**
   ```typescript
-  { preview: string; production: string; }
+  {
+    preview: string;
+    production: string;
+  }
   ```
 - **Default:**
   ```typescript
@@ -52,11 +55,11 @@ export default defineConfig({
 
 - **Type:**
   ```typescript
-  string
+  string;
   ```
 - **Default:**
   ```typescript
-  'dist/'
+  'dist/';
   ```
 
 The directory your build system is configured to build your app to.

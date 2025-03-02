@@ -12,11 +12,11 @@ Pack locations tell the publisher how to find the parts of your graphics pack fr
 
 - **Type:**
   ```typescript
-  string | false
+  string | false;
   ```
 - **Default:**
   ```typescript
-  'dist/'
+  'dist/';
   ```
 
 Path from project root to a directory where HTML files for dotcom pages are built. There must be a root `index.html` in this directory.
@@ -27,16 +27,16 @@ Set to `false` if the project has no dotcom pages.
 
 - **Type:**
   ```typescript
-  string | false
+  string | false;
   ```
 - **Default:**
   ```typescript
-  'dist/embeds/{locale}/{slug}/'
+  'dist/embeds/{locale}/{slug}/';
   ```
 
 Path pattern from project root to capture all directories where files for embeddable pages are built. There must be a root `index.html` in each directory found.
 
-Path should include capture groups for the edition's `locale` and `slug`, which must be defined in the directory path. 
+Path should include capture groups for the edition's `locale` and `slug`, which must be defined in the directory path.
 
 For example, setting to `dist/embeds/{locale}/{slug}/`:
 
@@ -46,7 +46,7 @@ import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
 
 export default defineConfig({
   packLocations: {
-    embeds: 'dist/embeds/{locale}/{slug}/'
+    embeds: 'dist/embeds/{locale}/{slug}/',
   },
 });
 ```
@@ -54,16 +54,8 @@ export default defineConfig({
 ... would capture the following editions from your local file system:
 
 <FileTree>
-- dist
-  - embeds
-    - en \{locale}
-      - page \{slug}
-        - index.html
-      - map \{slug}
-        - index.html
-    - de \{locale}
-      - map \{slug}
-        - index.html
+  - dist - embeds - en \{locale}- page \{slug}- index.html - map \{slug}-
+  index.html - de \{locale}- map \{slug}- index.html
 </FileTree>
 
 Set to `false` if the project has no embeddable pages.
@@ -72,16 +64,16 @@ Set to `false` if the project has no embeddable pages.
 
 - **Type:**
   ```typescript
-  string | false
+  string | false;
   ```
 - **Default:**
   ```typescript
-  'media-files/{locale}/{slug}/'
+  'media-files/{locale}/{slug}/';
   ```
 
-Path from project root to all directories where static files for embeddable graphics are saved. There must be *at least* one static file in the root of each directory. Valid static files include `.eps`, `.jpg`, `.png` or `.pdf`.
+Path from project root to all directories where static files for embeddable graphics are saved. There must be _at least_ one static file in the root of each directory. Valid static files include `.eps`, `.jpg`, `.png` or `.pdf`.
 
-Path should include capture groups for the edition's `locale` and `slug`, which must be defined in the directory path. 
+Path should include capture groups for the edition's `locale` and `slug`, which must be defined in the directory path.
 
 For example, setting to `media-files/{locale}/{slug}/`:
 
@@ -91,24 +83,16 @@ import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
 
 export default defineConfig({
   packLocations: {
-    statics: 'media-files/{locale}/{slug}/'
+    statics: 'media-files/{locale}/{slug}/',
   },
 });
 ```
 
 ... would capture the following editions from your local file system:
 
-
 <FileTree>
-- media-files
-  - en \{locale}
-    - map \{slug}
-      - map.eps EPS edition
-      - map.jpg JPG edition
-  - de \{locale}
-    - map \{slug}
-      - map.jpg JPG edition
-      - map.pdf PDF edition
+  - media-files - en \{locale}- map \{slug}- map.eps EPS edition - map.jpg JPG
+  edition - de \{locale}- map \{slug}- map.jpg JPG edition - map.pdf PDF edition
 </FileTree>
 
 Set to `false` if the project has no static files.

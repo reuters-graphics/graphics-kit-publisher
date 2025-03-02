@@ -8,5 +8,5 @@
     "outDir": "dist",
     "declarationDir": "dist",
     "typeRoots": ["src/__archive__/@types", "./node_modules/@types"]
-  },
+  }
 }

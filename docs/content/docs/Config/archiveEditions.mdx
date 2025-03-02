@@ -8,10 +8,11 @@ import { Aside, FileTree } from '@astrojs/starlight/components';
 
 Archive editions options tell the publisher how to create source archives for clients, which are published to connect.
 
-## docs 
-- **Type:** 
+## docs
+
+- **Type:**
   ```typescript
-  Record<string, string | function>
+  Record<string, string | function>;
   ```
 
 Docs create files in the root of [`media-interactive`](/graphics-kit-publisher/sphinx/#media-interactive-editions) editions.
@@ -22,14 +23,12 @@ Each key represents a file to create in the root of [`media-interactive`](/graph
 
 For example, a key of `EMBED.txt` would create the following file in the media-interactive edition folder:
 
-<FileTree>
-- media-en-map
-  - media-interactive
-    - **EMBED.txt**
-</FileTree>
+<FileTree>- media-en-map - media-interactive - **EMBED.txt**</FileTree>
 
 <Aside type="caution">
-You **must** define a `README.txt` key, which creates the [root file](/graphics-kit-publisher/sphinx/#root-files) for the media-interactive edition.
+  You **must** define a `README.txt` key, which creates the [root
+  file](/graphics-kit-publisher/sphinx/#root-files) for the media-interactive
+  edition.
 </Aside>
 
 ### values
@@ -65,7 +64,10 @@ export default defineConfig({
 
 ```html
 <!-- src/docs/embed.html -->
-<script type="text/javascript" src="https://graphics.thomsonreuters.com/cdn/pym.v1.min.js"></script>
+<script
+  type="text/javascript"
+  src="https://graphics.thomsonreuters.com/cdn/pym.v1.min.js"
+></script>
 <script>
   var pymParent = new pym.Parent('{{ embedSlug }}', '{{ embedUrl }}', {});
 </script>
@@ -76,7 +78,10 @@ export default defineConfig({
 
 ```html
 <!-- EMBED.html -->
-<script type="text/javascript" src="https://graphics.thomsonreuters.com/cdn/pym.v1.min.js"></script>
+<script
+  type="text/javascript"
+  src="https://graphics.thomsonreuters.com/cdn/pym.v1.min.js"
+></script>
 <script>
   var pymParent = new pym.Parent('media-en-map', 'https://...', {});
 </script>
@@ -94,7 +99,8 @@ import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
 export default defineConfig({
   archiveEditions: {
     docs: {
-      'EMBED.html': ({ embedUrl, embedSlug }) => `<div id="${embedUrl}" data:embed="${embedUrl}"></div>`
+      'EMBED.html': ({ embedUrl, embedSlug }) =>
+        `<div id="${embedUrl}" data:embed="${embedUrl}"></div>`,
     },
   },
 });
@@ -102,13 +108,13 @@ export default defineConfig({
 
 ## ignore
 
-- **Type:** 
+- **Type:**
   ```typescript
   string[]
   ```
 - **Default:**
   ```typescript
-  []
+  [];
   ```
 
 An array of files to ignore -- in addition to those ignored in your project's `.gitignore` -- when creating the ZIP archive of source files that is shared with clients on Reuters Connect.
@@ -121,10 +127,7 @@ import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
 
 export default defineConfig({
   archiveEditions: {
-    ignore: [
-      'project-files/',
-    ],
+    ignore: ['project-files/'],
   },
 });
 ```
-

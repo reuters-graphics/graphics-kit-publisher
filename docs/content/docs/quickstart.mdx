@@ -6,42 +6,42 @@ sidebar:
 
 import { Steps } from '@astrojs/starlight/components';
 
-
 <Steps>
 
 1. Install
 
-    ```console
-    pnpm i -D @reuters-graphics/graphics-kit-publisher
-    ```
+   ```console
+   pnpm i -D @reuters-graphics/graphics-kit-publisher
+   ```
 
 2. Add a config file to the root of your project. See [config options](/graphics-kit-publisher/config/).
 
-    ```typescript
-    // publisher.config.ts
-    import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+   ```typescript
+   // publisher.config.ts
+   import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
 
-    export default defineConfig({
-      // Config options
-    });
-    ```
-  
+   export default defineConfig({
+     // Config options
+   });
+   ```
+
 3. Publish a preview of your project.
 
-    ```console
-    npx graphics-publisher preview
-    ```
+   ```console
+   npx graphics-publisher preview
+   ```
 
 4. Upload your project to the graphics server.
 
-    ```console
-    npx graphics-publisher upload
-    ```
+   ```console
+   npx graphics-publisher upload
+   ```
 
 5. Publish your project.
 
-    ```console
-    npx graphics-publisher publish
-    ```
+   ```console
+   npx graphics-publisher publish
+   ```
+
 6. Go to the pub. 🍺
-</Steps>
+   </Steps>

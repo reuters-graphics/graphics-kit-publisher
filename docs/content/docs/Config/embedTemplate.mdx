@@ -6,27 +6,28 @@ sidebar:
 
 ## embedTemplate.declaration
 
-- **Type:** 
+- **Type:**
   ```typescript
-  (templateArgs: { embedUrl: string; embedSlug: string; }) => string;
+  (templateArgs: { embedUrl: string; embedSlug: string }) => string;
   ```
 - **Default:**
   ```typescript
   ({ embedUrl, embedSlug }) =>
-    `<div id="${embedSlug}"></div><script type="text/javascript">new pym.Parent("${embedSlug}", "${embedUrl}", {});</script>`
+    `<div id="${embedSlug}"></div><script type="text/javascript">new pym.Parent("${embedSlug}", "${embedUrl}", {});</script>`;
   ```
 
 The embed code for an embeddable graphic.
 
 ## embedTemplate.dependencies
 
-- **Type:** 
+- **Type:**
   ```typescript
-  (args: { embedUrl: string; embedSlug: string; }) => string;
+  (args: { embedUrl: string; embedSlug: string }) => string;
   ```
 - **Default:**
   ```typescript
-  () => `<script type="text/javascript" src="//graphics.thomsonreuters.com/pym.min.js"></script>`
+  () =>
+    `<script type="text/javascript" src="//graphics.thomsonreuters.com/pym.min.js"></script>`;
   ```
 
 Dependencies include any scripts that should be included only once per page, usually in the `<head>`.
