@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import { rimrafSync } from 'rimraf';
 import path from 'path';
-import { glob } from 'glob';
+import { globSync } from 'glob';
 import { log } from '@clack/prompts';
 
 export const cleanOutDir = (outDir: string) => {
@@ -15,7 +15,7 @@ export const cleanOutDir = (outDir: string) => {
  * Used to clear empty files out of outDir which the Sphinx server rejects.
  */
 export const deleteZeroLengthFiles = (dirPath: string) => {
-  const files = glob.sync('**/*', { cwd: dirPath, nodir: true });
+  const files = globSync('**/*', { cwd: dirPath, nodir: true });
 
   const zeroLengthFiles: string[] = [];
 

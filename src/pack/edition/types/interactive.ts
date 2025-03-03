@@ -2,7 +2,7 @@ import type { RNGS } from '@reuters-graphics/server-client';
 import type { Pack } from '../..';
 import { Edition } from './base';
 import path from 'path';
-import { glob } from 'glob';
+import { globSync } from 'glob';
 import { utils } from '@reuters-graphics/graphics-bin';
 import fs from 'fs';
 import { getPreviewImagePath } from '../utils/getPreviewImgPath';
@@ -96,7 +96,7 @@ export class Interactive extends Edition {
 
   async packUp(archiveDir: string) {
     const cwd = path.dirname(this.path);
-    const files = glob.sync('**/*', { cwd, nodir: true });
+    const files = globSync('**/*', { cwd, nodir: true });
     for (const file of files) {
       const absSrc = path.join(cwd, file);
       const absDest = path.join(archiveDir, this.type, file);

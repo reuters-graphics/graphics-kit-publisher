@@ -2,7 +2,7 @@ import { InvalidFileTypeError } from '../exceptions/errors';
 
 import { VALID_FILE_TYPES } from '../constants/fileTypes';
 // import fs from 'fs-extra';
-import { glob } from 'glob';
+import { globSync } from 'glob';
 import path from 'path';
 import { context } from '../context';
 import { note } from '@reuters-graphics/clack';
@@ -17,7 +17,7 @@ import picocolors from 'picocolors';
 const validateOutDirFileTypes = (s: ReturnType<typeof spinner>) => {
   const { outDir } = context.config.build;
   const distDir = path.join(context.cwd, outDir);
-  const files = glob.sync('**/*', { cwd: distDir, nodir: true });
+  const files = globSync('**/*', { cwd: distDir, nodir: true });
   const warnFiles = [];
   for (const file of files) {
     const fileType = path.extname(file).toLowerCase();

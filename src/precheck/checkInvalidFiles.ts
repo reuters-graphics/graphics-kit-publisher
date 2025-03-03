@@ -1,4 +1,4 @@
-import { glob } from 'glob';
+import { globSync } from 'glob';
 import { context } from '../context';
 import { note } from '@reuters-graphics/clack';
 import dedent from 'dedent';
@@ -28,12 +28,11 @@ export const checkInvalidfiles = () => {
   const invalidFileFilter = (file: string) =>
     INVALID_FILE_TYPES.includes(path.extname(file).toLocaleLowerCase());
 
-  const invalidFiles = glob
-    .sync('**/*', {
-      cwd,
-      nodir: true,
-      ignore: ['**/node_modules/**'],
-    })
+  const invalidFiles = globSync('**/*', {
+    cwd,
+    nodir: true,
+    ignore: ['**/node_modules/**'],
+  })
     .filter(gitignoreFilter)
     .filter(invalidFileFilter);
 

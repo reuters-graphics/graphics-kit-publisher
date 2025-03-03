@@ -4,7 +4,7 @@ import fs from 'fs';
 import { utils } from '@reuters-graphics/graphics-bin';
 import * as find from 'empathic/find';
 import ignore from 'ignore';
-import { glob } from 'glob';
+import { globSync } from 'glob';
 import archiver from 'archiver';
 import {
   EditionArchiveError,
@@ -47,9 +47,11 @@ class SrcArchive {
       .add(fs.readFileSync(ignoreFile, 'utf8'))
       .createFilter();
 
-    const files = glob
-      .sync('**/*', { cwd, nodir: true, ignore: ['**/node_modules/**'] })
-      .filter(gitignoreFilter);
+    const files = globSync('**/*', {
+      cwd,
+      nodir: true,
+      ignore: ['**/node_modules/**'],
+    }).filter(gitignoreFilter);
 
     const output = fs.createWriteStream(this.archivePath);
     const archive = archiver('zip', { zlib: { level: 9 } });

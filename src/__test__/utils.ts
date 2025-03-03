@@ -1,11 +1,11 @@
-import { glob } from 'glob';
+import { globSync } from 'glob';
 import { zipObject } from 'es-toolkit';
 import path from 'node:path';
 import mock from 'mock-fs';
 
 const __dirname = import.meta.dirname;
 
-const nodeModuleDeps = glob.sync('*/', {
+const nodeModuleDeps = globSync('*/', {
   cwd: path.resolve(__dirname, '../../node_modules'),
   absolute: true,
 });
