@@ -36,7 +36,7 @@ export const getPreviewImagePath = async (htmlPath: string) => {
   if (!ogUrl)
     throw new PageMetadataError(`No canonical link found in ${htmlPath}`);
 
-  const imgUrl = Array.isArray(ogImage) ? ogImage[0].url : ogImage.url;
+  const imgUrl = ogImage[0].url;
 
   // e.g., "/graphics/2025/my-project/"
   const rootRelativePathOfPage = new url.URL(ogUrl).pathname.replace(
