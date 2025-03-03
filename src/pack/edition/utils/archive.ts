@@ -4,7 +4,7 @@ import fs from 'fs';
 import { utils } from '@reuters-graphics/graphics-bin';
 import * as find from 'empathic/find';
 import ignore from 'ignore';
-import glob from 'glob';
+import { glob } from 'glob';
 import archiver from 'archiver';
 import {
   EditionArchiveError,

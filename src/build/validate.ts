@@ -2,7 +2,7 @@ import { InvalidFileTypeError } from '../exceptions/errors';
 
 import { VALID_FILE_TYPES } from '../constants/fileTypes';
 // import fs from 'fs-extra';
-import glob from 'glob';
+import { glob } from 'glob';
 import path from 'path';
 import { context } from '../context';
 import { note } from '@reuters-graphics/clack';

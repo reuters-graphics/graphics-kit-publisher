@@ -1,4 +1,4 @@
-import glob from 'glob';
+import { glob } from 'glob';
 import { context } from '../context';
 import { note } from '@reuters-graphics/clack';
 import dedent from 'dedent';
