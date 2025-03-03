@@ -84,17 +84,17 @@
     "ignore": "^7.0.3",
     "jiti": "^2.4.2",
     "mustache": "^4.2.0",
-    "open": "^8.0.5",
-    "open-graph-scraper": "^4.8.1",
+    "open": "^10.1.0",
+    "open-graph-scraper": "^6.9.0",
     "ordinal": "^1.0.3",
     "package-manager-detector": "^0.2.9",
     "picocolors": "^1.1.1",
     "rimraf": "^5.0.1",
     "sade": "^1.8.1",
     "sharp": "^0.32.5",
-    "slugify": "^1.5.0",
+    "slugify": "^1.6.6",
     "unzipper": "^0.10.14",
-    "url-join": "^4.0.1",
+    "url-join": "^5.0.0",
     "valibot": "1.0.0-beta.15"
   }
 }
