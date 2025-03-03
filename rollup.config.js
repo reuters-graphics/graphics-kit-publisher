@@ -6,7 +6,7 @@ const plugins = [json(), externals({ deps: true }), typescript()];
 
 const output = {
   dir: 'dist',
-  format: 'es',
+  format: 'cjs',
   sourcemap: true,
   paths: { '@reuters-graphics/graphics-publisher': './index.js' },
 };

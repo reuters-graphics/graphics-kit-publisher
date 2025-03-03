@@ -1,7 +1,6 @@
 {
   "name": "@reuters-graphics/graphics-kit-publisher",
   "version": "2.1.1",
-  "type": "module",
   "main": "./dist/index.js",
   "exports": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -12,7 +11,7 @@
     "node": ">=18.0.0"
   },
   "packageManager": "pnpm@9.13.2",
-  "repository": "https://github.com/reuters-graphics/graphics-kit-publisher",
+  "repository": "reuters-graphics/graphics-kit-publisher",
   "author": "Jon McClure <jon.r.mcclure@gmail.com>",
   "private": false,
   "keywords": [],
@@ -28,6 +27,7 @@
     "coverage": "vitest run --coverage",
     "knip": "knip",
     "lint": "eslint --fix",
+    "lint:package": "publint",
     "format": "prettier . --write",
     "changeset:version": "changeset version",
     "changeset:publish": "git add --all && changeset publish"
@@ -60,6 +60,7 @@
     "pkg-pr-new": "^0.0.40",
     "playwright": "^1.50.1",
     "prettier": "^3.3.3",
+    "publint": "^0.3.8",
     "rehype-mermaid": "^3.0.0",
     "rollup": "^4.34.9",
     "rollup-plugin-node-externals": "^8.0.0",
