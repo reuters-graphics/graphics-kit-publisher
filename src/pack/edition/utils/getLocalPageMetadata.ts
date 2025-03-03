@@ -1,7 +1,8 @@
 import fs from 'fs-extra';
 import ogs from 'open-graph-scraper';
+import type { SuccessResult } from 'open-graph-scraper/types';
 
-type OpenGraphScraped = ogs.OpenGraphProperties & {
+type OpenGraphScraped = SuccessResult['result'] & {
   ogImage?: { url: string }[] | { url: string };
   ogUrl?: string;
   success: true;
