@@ -8,7 +8,6 @@ import fs from 'fs';
 import { utils } from '@reuters-graphics/graphics-bin';
 import { context } from '../../context';
 import { zipDir } from '../../utils/zipDir';
-import { getServerClient } from '../../server/client';
 import { PackageMetadataError } from '../../exceptions/errors';
 import { spinner } from '@reuters-graphics/clack';
 
@@ -86,9 +85,9 @@ export class Archive {
   }
 
   async createOrUpdate() {
-    if (!this.pack.metadata.id)
+    if (!this.pack.serverClient)
       throw new PackageMetadataError('Must create graphic pack first');
-    const serverClient = getServerClient(this.pack.metadata.id);
+    const { serverClient } = this.pack;
     const metadata = await this.getMetadata();
     const zipPath = await this.packUp();
     const zipBuffer = fs.readFileSync(zipPath);

@@ -110,6 +110,7 @@ describe('Interactive edition', async () => {
     });
 
     const pack = new Pack();
+    pack.serverClient = getServerClient();
     pack.metadata.id = 'fakeid';
     const interactive = new Interactive(
       pack,

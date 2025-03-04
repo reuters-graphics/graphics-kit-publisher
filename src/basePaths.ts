@@ -108,7 +108,7 @@ export const getBasePath = (
   const opts = addPath ? options : (optionsOrAddPath as Options);
   let basePath = getBasePathByMode(mode);
   if (basePath === '') {
-    return addPath ? urljoin(basePath, addPath) : basePath;
+    return addPath && opts.rootRelative ? urljoin(basePath, addPath) : basePath;
   }
   if (addPath) {
     basePath = urljoin(basePath, addPath);

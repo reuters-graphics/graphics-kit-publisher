@@ -14,7 +14,6 @@ import {
 import { utils } from '@reuters-graphics/graphics-bin';
 import { getServerClient } from '../server/client';
 import { isValid, pack } from '../validators';
-import { note } from '@reuters-graphics/clack';
 import { spinner } from '@reuters-graphics/clack';
 import { Finder } from '../finder';
 import { buildForProduction } from '../build';
@@ -25,17 +24,13 @@ export class Pack {
   public metadata: Partial<PackMetadata> = {};
   public archives: Archive[] = [];
   public packRoot = '.graphics-kit/pack/' as const;
+  public serverClient?: ReturnType<typeof getServerClient>;
 
   private async getMetadata() {
     if (isValid(pack.Metadata, this.metadata))
       return this.metadata as PackMetadata;
 
-    note(
-      'Please answer a few questions to fill in metadata for this graphics pack.',
-      'Pack metadata'
-    );
-
-    this.metadata.id = utils.getPkgProp('reuters.graphic.id');
+    this.metadata.id = utils.getPkgProp('reuters.graphic.pack');
     this.metadata.desk = (await desk()) as Graphic.Desk;
     this.metadata.rootSlug = await rootSlug();
     this.metadata.wildSlug = await wildSlug();
@@ -60,18 +55,18 @@ export class Pack {
    */
   public async createOrUpdate() {
     const packMetadata = await this.getMetadata();
-    const serverClient = getServerClient();
+    this.serverClient = getServerClient(packMetadata.id);
 
     if (packMetadata.id) {
       log.step('Updating graphic pack');
-      await serverClient.updateGraphic(packMetadata);
+      await this.serverClient.updateGraphic(packMetadata);
       return log.step('Updated graphic pack');
     }
     log.step('Creating a graphic pack');
-    await serverClient.createGraphic(packMetadata);
+    await this.serverClient.createGraphic(packMetadata);
     log.step('Created graphic pack');
 
-    const packId = serverClient.pack.graphic?.id;
+    const packId = this.serverClient.pack.graphic?.id;
     if (!packId)
       throw new Error('Did not get a graphic ID from the graphics server');
 

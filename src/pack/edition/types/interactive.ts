@@ -8,7 +8,6 @@ import fs from 'fs';
 import { getPreviewImagePath } from '../utils/getPreviewImgPath';
 import sharp from 'sharp';
 import { zipDir } from '../../../utils/zipDir';
-import { getServerClient } from '../../../server/client';
 import {
   EditionArchiveError,
   PackageMetadataError,
@@ -41,11 +40,17 @@ export class Interactive extends Edition {
     if (existingUrl) return existingUrl as string;
 
     if (!this.pack.metadata.id)
-      throw new PackageMetadataError('Must create graphic pack first');
+      throw new PackageMetadataError(
+        'Must create or update graphic pack first'
+      );
     if (!this.archive.metadata.title || !this.archive.metadata.description)
       throw new EditionArchiveError('Must get archive metadata first');
+    if (!this.pack.serverClient)
+      throw new PackageMetadataError(
+        'Must create or update graphic pack first'
+      );
 
-    const serverClient = getServerClient(this.pack.metadata.id);
+    const { serverClient } = this.pack;
 
     const dummyArchive = path.join(
       context.cwd,
