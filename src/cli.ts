@@ -12,6 +12,7 @@ prog.command('preview').action(async () => {
     const graphicsPublisher = new GraphicsKitPublisher();
     await graphicsPublisher.preview();
   } catch (error) {
+    console.log(error);
     handleError(error);
   }
 });
@@ -51,3 +52,5 @@ prog.command('delete').action(async () => {
     handleError(error);
   }
 });
+
+prog.parse(process.argv);

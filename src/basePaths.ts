@@ -107,7 +107,9 @@ export const getBasePath = (
     typeof optionsOrAddPath === 'string' ? optionsOrAddPath : undefined;
   const opts = addPath ? options : (optionsOrAddPath as Options);
   let basePath = getBasePathByMode(mode);
-  if (basePath === '') return basePath;
+  if (basePath === '') {
+    return addPath ? urljoin(basePath, addPath) : basePath;
+  }
   if (addPath) {
     basePath = urljoin(basePath, addPath);
   }
@@ -115,9 +117,9 @@ export const getBasePath = (
     basePath = getRootRelativePath(basePath);
   }
   if (opts.trailingSlash) {
-    basePath = removeTrailingSlash(basePath);
-  } else {
     basePath = ensureTrailingSlash(basePath);
+  } else {
+    basePath = removeTrailingSlash(basePath);
   }
   return basePath;
 };
