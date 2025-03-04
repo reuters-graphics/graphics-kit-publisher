@@ -37,7 +37,7 @@ export function withIntroOutro(
     if (!(this instanceof GraphicsKitPublisher)) throw Error('Bad decorator'); // Never happens...
     intro('Publisher');
     const result = await originalMethod.apply(this, args);
-    outro('🏁 Done.');
+    outro('✅ Done.');
     return result;
   };
 

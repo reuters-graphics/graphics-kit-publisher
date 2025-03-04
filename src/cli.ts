@@ -12,7 +12,6 @@ prog.command('preview').action(async () => {
     const graphicsPublisher = new GraphicsKitPublisher();
     await graphicsPublisher.preview();
   } catch (error) {
-    console.log(error);
     handleError(error);
   }
 });

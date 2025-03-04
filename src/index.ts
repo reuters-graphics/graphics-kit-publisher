@@ -14,7 +14,7 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async preview() {
-    buildForPreview();
+    await buildForPreview();
     await uploadPreview();
   }
 

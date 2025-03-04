@@ -84,14 +84,14 @@ export class Pack {
   public async upload() {
     await this.getMetadata();
     await this.createOrUpdate();
-    buildForProduction();
+    await buildForProduction();
     const finder = new Finder(this);
     finder.findEditions();
     finder.logFound();
     for (const archive of this.archives) {
       await archive.getMetadata();
     }
-    buildForProduction();
+    await buildForProduction();
     await this.packUp();
     for (const archive of this.archives) {
       await archive.createOrUpdate();

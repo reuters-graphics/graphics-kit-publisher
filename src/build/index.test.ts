@@ -7,20 +7,21 @@ import {
   vi,
   type Mock,
 } from 'vitest';
+import { EventEmitter } from 'events';
 import mockFs from 'mock-fs';
 import path from 'path';
-import { spawnSync } from 'child_process';
+
+import { spawn, type ChildProcess } from 'child_process';
 import { utils } from '@reuters-graphics/graphics-bin';
 import { logs } from '../logging';
-import { validateOutDir } from './validate';
 import { cleanOutDir, deleteZeroLengthFiles } from './clean';
-
+import { validateOutDir } from './validate';
 import { buildForPreview, buildForProduction } from '.';
 import { BuildError, PackageConfigError } from '../exceptions/errors';
 
 // Mock external modules
 vi.mock('child_process', () => ({
-  spawnSync: vi.fn(),
+  spawn: vi.fn(),
 }));
 
 vi.mock('@reuters-graphics/graphics-bin', () => ({
@@ -61,7 +62,47 @@ vi.mock('./clean', () => ({
   deleteZeroLengthFiles: vi.fn(),
 }));
 
-describe('build', () => {
+/**
+ * Helper function to mock the spawn process in an asynchronous, event-driven way.
+ * We simulate the child process by returning an EventEmitter with mocked stdout/stderr streams.
+ */
+function mockSpawnProcess({
+  code = 0,
+  stdout = '',
+  stderr = '',
+  delay = 10, // small delay to ensure listeners are set up
+}: {
+  code?: number;
+  stdout?: string;
+  stderr?: string;
+  delay?: number;
+}): ChildProcess {
+  // Create an EventEmitter to mimic ChildProcess
+  const child = new EventEmitter() as ChildProcess;
+
+  // The real child.stdout and child.stderr are streams (EventEmitters),
+  // so we mock them out similarly.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  child.stdout = new EventEmitter() as any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  child.stderr = new EventEmitter() as any;
+
+  // Emit data + close event on a short delay to simulate async process
+  setTimeout(() => {
+    if (stdout) {
+      child.stdout?.emit('data', stdout);
+    }
+    if (stderr) {
+      child.stderr?.emit('data', stderr);
+    }
+    // Indicate process completion with exit code
+    child.emit('close', code);
+  }, delay);
+
+  return child;
+}
+
+describe('build (async spawn)', () => {
   beforeEach(() => {
     // Clear mock call counts
     vi.clearAllMocks();
@@ -90,42 +131,48 @@ describe('build', () => {
     mockFs.restore();
   });
 
-  it('throws PackageConfigError if the specified script does not exist in package.json', () => {
+  it('throws PackageConfigError if the specified script does not exist in package.json', async () => {
     // Setup: return a package.json that does NOT have the script we need
     (utils.getPkg as Mock).mockReturnValue({
       scripts: {
-        // missing 'build:preview' or 'build:prod'
+        // Missing 'build:preview' or 'build' here
       },
     });
 
-    // Attempt to build a preview
-    expect(() => buildForPreview()).toThrowError(PackageConfigError);
+    // Attempt to build a preview -> should fail before spawn is even called
+    await expect(buildForPreview()).rejects.toThrowError(PackageConfigError);
+
+    // spawn should never be called because we bail out on missing script
+    expect(spawn).not.toHaveBeenCalled();
   });
 
-  it('throws BuildError if spawnSync returns a non-zero status', () => {
+  it('throws BuildError if spawn returns a non-zero exit code', async () => {
     // Return a package.json that includes correct scripts
     (utils.getPkg as Mock).mockReturnValue({
       scripts: {
         'build:preview': 'echo "Preview build"',
-        build: 'echo "Prod build"',
+        build: 'echo "Production build"',
       },
     });
 
-    // Mock spawnSync to return a failing status code
-    (spawnSync as Mock).mockReturnValue({
-      status: 1,
-      stdout: Buffer.from('Some build output'),
-      stderr: Buffer.from('Some build error'),
-    });
+    // Mock spawn to emit non-zero exit code + some errors
+    (spawn as Mock).mockImplementation(() =>
+      mockSpawnProcess({
+        code: 1,
+        stdout: 'Some build output',
+        stderr: 'Some build error',
+      })
+    );
 
-    expect(() => buildForPreview()).toThrowError(BuildError);
+    // Attempt to build a preview -> should throw BuildError
+    await expect(buildForPreview()).rejects.toThrowError(BuildError);
 
     // Make sure logs were captured
     expect(logs.writeErrLog).toHaveBeenCalledWith('Some build error');
     expect(logs.writeOutLog).toHaveBeenCalledWith('Some build output');
   });
 
-  it('cleans output directory, spawns the build script, validates outDir on success for preview build', () => {
+  it('cleans output directory, spawns the build script, validates outDir on success for preview build', async () => {
     (utils.getPkg as Mock).mockReturnValue({
       scripts: {
         'build:preview': 'echo "Preview build"',
@@ -133,35 +180,41 @@ describe('build', () => {
       },
     });
 
-    // Mock spawnSync to succeed
-    (spawnSync as Mock).mockReturnValue({
-      status: 0,
-      stdout: Buffer.from('Preview build completed'),
-      stderr: Buffer.from(''),
-    });
+    // Mock spawn to succeed (exit code 0)
+    (spawn as Mock).mockImplementation(() =>
+      mockSpawnProcess({
+        code: 0,
+        stdout: 'Preview build completed',
+        stderr: '',
+      })
+    );
 
-    buildForPreview();
+    await buildForPreview();
 
     // Expect the output directory was cleaned
     expect(cleanOutDir).toHaveBeenCalledWith(
       path.join('/fake/project', 'dist')
     );
-    // Expect spawnSync was called with correct arguments
-    expect(spawnSync).toHaveBeenCalledWith('npm', ['run', 'build:preview'], {
+
+    // Expect spawn was called with correct arguments
+    expect(spawn).toHaveBeenCalledWith('npm', ['run', 'build:preview'], {
       stdio: ['inherit', 'pipe', 'pipe'],
       cwd: '/fake/project',
     });
+
     // Expect zero-length files to be deleted
     expect(deleteZeroLengthFiles).toHaveBeenCalledWith(
       path.join('/fake/project', 'dist')
     );
+
     // Expect validateOutDir to be called
     expect(validateOutDir).toHaveBeenCalled();
+
     // Expect logs to capture the stdout
     expect(logs.writeOutLog).toHaveBeenCalledWith('Preview build completed');
   });
 
-  it('cleans output directory, spawns the build script, validates outDir on success for production build', () => {
+  it('cleans output directory, spawns the build script, validates outDir on success for production build', async () => {
     (utils.getPkg as Mock).mockReturnValue({
       scripts: {
         'build:preview': 'echo "Preview build"',
@@ -169,21 +222,23 @@ describe('build', () => {
       },
     });
 
-    // Mock spawnSync to succeed
-    (spawnSync as Mock).mockReturnValue({
-      status: 0,
-      stdout: Buffer.from('Production build completed'),
-      stderr: Buffer.from(''),
-    });
+    // Mock spawn to succeed (exit code 0)
+    (spawn as Mock).mockImplementation(() =>
+      mockSpawnProcess({
+        code: 0,
+        stdout: 'Production build completed',
+        stderr: '',
+      })
+    );
 
-    buildForProduction();
+    await buildForProduction();
 
     // Expect the output directory was cleaned
     expect(cleanOutDir).toHaveBeenCalledWith(
       path.join('/fake/project', 'dist')
     );
-    // Expect spawnSync was called with correct arguments
-    expect(spawnSync).toHaveBeenCalledWith('npm', ['run', 'build'], {
+    // Expect spawn was called with correct arguments
+    expect(spawn).toHaveBeenCalledWith('npm', ['run', 'build'], {
       stdio: ['inherit', 'pipe', 'pipe'],
       cwd: '/fake/project',
     });
@@ -197,7 +252,7 @@ describe('build', () => {
     expect(logs.writeOutLog).toHaveBeenCalledWith('Production build completed');
   });
 
-  it('deletes zero-length files in outDir (e.g., empty.js)', () => {
+  it('deletes zero-length files in outDir (e.g., empty.js)', async () => {
     (utils.getPkg as Mock).mockReturnValue({
       scripts: {
         'build:preview': 'echo "Preview build"',
@@ -205,16 +260,20 @@ describe('build', () => {
       },
     });
 
-    // Mock spawnSync to succeed
-    (spawnSync as Mock).mockReturnValue({
-      status: 0,
-      stdout: Buffer.from('Preview build done'),
-      stderr: Buffer.from(''),
-    });
+    // Mock spawn to succeed
+    (spawn as Mock).mockImplementation(() =>
+      mockSpawnProcess({
+        code: 0,
+        stdout: 'Preview build done',
+        stderr: '',
+      })
+    );
 
-    buildForPreview();
+    await buildForPreview();
 
     // Ensure deleteZeroLengthFiles is called, simulating removal of empty.js
-    expect(deleteZeroLengthFiles).toHaveBeenCalledWith('/fake/project/dist');
+    expect(deleteZeroLengthFiles).toHaveBeenCalledWith(
+      path.join('/fake/project', 'dist')
+    );
   });
 });
