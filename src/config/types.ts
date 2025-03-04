@@ -135,25 +135,49 @@ interface MetadataPointers {
    */
   pack: {
     /**
-     * @defaultValue `locales/en/content.json?story.rootSlug`
+     * @defaultValue `'locales/en/content.json?story.rootSlug'`
      */
     rootSlug: MetadataPointer<string, string>;
     /**
-     * @defaultValue `locales/en/content.json?story.wildSlug`
+     * @defaultValue `'locales/en/content.json?story.wildSlug'`
      */
     wildSlug: MetadataPointer<string, string>;
+    /**
+     * @defaultValue `{ path: '~/.reuters-graphics/profile.json?desk', promptAsInitial: true }`
+     */
     desk: MetadataPointer<string, string>;
+    /**
+     * @defaultValue `'en'`
+     */
     language: RNGS.Language | MetadataPointer<string, string>;
+    /**
+     * @defaultValue `'dist/index.html?title'`
+     */
     title: MetadataPointer<string, string>;
+    /**
+     * @defaultValue `'dist/index.html?meta.og:description'`
+     */
     description: MetadataPointer<string, string>;
+    /**
+     * @defaultValue `'locales/en/content.json?story.authors'`
+     */
     byline: MetadataPointerPath;
+    /**
+     * @defaultValue `'~/.reuters-graphics/profile.json?email'`
+     */
     contactEmail: MetadataPointer<string, string>;
   };
   /**
    * Pointers to metadata for individual editions.
    */
   edition: {
+    /**
+     * @defaultValue `'index.html?title'`
+     */
     title: MetadataPointer<string, string>;
+    /**
+     * @defaultValue `'index.html?meta.og:description'`
+     */
     description: MetadataPointer<string, string>;
   };
 }

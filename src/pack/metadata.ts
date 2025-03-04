@@ -77,7 +77,7 @@ export const desk = async () =>
 
 export const contactEmail = async () =>
   prompts.getOrSetPkgText(
-    'reuters.contactEmail',
+    'reuters.graphic.contactEmail',
     context.config.metadataPointers.pack.contactEmail,
     {
       message: "What's the contact author's email?",

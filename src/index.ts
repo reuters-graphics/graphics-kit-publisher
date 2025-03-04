@@ -1,6 +1,5 @@
 import { uploadPreview } from './preview';
 import { loadConfig, withIntroOutro } from './decorators';
-import { buildForPreview } from './build';
 import { Pack } from './pack';
 import { precheck } from './precheck';
 
@@ -14,7 +13,6 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async preview() {
-    await buildForPreview();
     await uploadPreview();
   }
 
@@ -26,7 +24,7 @@ export class GraphicsKitPublisher {
   async upload() {
     await precheck();
     const pack = new Pack();
-    await pack.createOrUpdate();
+    await pack.upload();
   }
 
   /**

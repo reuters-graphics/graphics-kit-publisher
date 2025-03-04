@@ -6,8 +6,7 @@ import { utils } from '@reuters-graphics/graphics-bin';
  * Gets preview URL from package.json. Sets a random URL if one hasn't been set yet.
  */
 export const getPreviewURL = () => {
-  const { reuters } = utils.getPkg();
-  const { preview } = reuters;
+  const preview = utils.getPkgProp('reuters.preview');
   if (preview) return preview;
   const hash = cryptoRandomString({ length: 12, type: 'url-safe' }).replace(
     /[^A-Za-z0-9]/g,

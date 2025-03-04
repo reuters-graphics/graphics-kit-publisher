@@ -61,16 +61,15 @@ export class Pack {
   public async createOrUpdate() {
     const packMetadata = await this.getMetadata();
     const serverClient = getServerClient();
-    const s = spinner();
 
     if (packMetadata.id) {
-      s.start('Updating graphic pack');
+      log.step('Updating graphic pack');
       await serverClient.updateGraphic(packMetadata);
-      return s.stop('✅ Updated graphic pack');
+      return log.step('Updated graphic pack');
     }
-    s.start('Creating a graphic pack');
+    log.step('Creating a graphic pack');
     await serverClient.createGraphic(packMetadata);
-    await s.stop('✅ Created graphic pack');
+    log.step('Created graphic pack');
 
     const packId = serverClient.pack.graphic?.id;
     if (!packId)
@@ -141,18 +140,17 @@ export class Pack {
       message: 'Are you sure you want to delete this pack?',
     });
     if (!confirmed) return;
-    const s = spinner();
-    s.start('Deleting pack');
+    log.step('Deleting pack');
     try {
       await serverClient.deleteGraphic();
       if (!serverClient.pack.hasGraphic) {
-        await s.stop('Deleted pack');
+        log.step('Deleted pack');
         await this.resetPackData(false);
       } else {
-        await s.stop('Unable to delete');
+        log.step('Unable to delete');
       }
     } catch {
-      await s.stop('Unable to delete');
+      log.step('Unable to delete');
     }
   }
 }

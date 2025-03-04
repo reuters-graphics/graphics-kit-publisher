@@ -25,7 +25,7 @@ export type PackageJsonWithPack = {
       pack?: string;
       desk?: Graphic.Desk;
       language?: RNGS.Language;
-      contact?: string;
+      contactEmail?: string;
       slugs?: {
         root: string;
         wild: string;
