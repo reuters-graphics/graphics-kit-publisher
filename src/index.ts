@@ -5,6 +5,7 @@ import { precheck } from './precheck';
 
 export { defineConfig } from './config';
 export { getBasePath } from './basePaths';
+export { PKG } from './pkg';
 
 export class GraphicsKitPublisher {
   /**
@@ -42,13 +43,13 @@ export class GraphicsKitPublisher {
   @withIntroOutro
   async resetData() {
     const pack = new Pack();
-    pack.resetPackData();
+    await pack.resetPackData();
   }
 
   @loadConfig
   @withIntroOutro
   async delete() {
     const pack = new Pack();
-    pack.delete();
+    await pack.delete();
   }
 }

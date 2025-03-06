@@ -6,7 +6,7 @@ import fs from 'fs';
 import { isAxiosError } from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { cancel, isCancel, text } from '@clack/prompts';
-import type { ServerSpinner } from './spinner';
+import { serverSpinner } from './spinner';
 
 interface ApiCredentials {
   username: string;
@@ -20,7 +20,7 @@ export class Token {
     this.credentials = credentials;
   }
 
-  private async _postToken(activeSpinner?: ServerSpinner): Promise<string> {
+  private async _postToken(): Promise<string> {
     const { username, password, apiKey } = this.credentials;
     const credentials = Buffer.from(`${username}:${password}`).toString(
       'base64'
@@ -38,7 +38,7 @@ export class Token {
     } catch (err) {
       if (isAxiosError(err)) {
         if (err?.response?.status === 401) {
-          const token = await this._promptForToken(activeSpinner);
+          const token = await this._promptForToken();
           return token;
         }
       }
@@ -78,20 +78,20 @@ export class Token {
     }
   }
 
-  private async _promptForToken(activeSpinner?: ServerSpinner) {
+  private async _promptForToken() {
     const tempToken = this._readCachedTempToken() as string | undefined;
     if (tempToken) return tempToken;
-    if (activeSpinner) activeSpinner.pause();
+    serverSpinner.pause();
     const token = await text({
       message:
-        "Your server credentials don't have the correct permissions to publish graphics and may have expired.\n\nGet a temporary token from the graphics portal and paste it here:",
+        "Your server credentials don't have the correct permissions to publish graphics and may have expired. Get a temporary token from the graphics portal and paste it here:",
     });
     if (isCancel(token)) {
       cancel('Exiting publisher');
       process.exit(0);
     }
     this._writeCachedTempToken(token);
-    if (activeSpinner) activeSpinner.resume();
+    serverSpinner.resume();
     return token;
   }
 
@@ -123,8 +123,8 @@ export class Token {
    * Get a token for the RNGS server API
    * @returns A validated API token
    */
-  async getToken(activeSpinner?: ServerSpinner) {
-    const token = await this._postToken(activeSpinner);
+  async getToken() {
+    const token = await this._postToken();
     return this.validateToken(token);
   }
 }

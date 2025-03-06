@@ -20,6 +20,7 @@ import { buildForProduction } from '../build';
 import { log } from '@clack/prompts';
 import { confirm } from '../prompts';
 import { serverSpinner } from '../server/spinner';
+import { PKG } from '../pkg';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -31,7 +32,7 @@ export class Pack {
     if (isValid(pack.Metadata, this.metadata))
       return this.metadata as PackMetadata;
 
-    this.metadata.id = utils.getPkgProp('reuters.graphic.pack');
+    this.metadata.id = PKG.pack.id;
     this.metadata.desk = (await desk()) as Graphic.Desk;
     this.metadata.rootSlug = await rootSlug();
     this.metadata.wildSlug = await wildSlug();
@@ -72,7 +73,7 @@ export class Pack {
 
     // Persist the ID
     this.metadata.id = packId;
-    utils.setPkgProp('reuters.graphic.pack', packId);
+    PKG.pack.id = packId;
   }
 
   public async upload() {
@@ -111,19 +112,19 @@ export class Pack {
         })
       : true;
     if (!confirmed) return;
-    const pkg = utils.getPkg();
-    const archives = Object.keys(pkg.reuters.graphic.archives);
+    const archives = Object.keys(PKG.pack.archives || {});
     // Reset pack ID
-    utils.setPkgProp('reuters.graphic.pack', '');
+    PKG.pack.id = '';
     // Reset all URLs
-    utils.setPkgProp('homepage', '');
-    for (const archive of archives) {
-      utils.setPkgProp(`reuters.graphic.archives.${archive}.url`, '');
+    PKG.homepage = '';
+    for (const archiveId of archives) {
+      PKG.archive(archiveId).url = '';
+      PKG.archive(archiveId).uploaded = '';
     }
   }
 
   async delete() {
-    this.metadata.id = utils.getPkgProp('reuters.graphic.id');
+    this.metadata.id = PKG.pack.id;
     if (!this.metadata.id) {
       log.error(
         "Can't find an ID for this graphic pack to delete it. Have you uploaded the pack yet?"

@@ -24,8 +24,8 @@ importers:
         specifier: ^0.0.4
         version: 0.0.4
       '@reuters-graphics/server-client':
-        specifier: ^2.0.2
-        version: 2.0.2
+        specifier: ^2.0.3
+        version: 2.0.3
       archiver:
         specifier: ^7.0.1
         version: 7.0.1
@@ -1326,8 +1326,8 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  '@reuters-graphics/server-client@2.0.2':
-    resolution: {integrity: sha512-TJ+jGdtuXO3spjOLTVEbeeDzs5K6rT5GhLgEVLnGWfWAuxFJAjZoIQpePe7RgY6Y+9BvMPlLgamebaSucJJ/Mw==}
+  '@reuters-graphics/server-client@2.0.3':
+    resolution: {integrity: sha512-VbEkw2nqG6TlTcgKshyRbJLaspvWZBqLCoh4BGSs5xtFcbtLldrtRJHdsEC8dXw/Dxc6ZQUFK+J8zjT9C6Ah7g==}
     engines: {node: '>=16.0.0'}
 
   '@reuters-graphics/yaks-eslint@0.0.6':
@@ -7543,7 +7543,7 @@ snapshots:
     transitivePeerDependencies:
       - babel-plugin-macros
 
-  '@reuters-graphics/server-client@2.0.2':
+  '@reuters-graphics/server-client@2.0.3':
     dependencies:
       ajv: 8.17.1
       ajv-formats: 2.1.1(ajv@8.17.1)

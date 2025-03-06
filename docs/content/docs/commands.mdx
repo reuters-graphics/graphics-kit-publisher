@@ -38,6 +38,12 @@ npx graphics-publisher restart
 
 Sometimes a graphic pack in the server gets mangled. Run this to remove existing pack IDs and URLs from `package.json`, allowing you to create a new pack next time you upload your project. This command will preserve all other pack metadata previously saved, e.g., titles, descriptions, etc.
 
+<Aside>
+As a general rule, if your project hasn't published yet, you should use the [`delete`](#delete) command, which will also clear out all the previous pack's metadata from `package.json`.
+
+If your project _has_ published, that isn't an option, so you can use this command.
+</Aside>
+
 ## Delete
 
 ```console

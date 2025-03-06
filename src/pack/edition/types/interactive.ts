@@ -15,6 +15,7 @@ import {
 import { context } from '../../../context';
 import { serverSpinner } from '../../../server/spinner';
 import picocolors from 'picocolors';
+import { PKG } from '../../../pkg';
 
 export class Interactive extends Edition {
   public static type = 'interactive' as const;
@@ -34,10 +35,7 @@ export class Interactive extends Edition {
    * @returns Edition URL
    */
   async getUrl() {
-    const archiveUrlKey = `reuters.graphic.archives.${this.archive.id}.url`;
-    const archiveUploadedKey = `reuters.graphic.archives.${this.archive.id}.uploaded`;
-
-    const existingUrl = utils.getPkgProp(archiveUrlKey);
+    const existingUrl = PKG.archive(this.archive.id).url;
     if (existingUrl) return existingUrl as string;
 
     if (!this.pack.metadata.id)
@@ -94,8 +92,12 @@ export class Interactive extends Edition {
       'www.reuters.com/graphics'
     );
 
-    utils.setPkgProp(archiveUrlKey, standardisedURL);
-    utils.setPkgProp(archiveUploadedKey, new Date().toISOString());
+    PKG.archive(this.archive.id).url = standardisedURL;
+    PKG.archive(this.archive.id).uploaded = new Date().toISOString();
+
+    if (this.archive.type === 'public') {
+      PKG.homepage = standardisedURL;
+    }
 
     fs.rmSync(zipPath);
     return standardisedURL;

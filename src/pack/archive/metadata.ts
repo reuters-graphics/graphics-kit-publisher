@@ -3,6 +3,8 @@ import { validateOrMessage, archiveEdition } from '../../validators';
 import { context } from '../../context';
 import * as prompts from '../../prompts';
 import type { Archive } from '.';
+import picocolors from 'picocolors';
+import { PKG } from '../../pkg';
 
 export type ArchiveEditionsMetadata = {
   language: RNGS.Language;
@@ -16,10 +18,10 @@ export type ArchiveEditionsMetadata = {
 
 export const title = async (archive: Archive) =>
   prompts.getOrSetPkgText<string, string>(
-    `reuters.graphic.archives.${archive.id}.title`,
+    PKG.dotPaths.archives.title(archive.id),
     context.config.metadataPointers.edition.title,
     {
-      message: "What's the title for this graphic archive?",
+      message: `What's the title for the ${picocolors.cyan(archive.id)} archive?`,
       validate: (value) => {
         const maxArchiveTitleLength = 255 - archive.pack.metadata.title!.length;
         if (value.length >= maxArchiveTitleLength)
@@ -31,10 +33,10 @@ export const title = async (archive: Archive) =>
 
 export const description = async (archive: Archive) =>
   prompts.getOrSetPkgText(
-    `reuters.graphic.archives.${archive.id}.description`,
+    PKG.dotPaths.archives.description(archive.id),
     context.config.metadataPointers.edition.description,
     {
-      message: "What's the description for this graphic archive?",
+      message: `What's the description for the ${picocolors.cyan(archive.id)} archive?`,
       validate: (value) => {
         const maxArchiveDescriptionLength =
           255 - archive.pack.metadata.description!.length;

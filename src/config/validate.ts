@@ -60,7 +60,7 @@ const ConfigSchema = v.required(
     ),
     packLocations: v.required(
       v.object({
-        dotcom: v.pipe(v.string(), v.nonEmpty()),
+        dotcom: v.union([v.literal(false), v.pipe(v.string(), v.nonEmpty())]),
         embeds: mediaEditionLocation,
         statics: mediaEditionLocation,
       })

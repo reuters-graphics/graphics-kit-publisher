@@ -5,6 +5,7 @@ import { isValid, pack, validateOrMessage } from '../validators';
 import { utils } from '@reuters-graphics/graphics-bin';
 import slugify from 'slugify';
 import ordinal from 'ordinal';
+import { PKG } from '../pkg';
 
 export type PackMetadata = {
   id?: string;
@@ -20,7 +21,7 @@ export type PackMetadata = {
 
 export const rootSlug = async () =>
   prompts.getOrSetPkgText(
-    'reuters.graphic.slugs.root',
+    PKG.dotPaths.pack.slugs.root,
     context.config.metadataPointers.pack.rootSlug,
     {
       message:
@@ -31,7 +32,7 @@ export const rootSlug = async () =>
 
 export const wildSlug = async () =>
   prompts.getOrSetPkgText(
-    'reuters.graphic.slugs.wild',
+    PKG.dotPaths.pack.slugs.wild,
     context.config.metadataPointers.pack.wildSlug,
     {
       message:
@@ -42,7 +43,7 @@ export const wildSlug = async () =>
 
 export const title = async () =>
   prompts.getOrSetPkgText<string, string>(
-    'reuters.graphic.title',
+    PKG.dotPaths.pack.title,
     context.config.metadataPointers.pack.title,
     {
       message: "What's the title for this graphic pack?",
@@ -52,7 +53,7 @@ export const title = async () =>
 
 export const description = async () =>
   prompts.getOrSetPkgText(
-    'reuters.graphic.description',
+    PKG.dotPaths.pack.description,
     context.config.metadataPointers.pack.description,
     {
       message: "What's the description for this graphic pack?",
@@ -62,7 +63,7 @@ export const description = async () =>
 
 export const desk = async () =>
   prompts.getOrSetPkgTextSelect(
-    'reuters.graphic.desk',
+    PKG.dotPaths.pack.desk,
     context.config.metadataPointers.pack.desk,
     {
       message: 'What desk is publishing this graphic?',
@@ -77,7 +78,7 @@ export const desk = async () =>
 
 export const contactEmail = async () =>
   prompts.getOrSetPkgText(
-    'reuters.graphic.contactEmail',
+    PKG.dotPaths.pack.contactEmail,
     context.config.metadataPointers.pack.contactEmail,
     {
       message: "What's the contact author's email?",
@@ -87,7 +88,7 @@ export const contactEmail = async () =>
 
 export const language = async () =>
   prompts.getOrSetPkgTextSelect(
-    'reuters.graphic.language',
+    PKG.dotPaths.pack.language,
     context.config.metadataPointers.pack.language,
     {
       message: "What's the language for this graphic pack?",
@@ -130,14 +131,12 @@ const promptAuthor = async (authors: { name: string; link: string }[] = []) => {
 
 const promptAuthors = async () => {
   const authors = await promptAuthor();
-  utils.setPkgProp('reuters.graphic.authors', authors);
+  PKG.pack.authors = authors;
   return authors.map((d) => d.name).join(', ');
 };
 
 export const byline = async () => {
-  const existingAuthors = utils.getPkgProp('reuters.graphic.authors') as
-    | { name: string; link: string }[]
-    | undefined;
+  const existingAuthors = PKG.pack.authors;
   if (existingAuthors) return existingAuthors.map((d) => d.name).join(', ');
   const pointerValue = utils.fs.get(
     context.config.metadataPointers.pack.byline
@@ -148,6 +147,6 @@ export const byline = async () => {
     link: `https://www.reuters.com/authors/${slugify(name.trim(), { lower: true })}/`,
   }));
   if (!isValid(pack.Authors, authors)) return promptAuthors();
-  utils.setPkgProp('reuters.graphic.authors', authors);
+  PKG.pack.authors = authors;
   return authors.map((d) => d.name).join(', ');
 };

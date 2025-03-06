@@ -1,6 +1,6 @@
-import { utils } from '@reuters-graphics/graphics-bin';
 import url from 'url';
 import urljoin from 'url-join';
+import { PKG } from './pkg';
 
 const TESTING_BASE_PATH = 'https://www.reuters.com/graphics/testing/';
 
@@ -22,14 +22,13 @@ const ensureTrailingSlash = (urlPath: string) => {
 const getBasePathByMode = (
   mode: 'dev' | 'test' | 'preview' | 'prod' = 'dev'
 ) => {
-  const pkg = utils.getPkg();
   switch (mode) {
     case 'test':
       return TESTING_BASE_PATH;
     case 'preview':
-      return pkg.reuters.preview;
+      return PKG.preview!;
     case 'prod':
-      return pkg.homepage || '';
+      return PKG.homepage || '';
     default:
       return '';
   }

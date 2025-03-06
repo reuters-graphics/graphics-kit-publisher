@@ -11,6 +11,7 @@ import { zipDir } from '../../utils/zipDir';
 import { PackageMetadataError } from '../../exceptions/errors';
 import { serverSpinner } from '../../server/spinner';
 import picocolors from 'picocolors';
+import { PKG } from '../../pkg';
 
 type ArchiveType = 'public' | 'media';
 
@@ -92,9 +93,8 @@ export class Archive {
     const metadata = await this.getMetadata();
     const zipPath = await this.packUp();
     const zipBuffer = fs.readFileSync(zipPath);
-    const archiveUploadedKey = `reuters.graphic.archives.${this.id}.uploaded`;
 
-    const hasBeenUploaded = utils.getPkgProp(archiveUploadedKey);
+    const hasBeenUploaded = PKG.archive(this.id).uploaded;
 
     const logId = picocolors.cyan(this.id);
     if (!hasBeenUploaded) {
@@ -107,6 +107,6 @@ export class Archive {
       serverSpinner.stop(`Updated archive ${logId}`);
     }
 
-    utils.setPkgProp(archiveUploadedKey, new Date().toISOString());
+    PKG.archive(this.id).uploaded = new Date().toISOString();
   }
 }

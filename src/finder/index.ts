@@ -13,7 +13,7 @@ import {
 import slugify from 'slugify';
 import { uniqBy } from 'es-toolkit';
 import type { Pack } from '../pack';
-import { note, spinner } from '@reuters-graphics/clack';
+import { note } from '@reuters-graphics/clack';
 import picocolors from 'picocolors';
 
 export class Finder {
@@ -31,15 +31,12 @@ export class Finder {
   }
 
   public async findEditions() {
-    const s = spinner(1200);
-    s.start('Finding archives and editions from file system');
     this._findPublicEdition();
     this._findMediaEditions();
     this._findJPGEditions();
     this._findPNGEditions();
     this._findEPSEditions();
     this._findPDFEditions();
-    await s.stop('✅ Found archives and editions');
   }
 
   private _findEditionPaths(glob: string) {
