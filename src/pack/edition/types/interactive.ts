@@ -13,7 +13,8 @@ import {
   PackageMetadataError,
 } from '../../../exceptions/errors';
 import { context } from '../../../context';
-import { spinner } from '@reuters-graphics/clack';
+import { serverSpinner } from '../../../server/spinner';
+import picocolors from 'picocolors';
 
 export class Interactive extends Edition {
   public static type = 'interactive' as const;
@@ -69,8 +70,9 @@ export class Interactive extends Edition {
       description: this.archive.metadata.description,
     };
 
-    const s = spinner();
-    s.start(`Getting a URL for ${this.archive.id}`);
+    const logArchiveId = picocolors.cyan(this.archive.id);
+
+    serverSpinner.start(`Getting a URL for ${logArchiveId}`);
 
     const editions = await serverClient.createEditions(
       `${this.archive.id}.zip`,
@@ -78,7 +80,7 @@ export class Interactive extends Edition {
       editionMetadata
     );
 
-    await s.stop(`✅ Got URL for ${this.archive.id}`);
+    serverSpinner.stop(`Got URL for ${logArchiveId}`);
 
     const { url } = editions[`${this.archive.id}.zip`].interactive;
 

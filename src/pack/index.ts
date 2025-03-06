@@ -19,6 +19,7 @@ import { Finder } from '../finder';
 import { buildForProduction } from '../build';
 import { log } from '@clack/prompts';
 import { confirm } from '../prompts';
+import { serverSpinner } from '../server/spinner';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -57,14 +58,13 @@ export class Pack {
     const packMetadata = await this.getMetadata();
     this.serverClient = getServerClient(packMetadata.id);
 
+    serverSpinner.start();
     if (packMetadata.id) {
-      log.step('Updating graphic pack');
       await this.serverClient.updateGraphic(packMetadata);
-      return log.step('Updated graphic pack');
+      return serverSpinner.stop('Updated graphic pack');
     }
-    log.step('Creating a graphic pack');
     await this.serverClient.createGraphic(packMetadata);
-    log.step('Created graphic pack');
+    serverSpinner.stop('Created graphic pack');
 
     const packId = this.serverClient.pack.graphic?.id;
     if (!packId)
@@ -135,17 +135,17 @@ export class Pack {
       message: 'Are you sure you want to delete this pack?',
     });
     if (!confirmed) return;
-    log.step('Deleting pack');
+    serverSpinner.start();
     try {
       await serverClient.deleteGraphic();
       if (!serverClient.pack.hasGraphic) {
-        log.step('Deleted pack');
+        serverSpinner.stop('Deleted pack');
         await this.resetPackData(false);
       } else {
-        log.step('Unable to delete');
+        serverSpinner.stop('Unable to delete');
       }
     } catch {
-      log.step('Unable to delete');
+      serverSpinner.stop('Unable to delete');
     }
   }
 }

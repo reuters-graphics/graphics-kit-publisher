@@ -1,6 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import picocolors from 'picocolors';
 
+export class HTTPError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class ServerError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 export class ConfigError extends Error {
   constructor(message: string) {
     super(message);
@@ -98,6 +114,14 @@ export class EditionArchiveError extends Error {
 }
 
 export class ServerCredentialsError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class PromptError extends Error {
   constructor(message: string) {
     super(message);
     this.name = this.constructor.name;

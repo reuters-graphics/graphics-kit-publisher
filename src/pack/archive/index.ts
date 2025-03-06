@@ -9,7 +9,8 @@ import { utils } from '@reuters-graphics/graphics-bin';
 import { context } from '../../context';
 import { zipDir } from '../../utils/zipDir';
 import { PackageMetadataError } from '../../exceptions/errors';
-import { spinner } from '@reuters-graphics/clack';
+import { serverSpinner } from '../../server/spinner';
+import picocolors from 'picocolors';
 
 type ArchiveType = 'public' | 'media';
 
@@ -95,16 +96,15 @@ export class Archive {
 
     const hasBeenUploaded = utils.getPkgProp(archiveUploadedKey);
 
-    const s = spinner();
-
+    const logId = picocolors.cyan(this.id);
     if (!hasBeenUploaded) {
-      s.start(`Creating archive ${this.id}`);
+      serverSpinner.start(`Creating archive ${logId}`);
       await serverClient.createEditions(`${this.id}.zip`, zipBuffer, metadata);
-      await s.stop(`✅ Created archive ${this.id}`);
+      serverSpinner.stop(`Created archive ${logId}`);
     } else {
-      s.start(`Updating archive ${this.id}`);
+      serverSpinner.start(`Updating archive ${logId}`);
       await serverClient.updateEditions(`${this.id}.zip`, zipBuffer, metadata);
-      await s.stop(`✅ Updated archive ${this.id}`);
+      serverSpinner.stop(`Updated archive ${logId}`);
     }
 
     utils.setPkgProp(archiveUploadedKey, new Date().toISOString());
