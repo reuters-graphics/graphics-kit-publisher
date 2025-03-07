@@ -27,7 +27,6 @@ import { serverSpinner } from '../server/spinner';
 import { PKG } from '../pkg';
 import { getConnectOptions, getLynxOptions } from './publishOptions';
 import { multiselect } from '../prompts/multiselect';
-import picocolors from 'picocolors';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -163,57 +162,92 @@ export class Pack {
   async publish() {
     const id = PKG.pack.id;
     const archives = PKG.pack.archives;
-    if (!archives) {
+
+    if (!id || !archives) {
       log.warn('No archives found to publish. Have you uploaded yet?');
       return;
     }
 
-    const revisionType = (await select({
-      message: 'What type of update are you publishing?',
-      options: [
-        {
-          label: 'Refresh - Updates code or fixes a superficial typo',
-          value: 'Refresh',
-        },
-        { label: 'Update - Adds new information', value: 'Update' },
-        { label: 'Correction - Corrects an error', value: 'Correction' },
-      ],
-      initialValue: 'Refresh',
-    })) as Publishing.PublishRevisionType;
+    const serverClient = getServerClient(id);
+
+    const isCi = utils.environment.isCiEnvironment();
+
+    const revisionType =
+      isCi ? 'Refresh' : (
+        ((await select({
+          message: 'What type of update are you publishing?',
+          options: [
+            {
+              label: 'Refresh',
+              value: 'Refresh',
+              hint: 'Updates code or fixes a superficial typo',
+            },
+            { label: 'Update', value: 'Update', hint: 'Adds new information' },
+            {
+              label: 'Correction',
+              value: 'Correction',
+              hint: 'Corrects an error',
+            },
+          ],
+          initialValue: 'Refresh',
+        })) as Publishing.PublishRevisionType)
+      );
 
     const lynxOptions = getLynxOptions();
     const connectOptions = getConnectOptions();
+
+    if (isCi) {
+      return serverClient.publishGraphic(
+        [],
+        connectOptions,
+        lynxOptions,
+        revisionType
+      );
+    }
 
     const selectedForLynx = await multiselect({
       message: 'Which editions should be searchable in Lynx?',
       options: lynxOptions.map((archiveEdition) => ({
         value: JSON.stringify(archiveEdition),
-        label: `${archiveEdition[1]} ${picocolors.gray(`(${archiveEdition[0]})`)}`,
+        label: archiveEdition[1],
+        hint: archiveEdition[0],
       })),
+      initialValues: lynxOptions.map((archiveEdition) =>
+        JSON.stringify(archiveEdition)
+      ),
     });
 
     const editionsToLynx = selectedForLynx.map((selected) => {
-      return lynxOptions.find((opt) => JSON.stringify(opt) === selected)!;
+      return lynxOptions.find(
+        (archiveEdition) => JSON.stringify(archiveEdition) === selected
+      )!;
     });
 
     const selectedForConnect = await multiselect({
       message: 'Which editions should be available on Reuters Connect?',
       options: connectOptions.map((archiveEdition) => ({
         value: JSON.stringify(archiveEdition),
-        label: `${archiveEdition[1]} ${picocolors.gray(`(${archiveEdition[0]})`)}`,
+        label: archiveEdition[1],
+        hint: archiveEdition[0],
       })),
+      initialValues: connectOptions.map((archiveEdition) =>
+        JSON.stringify(archiveEdition)
+      ),
     });
 
     const editionsToConnect = selectedForConnect.map((selected) => {
-      return connectOptions.find((opt) => JSON.stringify(opt) === selected)!;
+      return connectOptions.find(
+        (archiveEdition) => JSON.stringify(archiveEdition) === selected
+      )!;
     });
 
-    const serverClient = getServerClient(id);
+    serverSpinner.start();
     await serverClient.publishGraphic(
       [],
       editionsToConnect,
       editionsToLynx,
       revisionType
     );
+    serverSpinner.stop('Published graphic pack');
   }
 }

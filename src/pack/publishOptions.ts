@@ -23,6 +23,7 @@ const lynxFilter = (editionType: EditionType) =>
   EDITION_TYPES_ELIGIBLE_FOR_LYNX.includes(editionType);
 
 export const getOptions = (filter: (type: EditionType) => boolean) => {
+  // Gets all archives saved in package.json
   const archives = PKG.pack.archives;
   if (!archives) return [];
 
@@ -32,7 +33,9 @@ export const getOptions = (filter: (type: EditionType) => boolean) => {
     archiveIds
       .filter((id) => archives[id].editions.some(filter))
       .map((id) =>
-        archives[id].editions.filter(filter).map((type) => [id, type])
+        archives[id].editions
+          .filter(filter)
+          .map((editionType) => [id, editionType])
       )
   );
   return eligible;

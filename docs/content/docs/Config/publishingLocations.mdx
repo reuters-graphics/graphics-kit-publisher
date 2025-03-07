@@ -21,7 +21,13 @@ Set rules for where archives are allowed to publish.
   ```
 - **Default:**
   ```typescript
-  []
+  [{
+    archive: 'public',
+    availableLocations: {
+      lynx: false,
+      connect: false,
+    },
+  }]
   ```
 
 

@@ -38,7 +38,7 @@ export const defaultConfig: Config = {
   packLocations: {
     dotcom: 'dist/',
     embeds: 'dist/embeds/{locale}/{slug}/',
-    statics: 'media-files/{locale}/{slug}/',
+    statics: 'media-assets/{locale}/{slug}/',
   },
   metadataPointers: {
     pack: {
@@ -72,5 +72,13 @@ export const defaultConfig: Config = {
     dependencies: () =>
       '<script type="text/javascript" src="//graphics.thomsonreuters.com/pym.min.js"></script>',
   },
-  publishingLocations: [],
+  publishingLocations: [
+    {
+      archive: 'public',
+      availableLocations: {
+        lynx: false,
+        connect: false,
+      },
+    },
+  ],
 };

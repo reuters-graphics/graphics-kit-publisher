@@ -39,7 +39,7 @@ describe('finder', async () => {
           packLocations: {
             dotcom: 'dist/',
             embeds: 'dist/embeds/{locale}/{slug}/',
-            statics: 'media-files/{locale}/{slug}/',
+            statics: 'media-assets/{locale}/{slug}/',
           },
         });`
       );
@@ -48,16 +48,16 @@ describe('finder', async () => {
       writeFileSync('./dist/embeds/en/chart/index.html', '<html></html>');
       writeFileSync('./dist/embeds/en/referral/index.html', '<html></html>');
       writeFileSync('./dist/embeds/de/map/index.html', '<html></html>');
-      writeFileSync('./media-files/en/map/graphic.JPG', '');
-      writeFileSync('./media-files/en/map/graphic.pdf', '');
-      writeFileSync('./media-files/de/map/graphic.png', '');
-      writeFileSync('./media-files/de/map/graphic.eps', '');
-      writeFileSync('./media-files/it/map/graphic.eps', '');
+      writeFileSync('./media-assets/en/map/graphic.JPG', '');
+      writeFileSync('./media-assets/en/map/graphic.pdf', '');
+      writeFileSync('./media-assets/de/map/graphic.png', '');
+      writeFileSync('./media-assets/de/map/graphic.eps', '');
+      writeFileSync('./media-assets/it/map/graphic.eps', '');
 
       const pack = new Pack();
       const finder = new Finder(pack);
 
-      await finder.findEditions();
+      finder.findEditions();
       finder.logFound();
       expect(pack.archives.length).toBe(5);
       expect(
@@ -80,6 +80,7 @@ describe('finder', async () => {
         pack.archives.some((a) => a.locale === 'de' && a.mediaSlug === 'map')
       ).toBe(true);
 
+      console.log(pack.archives);
       expect(pack.archives.reduce((a, c) => a + c.editions.length, 0)).toBe(13);
     });
   });

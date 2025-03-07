@@ -1,4 +1,7 @@
-import { spinner } from '@clack/prompts';
+import { log, spinner } from '@clack/prompts';
+import { utils } from '@reuters-graphics/graphics-bin';
+
+const isCi = utils.environment.isCiEnvironment();
 
 class ServerSpinner {
   private spinner: ReturnType<typeof spinner>;
@@ -7,19 +10,39 @@ class ServerSpinner {
   }
 
   start(msg?: string) {
-    this.spinner.start(msg || '📡 Sending to the graphics server');
+    const message = msg || '📡 Sending to the graphics server';
+    if (isCi) {
+      log.info(message);
+    } else {
+      this.spinner.start(message);
+    }
   }
 
   pause(msg?: string) {
-    this.spinner.stop(msg || 'Need further input');
+    const message = msg || 'Need further input';
+    if (isCi) {
+      log.info(message);
+    } else {
+      this.spinner.stop(message);
+    }
   }
 
   resume(msg?: string) {
-    this.spinner.start(msg || '📡 Sending to the graphics server');
+    const message = msg || '📡 Sending to the graphics server';
+    if (isCi) {
+      log.info(message);
+    } else {
+      this.spinner.stop(message);
+    }
   }
 
   stop(msg?: string) {
-    this.spinner.stop(msg || 'Sent to the graphics server');
+    const message = msg || 'Sent to the graphics server';
+    if (isCi) {
+      log.info(message);
+    } else {
+      this.spinner.stop(message);
+    }
   }
 }
 
