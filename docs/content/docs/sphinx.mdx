@@ -136,19 +136,51 @@ The root file can be named anything but should be of the same file type as the n
 Editions are ultimately published to readers on reuters.com or to media clients through Reuters Connect.
 
 ```mermaid
-flowchart LR
-  Edition1[interactive]-.->Dotcom[reuters.com]
-  Edition2a[interactive]-.->Dotcom
-  Edition2b[media-interactive]-.->Connect[Reuters Connect]
-  Edition2c[PNG]-.->Connect
+flowchart TB
+  public[public.zip]
+  media["media-en-map.zip"]
+  page-interactive[interactive]
+  embed-interactive[interactive]
+  media-interactive
+  PNG[JPG / PNG]
+  EPS[EPS / PDF]
+  RNGS[Public RNGS]
+  Lynx[Searchable via Lynx]
+  Connect["Reuters Connect (Media)"]
+  page-interactive-.->RNGS
+  embed-interactive-.->RNGS
+  embed-interactive-.->Lynx
+  PNG-.->Lynx
+  PNG-.->RNGS
+  EPS-.->Connect
+  media-interactive-.->Connect
+  public --o page-interactive
+  media --o embed-interactive
+  media --o EPS
+  media --o media-interactive
+  media --o PNG
+  subgraph Archives
+    public
+    media
+  end
   subgraph Editions
-    Edition1
-    Edition2a
-    Edition2b
-    Edition2c
+    page-interactive
+    embed-interactive
+    EPS
+    media-interactive
+    PNG
+    subgraph Embeddable
+      embed-interactive
+      PNG
+    end
+    subgraph Client editable
+      EPS
+      media-interactive
+    end
   end
   subgraph Publish locations
-    Dotcom
+    RNGS
+    Lynx
     Connect
   end
 ```
@@ -159,15 +191,15 @@ Publishing options are available on individual embeds and determine if and where
 
 #### Available locations
 
-- **Public RNGS** : Published to a public URL on reuters.com. This option is only available to [interactive editions](#interactive-editions).
-- **Media** : Published as a purchasable graphic on Reuters Connect. This option is only available to [media interactive editions](#media-interactive-editions) and [static file editions](#static-file-editions).
+- **Public RNGS** : Published to a public URL on reuters.com (including embeddable graphics). This option is only available to [interactive editions](#interactive-editions) and [JPG/PNG static file editions](#static-file-editions).
+- **Media** : Published as a purchasable graphic on Reuters Connect. This option is only available to [media-interactive editions](#media-interactive-editions) and [EPS/PDF static file editions](#static-file-editions).
 
 #### Searchable
 
 Editions can also be made **Searchable in Lynx**, which makes them available to embed in other reuters.com stories through embed tools in Lynx editor and Arc.
 
 <Aside type="caution">
-Only [media interactive editions](#media-interactive-editions) and [static file editions](#static-file-editions) should be made searchable in Lynx.
+Only [interactive editions](#interactive-editions) and [JPG/PNG static file editions](#static-file-editions) should be made searchable in Lynx.
 
 The publisher handles this for you if you publish your project from the terminal.
 </Aside>

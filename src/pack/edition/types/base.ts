@@ -11,7 +11,7 @@ import { utils } from '@reuters-graphics/graphics-bin';
 import { context } from '../../../context';
 import { VALID_LOCALES } from '../../../constants/locales';
 
-type EditionType =
+export type EditionType =
   | 'interactive'
   | 'media-interactive'
   | 'JPG'

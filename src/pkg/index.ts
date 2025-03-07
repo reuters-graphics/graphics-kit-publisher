@@ -99,11 +99,17 @@ class Archive {
   set description(description: Graphic['archives'][string]['description']) {
     utils.setPkgProp(dotPaths.archives.description(this.id), description);
   }
-  get uploaded(): Graphic['archives'][string]['description'] | undefined {
+  get uploaded(): Graphic['archives'][string]['uploaded'] | undefined {
     return utils.getPkgProp(dotPaths.archives.uploaded(this.id));
   }
-  set uploaded(uploaded: Graphic['archives'][string]['description']) {
+  set uploaded(uploaded: Graphic['archives'][string]['uploaded']) {
     utils.setPkgProp(dotPaths.archives.uploaded(this.id), uploaded);
+  }
+  get editions(): Graphic['archives'][string]['editions'] | undefined {
+    return utils.getPkgProp(dotPaths.archives.editions(this.id));
+  }
+  set editions(editions: Graphic['archives'][string]['editions']) {
+    utils.setPkgProp(dotPaths.archives.editions(this.id), editions);
   }
 }
 

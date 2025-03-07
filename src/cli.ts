@@ -25,6 +25,15 @@ prog.command('upload').action(async () => {
   }
 });
 
+prog.command('upload:quick').action(async () => {
+  try {
+    const graphicsPublisher = new GraphicsKitPublisher();
+    await graphicsPublisher.uploadPublicOnly();
+  } catch (error) {
+    handleError(error);
+  }
+});
+
 prog.command('publish').action(async () => {
   try {
     const graphicsPublisher = new GraphicsKitPublisher();
@@ -37,7 +46,7 @@ prog.command('publish').action(async () => {
 prog.command('restart').action(async () => {
   try {
     const graphicsPublisher = new GraphicsKitPublisher();
-    await graphicsPublisher.resetData();
+    await graphicsPublisher.restart();
   } catch (error) {
     handleError(error);
   }

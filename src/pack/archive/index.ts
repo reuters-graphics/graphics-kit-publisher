@@ -108,5 +108,6 @@ export class Archive {
     }
 
     PKG.archive(this.id).uploaded = new Date().toISOString();
+    PKG.archive(this.id).editions = this.editions.map((e) => e.type);
   }
 }

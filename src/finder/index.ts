@@ -30,8 +30,12 @@ export class Finder {
     note(`${archiveLog}`, 'Your graphic pack includes:');
   }
 
-  public async findEditions() {
+  /**
+   * @param publicOnly Find editions for the public archive only
+   */
+  public findEditions(publicOnly = false) {
     this._findPublicEdition();
+    if (publicOnly) return;
     this._findMediaEditions();
     this._findJPGEditions();
     this._findPNGEditions();

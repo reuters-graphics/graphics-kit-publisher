@@ -121,14 +121,6 @@ export class ServerCredentialsError extends Error {
   }
 }
 
-export class PromptError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
 const coalesceToError = (err: unknown) => {
   return (
       err instanceof Error || (err && (err as any).name && (err as any).message)

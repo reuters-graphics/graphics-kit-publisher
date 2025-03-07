@@ -15,7 +15,7 @@ axiosRetry(axios, {
  * @returns Error
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const catchGraphicsServerError = (e: any) => {
+const catchGraphicsServerError = (e: any) => {
   // RNGS errors
   if (has(e, 'response.data.errors')) {
     const errorMessage = e.response.data.errors

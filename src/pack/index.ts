@@ -1,4 +1,8 @@
-import type { Graphic, RNGS } from '@reuters-graphics/server-client';
+import type {
+  Graphic,
+  Publishing,
+  RNGS,
+} from '@reuters-graphics/server-client';
 import { Archive } from './archive';
 import {
   byline,
@@ -18,9 +22,12 @@ import { spinner } from '@reuters-graphics/clack';
 import { Finder } from '../finder';
 import { buildForProduction } from '../build';
 import { log } from '@clack/prompts';
-import { confirm } from '../prompts';
+import { confirm, select } from '../prompts';
 import { serverSpinner } from '../server/spinner';
 import { PKG } from '../pkg';
+import { getConnectOptions, getLynxOptions } from './publishOptions';
+import { multiselect } from '../prompts/multiselect';
+import picocolors from 'picocolors';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -76,12 +83,15 @@ export class Pack {
     PKG.pack.id = packId;
   }
 
-  public async upload() {
+  /**
+   * @param publicOnly Only upload the public archive
+   */
+  public async upload(publicOnly = false) {
     await this.getMetadata();
     await this.createOrUpdate();
     await buildForProduction();
     const finder = new Finder(this);
-    finder.findEditions();
+    finder.findEditions(publicOnly);
     finder.logFound();
     for (const archive of this.archives) {
       await archive.getMetadata();
@@ -148,5 +158,62 @@ export class Pack {
     } catch {
       serverSpinner.stop('Unable to delete');
     }
+  }
+
+  async publish() {
+    const id = PKG.pack.id;
+    const archives = PKG.pack.archives;
+    if (!archives) {
+      log.warn('No archives found to publish. Have you uploaded yet?');
+      return;
+    }
+
+    const revisionType = (await select({
+      message: 'What type of update are you publishing?',
+      options: [
+        {
+          label: 'Refresh - Updates code or fixes a superficial typo',
+          value: 'Refresh',
+        },
+        { label: 'Update - Adds new information', value: 'Update' },
+        { label: 'Correction - Corrects an error', value: 'Correction' },
+      ],
+      initialValue: 'Refresh',
+    })) as Publishing.PublishRevisionType;
+
+    const lynxOptions = getLynxOptions();
+    const connectOptions = getConnectOptions();
+
+    const selectedForLynx = await multiselect({
+      message: 'Which editions should be searchable in Lynx?',
+      options: lynxOptions.map((archiveEdition) => ({
+        value: JSON.stringify(archiveEdition),
+        label: `${archiveEdition[1]} ${picocolors.gray(`(${archiveEdition[0]})`)}`,
+      })),
+    });
+
+    const editionsToLynx = selectedForLynx.map((selected) => {
+      return lynxOptions.find((opt) => JSON.stringify(opt) === selected)!;
+    });
+
+    const selectedForConnect = await multiselect({
+      message: 'Which editions should be available on Reuters Connect?',
+      options: connectOptions.map((archiveEdition) => ({
+        value: JSON.stringify(archiveEdition),
+        label: `${archiveEdition[1]} ${picocolors.gray(`(${archiveEdition[0]})`)}`,
+      })),
+    });
+
+    const editionsToConnect = selectedForConnect.map((selected) => {
+      return connectOptions.find((opt) => JSON.stringify(opt) === selected)!;
+    });
+
+    const serverClient = getServerClient(id);
+    await serverClient.publishGraphic(
+      [],
+      editionsToConnect,
+      editionsToLynx,
+      revisionType
+    );
   }
 }

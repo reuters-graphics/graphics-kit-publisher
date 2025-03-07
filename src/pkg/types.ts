@@ -1,10 +1,12 @@
 import type { Graphic, RNGS } from '@reuters-graphics/server-client';
+import type { EditionType } from '../pack/edition/types/base';
 
-export type PkgArchive = {
+type PkgArchive = {
   url: string;
   title: string;
   description: string;
   uploaded: string;
+  editions: EditionType[];
 };
 
 export type Pkg = {

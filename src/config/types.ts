@@ -214,7 +214,7 @@ type EmbedTemplate = {
 };
 
 interface EditionPublishingLocations {
-  slug: string | RegExp;
+  archive: string | RegExp;
   availableLocations: {
     lynx: boolean;
     connect: boolean;

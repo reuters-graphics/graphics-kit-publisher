@@ -39,18 +39,21 @@ After uploading your project, pack metadata from the graphics server is saved in
           "url": "https://www.reuters.com/graphics/.../",
           "title": "A title",
           "description": "A description",
-          "uploaded": "2025-02-24T00:00:00.000Z"
+          "uploaded": "2025-02-24T00:00:00.000Z",
+          "editions": ["interactive"]
         },
         "media-en-page": {
           "url": "https://www.reuters.com/graphics/.../",
           "title": "A title",
           "description": "A description",
-          "uploaded": "2025-02-24T00:00:00.000Z"
+          "uploaded": "2025-02-24T00:00:00.000Z",
+          "editions": ["interactive", "media-interactive", "EPS", "JPG"]
         },
         "media-de-map": {
           "title": "A title",
           "description": "A description",
-          "uploaded": "2025-02-24T00:00:00.000Z"
+          "uploaded": "2025-02-24T00:00:00.000Z",
+          "editions": ["EPS", "JPG"]
         }
       }
     }
@@ -69,7 +72,7 @@ That said, you probably shouldn't edit things like IDs or URLs unless you're sur
 
 ## Metadata getters
 
-You can use getters from the `PKG` module to retrieve typed data from the metadata saved by the publisher in your project's package.json.
+You can use getters from the `PKG` module to retrieve typed values from the metadata the publisher saves to your project's package.json.
 
 ```typescript
 import { PKG } from '@reuters-graphics/graphics-kit-publisher';
@@ -175,7 +178,7 @@ PKG.pack.authors
 
 #### archives
 
-Access archive metadata using the archive's ID.
+Access archive metadata using the archive's ID with [metadata getters](#metadata-getters).
 
 ##### url
 
@@ -200,9 +203,18 @@ PKG.archive('media-en-page').description
 
 ##### uploaded
 
+Timestamp of the last time this edition was uploaded to the graphics server.
+
 ```typescript
 PKG.archive('media-en-page').uploaded
-// `2025-02-24T00:00:00.000Z`
+// '2025-02-24T00:00:00.000Z'
+```
+
+##### editions
+
+```typescript
+PKG.archive('media-en-page').editions
+// ['interactive', 'media-interactive', 'EPS', 'JPG']
 ```
 
 ## homepage

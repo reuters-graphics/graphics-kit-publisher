@@ -24,5 +24,7 @@ export const dotPaths = {
       `reuters.graphic.archives.${id}.description` as const,
     uploaded: (id: string) =>
       `reuters.graphic.archives.${id}.uploaded` as const,
+    editions: (id: string) =>
+      `reuters.graphic.archives.${id}.editions` as const,
   },
 } as const;

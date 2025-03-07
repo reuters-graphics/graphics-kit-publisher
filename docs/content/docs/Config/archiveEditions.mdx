@@ -25,7 +25,8 @@ For example, a key of `EMBED.txt` would create the following file in the media-i
 
 <FileTree>
 - media-en-map
-  - media-interactive - **EMBED.txt**
+  - media-interactive 
+    - **EMBED.txt**
 </FileTree>
 
 <Aside type="caution">
@@ -72,7 +73,7 @@ export default defineConfig({
   src="https://graphics.thomsonreuters.com/cdn/pym.v1.min.js"
 ></script>
 <script>
-  var pymParent = new pym.Parent('{{ embedSlug }}', '{{ embedUrl }}', {});
+  var pymParent = new pym.Parent('{{ embedSlug }}', '{{{ embedUrl }}}', {});
 </script>
 <div id="{{ embedSlug }}"></div>
 ```

@@ -129,9 +129,6 @@ importers:
       '@types/fs-extra':
         specifier: ^11.0.1
         version: 11.0.1
-      '@types/glob':
-        specifier: ^8.1.0
-        version: 8.1.0
       '@types/mock-fs':
         specifier: ^4.13.4
         version: 4.13.4
@@ -141,15 +138,9 @@ importers:
       '@types/node':
         specifier: ^22.9.0
         version: 22.9.0
-      '@types/open-graph-scraper':
-        specifier: ^4.8.3
-        version: 4.8.3
       '@types/unzipper':
         specifier: ^0.10.7
         version: 0.10.7
-      '@types/url-join':
-        specifier: ^4.0.1
-        version: 4.0.1
       '@vitest/coverage-v8':
         specifier: 3.0.5
         version: 3.0.5(vitest@3.0.5(@types/debug@4.1.12)(@types/node@22.9.0))
@@ -1852,9 +1843,6 @@ packages:
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
 
-  '@types/glob@8.1.0':
-    resolution: {integrity: sha512-IO+MJPVhoqz+28h1qLAcBEH2+xHMK6MTyHJc7MTnnYb6wsoLR29POVGJ7LycmVXIqyy/4/2ShP5sUwTXuOwb/w==}
-
   '@types/hast@3.0.4':
     resolution: {integrity: sha512-WPs+bbQw5aCj+x6laNGWLH3wviHtoCv/P3+otBhbOhJgG8qtpdAMlTCxLtsTWA7LH1Oh/bFCHsBn0TPS5m30EQ==}
 
@@ -1876,9 +1864,6 @@ packages:
   '@types/mdx@2.0.13':
     resolution: {integrity: sha512-+OWZQfAYyio6YkJb3HLxDrvnx6SWWDbC0zVPfBRzUk0/nqoDyf6dNxQi3eArPe8rJ473nobTMQ/8Zk+LxJ+Yuw==}
 
-  '@types/minimatch@5.1.2':
-    resolution: {integrity: sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==}
-
   '@types/mock-fs@4.13.4':
     resolution: {integrity: sha512-mXmM0o6lULPI8z3XNnQCpL0BGxPwx1Ul1wXYEPBGl4efShyxW2Rln0JOPEWGyZaYZMM6OVXM/15zUuFMY52ljg==}
 
@@ -1899,9 +1884,6 @@ packages:
 
   '@types/node@22.9.0':
     resolution: {integrity: sha512-vuyHg81vvWA1Z1ELfvLko2c8f34gyA0zaic0+Rllc5lbCnbSyuvb2Oxpm6TAUAC/2xZN3QGqxBNggD1nNR2AfQ==}
-
-  '@types/open-graph-scraper@4.8.3':
-    resolution: {integrity: sha512-LN6OLc27oqNknCHb7Zd6K2dCwu+ea3zGAdvmCkCDfuehY/C/rfNL+WulTpUPPTrk0t/VbEdVq4Lg3/jbo/2pHw==}
 
   '@types/readdir-glob@1.1.1':
     resolution: {integrity: sha512-ImM6TmoF8bgOwvehGviEj3tRdRBbQujr1N+0ypaln/GWjaerOB26jb93vsRHmdMtvVQZQebOlqt2HROark87mQ==}
@@ -1926,9 +1908,6 @@ packages:
 
   '@types/unzipper@0.10.7':
     resolution: {integrity: sha512-1yZanW3LWgY4wA6x0MyIkyI5rGILLHjXWAvvuz+xF2JzqBLG26ySL+VrSgjz9EWIYLv+icqv5RPW6FN4BJmsHw==}
-
-  '@types/url-join@4.0.1':
-    resolution: {integrity: sha512-wDXw9LEEUHyV+7UWy7U315nrJGJ7p1BzaCxDpEoLr789Dk1WDVMMlf3iBfbG2F8NdWnYyFbtTxUn2ZNbm1Q4LQ==}
 
   '@typescript-eslint/eslint-plugin@8.13.0':
     resolution: {integrity: sha512-nQtBLiZYMUPkclSeC3id+x4uVd1SGtHuElTxL++SfP47jR0zfkZBJHc+gL4qPsgTuypz0k8Y2GheaDYn6Gy3rg==}
@@ -8213,11 +8192,6 @@ snapshots:
 
   '@types/geojson@7946.0.16': {}
 
-  '@types/glob@8.1.0':
-    dependencies:
-      '@types/minimatch': 5.1.2
-      '@types/node': 22.9.0
-
   '@types/hast@3.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -8240,8 +8214,6 @@ snapshots:
 
   '@types/mdx@2.0.13': {}
 
-  '@types/minimatch@5.1.2': {}
-
   '@types/mock-fs@4.13.4':
     dependencies:
       '@types/node': 22.9.0
@@ -8261,10 +8233,6 @@ snapshots:
   '@types/node@22.9.0':
     dependencies:
       undici-types: 6.19.8
-
-  '@types/open-graph-scraper@4.8.3':
-    dependencies:
-      '@types/node': 22.9.0
 
   '@types/readdir-glob@1.1.1':
     dependencies:
@@ -8290,8 +8258,6 @@ snapshots:
   '@types/unzipper@0.10.7':
     dependencies:
       '@types/node': 22.9.0
-
-  '@types/url-join@4.0.1': {}
 
   '@typescript-eslint/eslint-plugin@8.13.0(@typescript-eslint/parser@8.13.0(eslint@9.14.0(jiti@2.4.2))(typescript@5.7.3))(eslint@9.14.0(jiti@2.4.2))(typescript@5.7.3)':
     dependencies:

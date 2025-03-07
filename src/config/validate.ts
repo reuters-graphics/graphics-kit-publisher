@@ -100,7 +100,7 @@ const ConfigSchema = v.required(
     ),
     publishingLocations: v.array(
       v.object({
-        slug: v.union([v.string(), Regex]),
+        archive: v.union([v.string(), Regex]),
         availableLocations: v.required(
           v.object({
             lynx: v.boolean(),
