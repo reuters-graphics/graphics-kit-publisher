@@ -159,6 +159,11 @@ export class Pack {
     }
   }
 
+  private setPublishMetadata() {
+    if (!PKG.pack.published) PKG.pack.published = new Date().toISOString();
+    PKG.pack.updated = new Date().toISOString();
+  }
+
   async publish() {
     const id = PKG.pack.id;
     const archives = PKG.pack.archives;
@@ -197,12 +202,14 @@ export class Pack {
     const connectOptions = getConnectOptions();
 
     if (isCi) {
-      return serverClient.publishGraphic(
+      await serverClient.publishGraphic(
         [],
         connectOptions,
         lynxOptions,
         revisionType
       );
+      this.setPublishMetadata();
+      return;
     }
 
     const selectedForLynx = await multiselect({
@@ -249,5 +256,6 @@ export class Pack {
       revisionType
     );
     serverSpinner.stop('Published graphic pack');
+    this.setPublishMetadata();
   }
 }
