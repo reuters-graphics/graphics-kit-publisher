@@ -22,7 +22,7 @@ const connectFilter = (editionType: EditionType) =>
 const lynxFilter = (editionType: EditionType) =>
   EDITION_TYPES_ELIGIBLE_FOR_LYNX.includes(editionType);
 
-export const getOptions = (filter: (type: EditionType) => boolean) => {
+const getOptions = (filter: (type: EditionType) => boolean) => {
   // Gets all archives saved in package.json
   const archives = PKG.pack.archives;
   if (!archives) return [];
