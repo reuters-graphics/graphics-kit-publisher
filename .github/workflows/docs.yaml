@@ -1,0 +1,12 @@
+name: Docs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  docs:
+    uses: reuters-graphics/action-workflows/.github/workflows/docs.yaml@main
+    secrets: inherit
+    with:
+      docs_directory: './dist'
+      node_version: '20'
