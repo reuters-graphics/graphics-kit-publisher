@@ -79,8 +79,6 @@ describe('finder', async () => {
       expect(
         pack.archives.some((a) => a.locale === 'de' && a.mediaSlug === 'map')
       ).toBe(true);
-
-      console.log(pack.archives);
       expect(pack.archives.reduce((a, c) => a + c.editions.length, 0)).toBe(13);
     });
   });
