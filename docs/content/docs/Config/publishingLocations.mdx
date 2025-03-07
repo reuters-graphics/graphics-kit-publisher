@@ -21,13 +21,7 @@ Set rules for where archives are allowed to publish.
   ```
 - **Default:**
   ```typescript
-  [{
-    archive: 'public',
-    availableLocations: {
-      lynx: false,
-      connect: false,
-    },
-  }]
+  []
   ```
 
 
@@ -60,10 +54,8 @@ export default defineConfig({
 
 A `string` or `RegExp` pattern that matches the ID of your archive.
 
-## availableLocations
-
-### lynx
+## availableLocations.lynx
 Whether archives matching this slug pattern can be promoted in Lynx.
 
-### connect
+## availableLocations.connect
 Whether archives matching this slug pattern can be published to Reuters Connect.

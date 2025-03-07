@@ -72,13 +72,5 @@ export const defaultConfig: Config = {
     dependencies: () =>
       '<script type="text/javascript" src="//graphics.thomsonreuters.com/pym.min.js"></script>',
   },
-  publishingLocations: [
-    {
-      archive: 'public',
-      availableLocations: {
-        lynx: false,
-        connect: false,
-      },
-    },
-  ],
+  publishingLocations: [],
 };
