@@ -97,14 +97,27 @@ export class Archive {
     const hasBeenUploaded = PKG.archive(this.id).uploaded;
 
     const logId = picocolors.cyan(this.id);
-    if (!hasBeenUploaded) {
-      serverSpinner.start(`Creating archive ${logId}`);
-      await serverClient.createEditions(`${this.id}.zip`, zipBuffer, metadata);
-      serverSpinner.stop(`Created archive ${logId}`);
-    } else {
-      serverSpinner.start(`Updating archive ${logId}`);
-      await serverClient.updateEditions(`${this.id}.zip`, zipBuffer, metadata);
-      serverSpinner.stop(`Updated archive ${logId}`);
+    try {
+      if (!hasBeenUploaded) {
+        serverSpinner.start(`Creating archive ${logId}`);
+        await serverClient.createEditions(
+          `${this.id}.zip`,
+          zipBuffer,
+          metadata
+        );
+        serverSpinner.stop(`Created archive ${logId}`);
+      } else {
+        serverSpinner.start(`Updating archive ${logId}`);
+        await serverClient.updateEditions(
+          `${this.id}.zip`,
+          zipBuffer,
+          metadata
+        );
+        serverSpinner.stop(`Updated archive ${logId}`);
+      }
+    } catch (err) {
+      serverSpinner.stop(`Error creating or updating archive ${logId}`);
+      throw err;
     }
 
     PKG.archive(this.id).uploaded = new Date().toISOString();

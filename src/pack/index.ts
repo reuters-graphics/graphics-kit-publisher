@@ -66,12 +66,17 @@ export class Pack {
     this.serverClient = getServerClient(packMetadata.id);
 
     serverSpinner.start();
-    if (packMetadata.id) {
-      await this.serverClient.updateGraphic(packMetadata);
-      return serverSpinner.stop('Updated graphic pack');
+    try {
+      if (packMetadata.id) {
+        await this.serverClient.updateGraphic(packMetadata);
+        return serverSpinner.stop('Updated graphic pack');
+      }
+      await this.serverClient.createGraphic(packMetadata);
+      serverSpinner.stop('Created graphic pack');
+    } catch (err) {
+      serverSpinner.stop('Error creating or updating graphic pack');
+      throw err;
     }
-    await this.serverClient.createGraphic(packMetadata);
-    serverSpinner.stop('Created graphic pack');
 
     const packId = this.serverClient.pack.graphic?.id;
     if (!packId)
@@ -251,13 +256,19 @@ export class Pack {
     });
 
     serverSpinner.start();
-    await serverClient.publishGraphic(
-      [],
-      editionsToConnect,
-      editionsToLynx,
-      revisionType
-    );
-    serverSpinner.stop('Published graphic pack');
+    try {
+      await serverClient.publishGraphic(
+        [],
+        editionsToConnect,
+        editionsToLynx,
+        revisionType
+      );
+      serverSpinner.stop('Published graphic pack');
+    } catch (err) {
+      serverSpinner.stop('Error publishing graphic pack');
+      throw err;
+    }
+
     this.setPublishTimes();
   }
 }

@@ -71,12 +71,18 @@ export class Interactive extends Edition {
     const logArchiveId = picocolors.cyan(this.archive.id);
 
     serverSpinner.start(`Getting a URL for ${logArchiveId}`);
+    let editions: Awaited<ReturnType<typeof serverClient.createEditions>>;
 
-    const editions = await serverClient.createEditions(
-      `${this.archive.id}.zip`,
-      fileBuffer,
-      editionMetadata
-    );
+    try {
+      editions = await serverClient.createEditions(
+        `${this.archive.id}.zip`,
+        fileBuffer,
+        editionMetadata
+      );
+    } catch (err) {
+      serverSpinner.stop(`Error getting URL for ${logArchiveId}`);
+      throw err;
+    }
 
     serverSpinner.stop(`Got URL for ${logArchiveId}`);
 
