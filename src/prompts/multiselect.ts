@@ -20,9 +20,8 @@ interface MultiselectOptions {
 }
 
 /**
- * Prompt for a datetime value
+ * Prompt for multiple values
  */
-
 export const multiselect = async ({
   message,
   options,
