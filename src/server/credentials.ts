@@ -40,7 +40,7 @@ export const getServerCredentials = () => {
   );
   if (!fs.existsSync(credFilePath)) {
     throw new UserConfigError(
-      `Can't find graphics server credentials file ${picocolors.yellow('~/.reuters-graphics/graphics-server.json')}`
+      `Can't find graphics server credentials file ${picocolors.cyan('~/.reuters-graphics/graphics-server.json')}`
     );
   }
   return validate(fs.readJsonSync(credFilePath));

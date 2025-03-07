@@ -126,6 +126,8 @@ export class Pack {
     PKG.pack.id = '';
     // Reset all URLs
     PKG.homepage = '';
+    PKG.pack.published = '';
+    PKG.pack.updated = '';
     for (const archiveId of archives) {
       PKG.archive(archiveId).url = '';
       PKG.archive(archiveId).uploaded = '';
@@ -159,7 +161,7 @@ export class Pack {
     }
   }
 
-  private setPublishMetadata() {
+  private setPublishTimes() {
     if (!PKG.pack.published) PKG.pack.published = new Date().toISOString();
     PKG.pack.updated = new Date().toISOString();
   }
@@ -208,7 +210,7 @@ export class Pack {
         lynxOptions,
         revisionType
       );
-      this.setPublishMetadata();
+      this.setPublishTimes();
       return;
     }
 
@@ -256,6 +258,6 @@ export class Pack {
       revisionType
     );
     serverSpinner.stop('Published graphic pack');
-    this.setPublishMetadata();
+    this.setPublishTimes();
   }
 }
