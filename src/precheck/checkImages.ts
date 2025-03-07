@@ -13,7 +13,7 @@ export const checkImages = async () => {
   const srcDir = path.join(context.cwd, 'src');
   if (!fs.existsSync(srcDir)) return;
   const savile = new Savile(srcDir);
-  log.message('Running a courtesy check for oversized images in your project');
+  log.step('Coutesy check for oversized images in your project ...');
   await savile.findImages();
   await savile.logImageFileSize();
   await sleep(2000);

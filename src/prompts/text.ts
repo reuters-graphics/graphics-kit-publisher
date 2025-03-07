@@ -34,6 +34,10 @@ interface TextOptions {
    * @returns Message or Error if value is invalid
    */
   validate?: (value: string) => string | Error | undefined;
+  /**
+   * Whether a blank value is allowed, defaults to `true`.
+   */
+  required?: boolean;
 }
 
 /**
@@ -132,12 +136,14 @@ export const getOrSetPkgText = async <I, O>(
   promptOptions: TextOptions,
   validate?: (v: string) => void
 ) => {
+  const isRequired = promptOptions.required ?? true;
   // Get the value from package.json if already saved
   const savedValue = utils.getPkgProp(pkgPath) as string | undefined;
+  if (!isRequired && savedValue !== undefined) return savedValue;
   if (savedValue) return savedValue;
   const newValue = await getOrPromptText<I, O>(pointer, promptOptions);
   if (validate) validate(newValue);
   // Save the value to package.json
-  utils.setPkgProp(pkgPath, newValue);
+  utils.setPkgProp(pkgPath, isRequired ? newValue : (newValue ?? ''));
   return newValue;
 };

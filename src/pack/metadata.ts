@@ -38,6 +38,7 @@ export const wildSlug = async () =>
       message:
         "What's the wild slug for this graphic pack, i.e., a more specific page slug?",
       validate: (value) => validateOrMessage(pack.WildSlug, value),
+      required: false,
     }
   );
 

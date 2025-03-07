@@ -112,6 +112,8 @@ describe('Interactive edition', async () => {
     const pack = new Pack();
     pack.serverClient = getServerClient();
     pack.metadata.id = 'fakeid';
+    pack.metadata.title = 'A title';
+    pack.metadata.description = 'A description';
     const interactive = new Interactive(
       pack,
       'dist/embeds/en/page/index.html',

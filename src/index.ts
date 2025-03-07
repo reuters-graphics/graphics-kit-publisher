@@ -2,6 +2,8 @@ import { uploadPreview } from './preview';
 import { loadConfig, withIntroOutro } from './decorators';
 import { Pack } from './pack';
 import { precheck } from './precheck';
+import { log } from '@clack/prompts';
+import picocolors from 'picocolors';
 
 export { defineConfig } from './config';
 export { getBasePath } from './basePaths';
@@ -14,6 +16,7 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async preview() {
+    log.info(`Running: ${picocolors.green('preview')}`);
     await uploadPreview();
   }
 
@@ -23,6 +26,7 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async upload() {
+    log.info(`Running: ${picocolors.green('upload')}`);
     await precheck();
     const pack = new Pack();
     await pack.upload();
@@ -34,9 +38,10 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async uploadPublicOnly() {
+    log.info(`Running: ${picocolors.green('upload:quick')}`);
     await precheck();
     const pack = new Pack();
-    await pack.upload();
+    await pack.upload(true);
   }
 
   /**
@@ -45,6 +50,7 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async publish() {
+    log.info(`Running: ${picocolors.green('publish')}`);
     const pack = new Pack();
     await pack.publish();
   }
@@ -56,6 +62,7 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async restart() {
+    log.info(`Running: ${picocolors.green('restart')}`);
     const pack = new Pack();
     await pack.resetPackData();
   }
@@ -63,6 +70,7 @@ export class GraphicsKitPublisher {
   @loadConfig
   @withIntroOutro
   async delete() {
+    log.info(`Running: ${picocolors.green('delete')}`);
     const pack = new Pack();
     await pack.delete();
   }

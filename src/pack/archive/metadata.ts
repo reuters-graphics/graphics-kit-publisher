@@ -28,6 +28,7 @@ export const title = async (archive: Archive) =>
           return `Must be fewer than ${maxArchiveTitleLength} characters.`;
         return validateOrMessage(archiveEdition.Title, value);
       },
+      required: false,
     }
   );
 
@@ -44,5 +45,6 @@ export const description = async (archive: Archive) =>
           return `Must be fewer than ${maxArchiveDescriptionLength} characters.`;
         return validateOrMessage(archiveEdition.Description, value);
       },
+      required: false,
     }
   );

@@ -8,10 +8,7 @@ import fs from 'fs';
 import { getPreviewImagePath } from '../utils/getPreviewImgPath';
 import sharp from 'sharp';
 import { zipDir } from '../../../utils/zipDir';
-import {
-  EditionArchiveError,
-  PackageMetadataError,
-} from '../../../exceptions/errors';
+import { PackageMetadataError } from '../../../exceptions/errors';
 import { context } from '../../../context';
 import { serverSpinner } from '../../../server/spinner';
 import picocolors from 'picocolors';
@@ -38,12 +35,14 @@ export class Interactive extends Edition {
     const existingUrl = PKG.archive(this.archive.id).url;
     if (existingUrl) return existingUrl as string;
 
-    if (!this.pack.metadata.id)
+    if (
+      !this.pack.metadata.id ||
+      !this.pack.metadata.title ||
+      !this.pack.metadata.description
+    )
       throw new PackageMetadataError(
         'Must create or update graphic pack first'
       );
-    if (!this.archive.metadata.title || !this.archive.metadata.description)
-      throw new EditionArchiveError('Must get archive metadata first');
     if (!this.pack.serverClient)
       throw new PackageMetadataError(
         'Must create or update graphic pack first'
@@ -64,8 +63,10 @@ export class Interactive extends Edition {
 
     const editionMetadata = {
       language: this.locale as RNGS.Language,
-      title: this.archive.metadata.title,
-      description: this.archive.metadata.description,
+      // Falls back to pack title/description, which the server client sends as null
+      title: this.archive.metadata.title || this.pack.metadata.title,
+      description:
+        this.archive.metadata.description || this.pack.metadata.description,
     };
 
     const logArchiveId = picocolors.cyan(this.archive.id);

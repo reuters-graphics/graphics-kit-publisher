@@ -44,8 +44,10 @@ export class Archive {
       this.metadata.title = this.pack.metadata.title;
       this.metadata.description = this.pack.metadata.description;
     } else {
-      this.metadata.title = await title(this);
-      this.metadata.description = await description(this);
+      // Falls back to pack title/description, which the server client sends as null
+      this.metadata.title = (await title(this)) || this.pack.metadata.title;
+      this.metadata.description =
+        (await description(this)) || this.pack.metadata.description;
     }
 
     /**
