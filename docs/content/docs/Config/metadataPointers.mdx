@@ -1,0 +1,298 @@
+---
+title: Metadata pointers
+sidebar:
+  order: 13
+---
+
+import { Aside, FileTree } from '@astrojs/starlight/components';
+
+Metadata pointers tell the publisher where to get metadata values from other files in your project, usually `.json` or built `.html` files.
+
+## Pointer structure
+
+```typescript
+{
+  path: 'locales/en/content.json?story.authors',
+  format: (value: string[]) => {
+    return value.join(', ');
+  },
+  validate: (value: string) => value.length > 3,
+  promptAsInitial: false,
+}
+
+// ... or shorthanded with just path
+'locales/en/content.json?story.authors'
+```
+
+### path
+
+Pointer paths are a compound string of the relative path to a file and the JSON path to a data value within it.
+
+For example, a path like:
+
+```typescript
+{
+  path: 'locales/en/content.json?story.title',
+}
+```
+
+... would point at the following value:
+
+```json
+// locales/en/content.json
+{
+  "story": {
+    "title": "My page title"
+  }
+}
+```
+
+Can also be used to get values from built HTML files like:
+
+```typescript
+{
+  path: 'dist/index.html?title',
+}
+```
+
+```html
+<!-- dist/index.html -->
+<html>
+  <head>
+    <title>My page title</title>
+  </head>
+  <body></body>
+</html>
+```
+
+See more examples at [@reuters-graphics/graphics-bin](https://reuters-graphics.github.io/graphics-bin/functions/utils.fs.get.html).
+
+#### Shorthand syntax
+
+A metadata pointer can also be defined as just the `path` string.
+
+```javascript
+'locales/en/content.json?story.title';
+```
+
+### format
+
+An optional format function to run when the value is found in a file.
+
+For example:
+
+```typescript
+{
+  path: 'locales/en/content.json?story.authors',
+  format: (value: string[]) => {
+    return value.join(', ');
+  },
+}
+```
+
+... could be used to format an array of strings like the following into a single string.
+
+```json
+// locales/en/content.json
+{
+  "story": {
+    "authors": ["Jane Doe", "John Doe"]
+  }
+}
+```
+
+### validate
+
+An optional function to validate the value found in the metadata file.
+
+For example:
+
+```typescript
+{
+  path: '~/.reuters-graphics/profile.json?email',
+  validate: (value: string) => {
+    // Returns true if value is a TR email
+    return /.+@thomsonreuters\.com$/.test(value);
+  },
+}
+```
+
+### promptAsInitial
+
+If the pointer finds a value, use it as the initial value in a prompt to the user. If set to `false` or not defined, skips the prompt if the pointer finds a value and uses it directly.
+
+```typescript
+{
+  path: 'locales/en/content.json?story.title',
+  promptAsInitial: true,
+}
+```
+
+## Pointers
+
+```typescript
+// publisher.config.ts
+import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
+export default defineConfig({
+  metadataPointers: {
+    pack: {
+      rootSlug: 'locales/en/content.json?story.rootSlug',
+      wildSlug: 'locales/en/content.json?story.wildSlug',
+      desk: {
+        path: '~/.reuters-graphics/profile.json?desk',
+        promptAsInitial: true,
+      },
+      language: 'en',
+      title: 'dist/index.html?title',
+      description: 'dist/index.html?meta.og:description',
+      byline: 'locales/en/content.json?story.authors',
+      contactEmail: '~/.reuters-graphics/profile.json?email',
+    },
+    edition: {
+      title: 'index.html?title',
+      description: 'index.html?meta.og:description',
+    },
+  },
+});
+```
+
+### pack.rootSlug
+
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>;
+  ```
+- **Default:**
+  ```typescript
+  'locales/en/content.json?story.rootSlug';
+  ```
+
+### pack.wildSlug
+
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>;
+  ```
+- **Default:**
+  ```typescript
+  'locales/en/content.json?story.wildSlug';
+  ```
+
+### pack.desk
+
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>;
+  ```
+- **Default:**
+  ```typescript
+  { path: '~/.reuters-graphics/profile.json?desk', promptAsInitial: true }
+  ```
+
+### pack.language
+
+- **Type:**
+  ```typescript
+  RNGS.Language | MetadataPointer<string, string>;
+  ```
+- **Default:**
+  ```typescript
+  'en';
+  ```
+
+<Aside>
+  The shorthand syntax is not available for this pointer. Passing a string
+  instead is assumed to be a valid [language
+  code](https://reuters-graphics.github.io/graphics-server-client/types/RNGS.Language.html).
+</Aside>
+
+### pack.title
+
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>;
+  ```
+- **Default:**
+  ```typescript
+  'dist/index.html?title';
+  ```
+
+### pack.description
+
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>;
+  ```
+- **Default:**
+  ```typescript
+  'dist/index.html?meta.og:description';
+  ```
+
+### pack.byline
+
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>;
+  ```
+- **Default:**
+  ```typescript
+  'locales/en/content.json?story.authors';
+  ```
+
+### pack.contactEmail
+
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>;
+  ```
+- **Default:**
+  ```typescript
+  '~/.reuters-graphics/profile.json?email';
+  ```
+
+### edition.title
+
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>;
+  ```
+- **Default:**
+  ```typescript
+  'index.html?title';
+  ```
+
+<Aside>
+The file path part of edition `path` pointers is relative to the edition's root folder.
+
+<FileTree>
+- dist
+  - embeds
+    - en
+      - page Edition root
+        - **index.html**
+</FileTree>
+</Aside>
+
+### edition.description
+
+- **Type:**
+  ```typescript
+  string | MetadataPointer<string, string>;
+  ```
+- **Default:**
+  ```typescript
+  'index.html?meta.og:description';
+  ```
+
+<Aside>
+The file path part of edition `path` pointers is relative to the edition's root folder.
+
+<FileTree>
+- dist
+  - embeds
+    - en
+      - page Edition root
+        - **index.html**
+</FileTree>
+</Aside>

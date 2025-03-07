@@ -60,5 +60,7 @@ export const VALID_FILE_TYPES = [
   '.xsl',
   '.xslt',
   '.webp',
-  '.zip',
+  // We don't want ZIPs b/c they have a high failure rate in the server
+  // depending on how they were built.
+  // '.zip',
 ];

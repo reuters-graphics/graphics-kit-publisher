@@ -1,0 +1,242 @@
+---
+title: Pack metadata
+sidebar:
+  order: 19
+tableOfContents:
+  minHeadingLevel: 2
+  maxHeadingLevel: 5
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+After uploading your project, pack metadata from the graphics server is saved in your project's `package.json` -- most under the `"reuters"` key.
+
+```json
+// package.json
+{
+  "reuters": {
+    "preview": "https://graphics.thomsonreuters.com/.../",
+    "graphic": {
+      "pack": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
+      "desk": "london",
+      "slugs": {
+        "root": "ROOT-SLUG",
+        "wild": "WILD"
+      },
+      "contactEmail": "jane.doe@thomsonreuters.com",
+      "title": "A title",
+      "description": "A description",
+      "authors": [
+        {
+          "name": "Jane Doe",
+          "link": "https://www.reuters.com/authors/jane-doe/"
+        }
+      ],
+      "published": "2025-02-23T00:00:00.000Z",
+      "updated": "2025-02-24T00:00:00.000Z",
+      "archives": {
+        "public": {
+          "url": "https://www.reuters.com/graphics/.../",
+          "title": "A title",
+          "description": "A description",
+          "uploaded": "2025-02-24T00:00:00.000Z",
+          "editions": ["interactive"]
+        },
+        "media-en-page": {
+          "url": "https://www.reuters.com/graphics/.../",
+          "title": "A title",
+          "description": "A description",
+          "uploaded": "2025-02-24T00:00:00.000Z",
+          "editions": ["interactive", "media-interactive", "EPS", "JPG"]
+        },
+        "media-de-map": {
+          "title": "A title",
+          "description": "A description",
+          "uploaded": "2025-02-24T00:00:00.000Z",
+          "editions": ["EPS", "JPG"]
+        }
+      }
+    }
+  },
+  "homepage": "https://www.reuters.com/graphics/.../"
+}
+```
+
+
+<Aside>
+Most of this data is directly editable in your `package.json`. Changes will update the pack in the graphics server when uploaded.
+
+That said, you probably shouldn't edit things like IDs or URLs unless you're sure you know what you're doing.
+</Aside>
+
+
+## Metadata getters
+
+You can use getters from the `PKG` module to retrieve typed values from the metadata the publisher saves to your project's package.json.
+
+```typescript
+import { PKG } from '@reuters-graphics/graphics-kit-publisher';
+
+const homepage = PKG.homepage;
+const enPageUrl = PKG.archive('media-en-page').url;
+```
+
+<Aside type="caution">
+Technically, the `PKG` properties work as setters, too, which the publisher uses internally. But you should probably avoid using them.
+
+Upshot, **DON'T DO THIS** unless you _really_ know what you're doing:
+```typescript
+import { PKG } from '@reuters-graphics/graphics-kit-publisher';
+
+// ❌ Probably a bad idea 👇
+PKG.homepage = 'https://www.reuters.com/graphics/.../'; 
+```
+</Aside>
+
+## reuters
+
+### preview
+
+Preview URL for the project.
+
+```typescript
+PKG.preview
+// 'https://graphics.thomsonreuters.com/.../'
+```
+
+### graphic
+
+#### pack
+
+Graphics pack ID in the Sphinx graphics server.
+
+```typescript
+PKG.pack.id
+// 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
+```
+
+#### desk
+
+```typescript
+PKG.pack.desk
+// 'london'
+```
+
+#### slugs
+
+##### root
+
+```typescript
+PKG.pack.rootSlug
+// 'ROOT-SLUG'
+```
+
+##### wild
+
+```typescript
+PKG.pack.wildSlug
+// 'WILD'
+```
+
+#### language
+
+```typescript
+PKG.pack.language
+// 'en'
+```
+
+#### contactEmail
+
+```typescript
+PKG.pack.contactEmail
+// 'jane.doe@thomsonreuters.com'
+```
+
+#### title
+
+```typescript
+PKG.pack.title
+// 'A title'
+```
+
+#### description
+
+```typescript
+PKG.pack.description
+// 'A description'
+```
+
+#### authors
+
+```typescript
+PKG.pack.authors
+// [
+//   { name: 'Jane Doe', link: 'https://www.reuters.com/authors/jane-doe/' },
+//   { name: 'John Doe', link: 'https://www.reuters.com/authors/john-doe/' },
+// ]
+```
+
+#### published
+Timestamp of first publish of the graphic pack in the graphics server.
+```typescript
+PKG.pack.published
+// '2025-02-23T00:00:00.000Z'
+```
+
+#### updated
+Timestamp of latest publish of the graphic pack in the graphics server.
+```typescript
+PKG.pack.updated
+// '2025-02-24T00:00:00.000Z'
+```
+
+
+#### archives
+
+Access archive metadata using the archive's ID with [metadata getters](#metadata-getters).
+
+##### url
+
+```typescript
+PKG.archive('media-en-page').url
+// 'https://www.reuters.com/graphics/.../'
+```
+
+##### title
+
+```typescript
+PKG.archive('media-en-page').title
+// 'A title'
+```
+
+##### description
+
+```typescript
+PKG.archive('media-en-page').description
+// 'A description'
+```
+
+##### uploaded
+
+Timestamp of the last time this edition was uploaded to the graphics server.
+
+```typescript
+PKG.archive('media-en-page').uploaded
+// '2025-02-24T00:00:00.000Z'
+```
+
+##### editions
+
+```typescript
+PKG.archive('media-en-page').editions
+// ['interactive', 'media-interactive', 'EPS', 'JPG']
+```
+
+## homepage
+
+If the project has a `public` archive, its URL will also be saved here.
+
+```typescript
+PKG.homepage
+// 'https://www.reuters.com/graphics/.../'
+```

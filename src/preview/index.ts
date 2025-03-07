@@ -1,15 +1,36 @@
-import type { ConfigType } from '../setConfig';
-import buildPreview from './build';
-import getPreviewURL from './getPreviewURL';
-import publishToAWS from './publishToAWS';
-import { validateBuiltFiles } from '../validateFileSystem';
+import { PREVIEW_ORIGIN } from '../constants/preview';
 
-/**
- * Upload preview of project to AWS S3
- */
-export default async (config: ConfigType) => {
-  getPreviewURL();
-  buildPreview(config);
-  validateBuiltFiles(config);
-  await publishToAWS(config);
+import { getPreviewURL } from './previewURL';
+import open from 'open';
+import { S3Client, utils } from '@reuters-graphics/graphics-bin';
+import type { PutObjectCommandInput } from '@aws-sdk/client-s3';
+import { context } from '../context';
+import path from 'path';
+import { log } from '@clack/prompts';
+import picocolors from 'picocolors';
+import { buildForPreview } from '../build';
+
+export const uploadPreview = async () => {
+  const url = getPreviewURL();
+
+  await buildForPreview();
+
+  const bucketDirPath = url.replace(PREVIEW_ORIGIN + '/', '');
+
+  const s3 = new S3Client();
+  console.log(''); // Silly to make the logs look nicer...
+  const uploaded = await s3.uploadLocalDirectory(
+    path.join(context.cwd, context.config.build.outDir),
+    bucketDirPath
+  );
+
+  if (utils.environment.isTestingEnvironment()) {
+    return uploaded as PutObjectCommandInput[];
+  }
+
+  log.info(`Uploaded to: ${picocolors.cyan(url)}`);
+
+  if (!utils.environment.isCiEnvironment()) {
+    await open(url);
+  }
 };

@@ -1,7 +1,39 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import chalk from 'chalk';
+import picocolors from 'picocolors';
+
+export class HTTPError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class ServerError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class ConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
 
 export class LocationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class BuildError extends Error {
   constructor(message: string) {
     super(message);
     this.name = this.constructor.name;
@@ -25,6 +57,14 @@ export class FileSystemError extends Error {
   }
 }
 
+export class InvalidLocaleError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 export class InvalidFileTypeError extends Error {
   constructor(message: string) {
     super(message);
@@ -34,6 +74,14 @@ export class InvalidFileTypeError extends Error {
 }
 
 export class PackageMetadataError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class PageMetadataError extends Error {
   constructor(message: string) {
     super(message);
     this.name = this.constructor.name;
@@ -65,6 +113,14 @@ export class EditionArchiveError extends Error {
   }
 }
 
+export class ServerCredentialsError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 const coalesceToError = (err: unknown) => {
   return (
       err instanceof Error || (err && (err as any).name && (err as any).message)
@@ -79,11 +135,13 @@ const coalesceToError = (err: unknown) => {
  */
 export const handleError = (e: unknown) => {
   const error = coalesceToError(e);
-  const prefix = chalk.bold.red('> Publisher ERROR:');
+  const prefix = picocolors.red(picocolors.bold('> Publisher ERROR:'));
   if (error.message) {
     console.error(`${prefix} ${error.message}\n`);
     if (error.stack) {
-      console.error(chalk.gray(error.stack.split('\n').slice(1).join('\n')));
+      console.error(
+        picocolors.gray(error.stack.split('\n').slice(1).join('\n'))
+      );
     }
   } else {
     console.error(`${prefix} ${error}`);

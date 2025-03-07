@@ -1,0 +1,67 @@
+---
+title: Commands
+sidebar:
+  order: 2
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## Preview
+
+```console
+pnpm graphics-publisher preview
+```
+
+Build and upload a preview of your project to our testfiles S3 bucket.
+
+## Upload
+
+```console
+pnpm graphics-publisher upload
+```
+
+Upload your project to the graphics server.
+
+<Aside type="tip">
+**In a hurry?** To more quickly upload _just_ the `public` archive -- i.e., the page published on reuters.com, excluding all other embeds or editable editions -- run:
+
+```console
+pnpm graphics-publisher upload:quick
+```
+</Aside>
+
+
+
+## Publish
+
+```console
+pnpm graphics-publisher publish
+```
+
+Publish your project in the graphics server.
+
+## Restart
+
+```console
+pnpm graphics-publisher restart
+```
+
+Sometimes a graphic pack in the server gets mangled. Run this to remove existing pack IDs and URLs from `package.json`, allowing you to create a new pack next time you upload your project. This command will preserve all other pack metadata previously saved, e.g., titles, descriptions, etc.
+
+<Aside>
+As a general rule, if your project hasn't published yet, you should use the [`delete`](#delete) command, which will also clear out all the previous pack's metadata from `package.json`.
+
+If your project _has_ published, that isn't an option, so you can use this command.
+</Aside>
+
+## Delete
+
+```console
+pnpm graphics-publisher delete
+```
+
+If possible, delete a graphic pack in the graphics server and restart the pack.
+
+<Aside>
+Projects that have been published in the graphics server **cannot** be deleted.
+</Aside>

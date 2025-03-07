@@ -1,0 +1,61 @@
+---
+title: Publishing locations
+sidebar:
+  order: 16
+tableOfContents:
+  minHeadingLevel: 2
+  maxHeadingLevel: 5
+---
+
+Set rules for where archives are allowed to publish.
+
+- **Type:**
+  ```typescript
+  {
+    archive: string | RegExp;
+    availableLocations: {
+      lynx: boolean;
+      connect: boolean;
+    };
+  }[]
+  ```
+- **Default:**
+  ```typescript
+  []
+  ```
+
+
+
+```typescript
+// publisher.config.ts
+import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
+export default defineConfig({
+  publishingLocations: [
+    {
+      archive: 'public',
+      availableLocations: {
+        lynx: false,
+        connect: false,
+      },
+    },
+    {
+      archive: /-referral$/,
+      availableLocations: {
+        lynx: true,
+        connect: false,
+      },
+    },
+  ],
+});
+```
+
+## archive
+
+A `string` or `RegExp` pattern that matches the ID of your archive.
+
+## availableLocations.lynx
+Whether archives matching this slug pattern can be promoted in Lynx.
+
+## availableLocations.connect
+Whether archives matching this slug pattern can be published to Reuters Connect.

@@ -5,6 +5,6 @@ import { node } from '@reuters-graphics/yaks-eslint';
  */
 export default [
   { files: ['src/**/*.{js,ts}'] },
-  { ignores: ['docs/**/*', 'dist/**/*'] },
+  { ignores: ['docs/**/*', 'dist/**/*', '.astro/**/*'] },
   ...node,
 ];
