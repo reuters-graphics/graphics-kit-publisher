@@ -27,6 +27,7 @@ import { serverSpinner } from '../server/spinner';
 import { PKG } from '../pkg';
 import { getConnectOptions, getLynxOptions } from './publishOptions';
 import { multiselect } from '../prompts/multiselect';
+import picocolors from 'picocolors';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -229,6 +230,7 @@ export class Pack {
       initialValues: lynxOptions.map((archiveEdition) =>
         JSON.stringify(archiveEdition)
       ),
+      required: false,
     });
 
     const editionsToLynx = selectedForLynx.map((selected) => {
@@ -247,7 +249,21 @@ export class Pack {
       initialValues: connectOptions.map((archiveEdition) =>
         JSON.stringify(archiveEdition)
       ),
+      required: false,
     });
+
+    if (selectedForConnect.length > 0) {
+      const bloodOath = await confirm({
+        message: `Have you confirmed the editions you're sending to Connect work as embeds in a preview?`,
+        initialValue: false,
+      });
+      if (!bloodOath) {
+        log.error(
+          `💀 ${picocolors.red(picocolors.bold('Always check your embeds.'))} Try publishing again after you have.`
+        );
+        return;
+      }
+    }
 
     const editionsToConnect = selectedForConnect.map((selected) => {
       return connectOptions.find(
@@ -270,5 +286,7 @@ export class Pack {
     }
 
     this.setPublishTimes();
+
+    if (PKG.homepage) log.info(`🏠 ${picocolors.cyan(PKG.homepage)}`);
   }
 }
