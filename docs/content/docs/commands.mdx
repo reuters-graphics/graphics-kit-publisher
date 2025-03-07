@@ -9,7 +9,7 @@ import { Aside } from '@astrojs/starlight/components';
 ## Preview
 
 ```console
-npx graphics-publisher preview
+pnpm graphics-publisher preview
 ```
 
 Build and upload a preview of your project to our testfiles S3 bucket.
@@ -17,16 +17,16 @@ Build and upload a preview of your project to our testfiles S3 bucket.
 ## Upload
 
 ```console
-npx graphics-publisher upload
+pnpm graphics-publisher upload
 ```
 
 Upload your project to the graphics server.
 
 <Aside type="tip">
-**In a hurry?** To more quickly upload _just_ the `public` archive -- i.e., the page published on reuters.com -- run:
+**In a hurry?** To more quickly upload _just_ the `public` archive -- i.e., the page published on reuters.com, excluding all other embeds or editable editions -- run:
 
 ```console
-npx graphics-publisher upload:quick
+pnpm graphics-publisher upload:quick
 ```
 </Aside>
 
@@ -35,7 +35,7 @@ npx graphics-publisher upload:quick
 ## Publish
 
 ```console
-npx graphics-publisher publish
+pnpm graphics-publisher publish
 ```
 
 Publish your project in the graphics server.
@@ -43,7 +43,7 @@ Publish your project in the graphics server.
 ## Restart
 
 ```console
-npx graphics-publisher restart
+pnpm graphics-publisher restart
 ```
 
 Sometimes a graphic pack in the server gets mangled. Run this to remove existing pack IDs and URLs from `package.json`, allowing you to create a new pack next time you upload your project. This command will preserve all other pack metadata previously saved, e.g., titles, descriptions, etc.
@@ -57,7 +57,7 @@ If your project _has_ published, that isn't an option, so you can use this comma
 ## Delete
 
 ```console
-npx graphics-publisher delete
+pnpm graphics-publisher delete
 ```
 
 If possible, delete a graphic pack in the graphics server and restart the pack.
