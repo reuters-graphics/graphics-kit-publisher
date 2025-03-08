@@ -58,11 +58,11 @@ const basePath = getBasePath(mode, {
   rootRelative: true,
 });
 // e.g., "/graphics/ROOT-SLUG/WILD/asdjuspodfg"
-const assetsPath = getBasePath(mode, 'my-assets', {
-  trailingSlash: true,
+const assetsPath = getBasePath(mode, 'cdn', {
+  trailingSlash: false,
   rootRelative: false,
 });
-// e.g., "https://www.reuters.com/graphics/ROOT-SLUG/WILD/asdjuspodfg/my-assets/"
+// e.g., "https://www.reuters.com/graphics/ROOT-SLUG/WILD/asdjuspodfg/cdn"
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
