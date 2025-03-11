@@ -13,6 +13,7 @@ export type Pkg = {
   homepage: string;
   reuters: {
     preview: string;
+    separateAssets: string;
     graphic: {
       slugs: {
         root: string;

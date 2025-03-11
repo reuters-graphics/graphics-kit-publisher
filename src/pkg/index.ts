@@ -131,6 +131,12 @@ class Package {
   set homepage(url: Pkg['homepage']) {
     utils.setPkgProp(dotPaths.homepage, url);
   }
+  get separateAssets(): Pkg['reuters']['separateAssets'] | undefined {
+    return utils.getPkgProp(dotPaths.separateAssets);
+  }
+  set separateAssets(url: Pkg['reuters']['separateAssets']) {
+    utils.setPkgProp(dotPaths.separateAssets, url);
+  }
   archive(id: string) {
     return new Archive(id);
   }

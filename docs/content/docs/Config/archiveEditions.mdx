@@ -135,3 +135,18 @@ export default defineConfig({
   },
 });
 ```
+
+## separateAssets
+
+- **Type:**
+  ```typescript
+  string | false
+  ```
+- **Default:**
+  ```typescript
+  'project-files/'
+  ```
+
+A directory of assets that will be stored remotely on S3 and made available for clients to download separately. This is useful for precursor assets, such as Illustrator or Photoshop files, which are often too large to upload to the graphics server but needed by clients who wish to modify AI graphics. 
+
+When set, all files in the specified directory will be uploaded to S3 in a single ZIP archive and the link will be saved in the project's [package.json](/graphics-kit-publisher/package/#separateassets).
