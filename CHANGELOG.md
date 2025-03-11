@@ -1,5 +1,13 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.0.1
+
+### Patch Changes
+
+- 26ec4aa: Won't prompt for Lynx or Connect publishing if there are no elegible editions to go there. Fixes #90.
+- 035ed69: Fixes validation rules on pack title and description for #87."
+- 1411085: Adds separate asset handling, uploading a directory of assets to S3 directly and NOT to the graphics server, per #89.
+
 ## 3.0.0
 
 ### Major Changes
