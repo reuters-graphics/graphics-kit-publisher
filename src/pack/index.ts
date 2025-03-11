@@ -220,18 +220,21 @@ export class Pack {
       return;
     }
 
-    const selectedForLynx = await multiselect({
-      message: 'Which editions should be searchable in Lynx?',
-      options: lynxOptions.map((archiveEdition) => ({
-        value: JSON.stringify(archiveEdition),
-        label: archiveEdition[1],
-        hint: archiveEdition[0],
-      })),
-      initialValues: lynxOptions.map((archiveEdition) =>
-        JSON.stringify(archiveEdition)
-      ),
-      required: false,
-    });
+    const selectedForLynx =
+      lynxOptions.length > 0 ?
+        await multiselect({
+          message: 'Which editions should be searchable in Lynx?',
+          options: lynxOptions.map((archiveEdition) => ({
+            value: JSON.stringify(archiveEdition),
+            label: archiveEdition[1],
+            hint: archiveEdition[0],
+          })),
+          initialValues: lynxOptions.map((archiveEdition) =>
+            JSON.stringify(archiveEdition)
+          ),
+          required: false,
+        })
+      : [];
 
     const editionsToLynx = selectedForLynx.map((selected) => {
       return lynxOptions.find(
@@ -239,18 +242,21 @@ export class Pack {
       )!;
     });
 
-    const selectedForConnect = await multiselect({
-      message: 'Which editions should be available on Reuters Connect?',
-      options: connectOptions.map((archiveEdition) => ({
-        value: JSON.stringify(archiveEdition),
-        label: archiveEdition[1],
-        hint: archiveEdition[0],
-      })),
-      initialValues: connectOptions.map((archiveEdition) =>
-        JSON.stringify(archiveEdition)
-      ),
-      required: false,
-    });
+    const selectedForConnect =
+      connectOptions.length > 0 ?
+        await multiselect({
+          message: 'Which editions should be available on Reuters Connect?',
+          options: connectOptions.map((archiveEdition) => ({
+            value: JSON.stringify(archiveEdition),
+            label: archiveEdition[1],
+            hint: archiveEdition[0],
+          })),
+          initialValues: connectOptions.map((archiveEdition) =>
+            JSON.stringify(archiveEdition)
+          ),
+          required: false,
+        })
+      : [];
 
     if (selectedForConnect.length > 0) {
       const bloodOath = await confirm({
