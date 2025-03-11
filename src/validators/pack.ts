@@ -89,16 +89,16 @@ const Byline = v.pipe(v.string(), v.trim(), v.nonEmpty(), v.minLength(3));
 export const Title = v.pipe(
   v.string(),
   v.trim(),
-  v.nonEmpty(),
-  v.length(3, 'Title must be at least 3 characters'),
+  v.nonEmpty('Title is required'),
+  v.minLength(3, 'Title must be at least 3 characters'),
   v.maxLength(150, 'Description must be less than 150 characters')
 );
 
 export const Description = v.pipe(
   v.string(),
   v.trim(),
-  v.nonEmpty(),
-  v.length(3, 'Description must be at least 3 characters'),
+  v.nonEmpty('Description is required'),
+  v.minLength(3, 'Description must be at least 3 characters'),
   v.maxLength(150, 'Description must be less than 150 characters')
 );
 

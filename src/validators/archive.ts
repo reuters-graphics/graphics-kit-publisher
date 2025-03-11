@@ -33,7 +33,12 @@ export const Language = v.union(
   'Language is not a valid option.'
 );
 
-export const Title = v.pipe(v.string(), v.trim(), v.nonEmpty(), v.minLength(3));
+export const Title = v.pipe(
+  v.string(),
+  v.trim(),
+  v.nonEmpty('Title is required'),
+  v.minLength(3, 'Title must be at least 3 characters.')
+);
 
 export const Description = v.pipe(v.string(), v.trim());
 
