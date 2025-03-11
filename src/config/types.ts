@@ -200,6 +200,15 @@ interface ArchiveEditions {
    * those already ignored via .gitignore.
    */
   ignore: string[];
+  /**
+   * A directory of assets that will be stored remotely on S3
+   * and made available for clients to download separately. This
+   * is useful for precursor assets, such as Illustrator or Photoshop
+   * files.
+   *
+   * @defaultValue `'project-files/'`
+   */
+  separateAssets: string | false;
 }
 
 type EmbedTemplate = {

@@ -80,8 +80,10 @@ describe('srcArchive', () => {
 
       expect(includedFiles).toContain('file1.txt');
       expect(includedFiles).toContain('src/index.js');
-      expect(includedFiles).toContain('project-files/config.json');
       expect(includedFiles).toContain('src/components/App.svelte');
+
+      // Excluded by separateAssets config
+      expect(includedFiles).not.toContain('project-files/config.json');
 
       expect(includedFiles).not.toContain('dist/dist-file.js');
       expect(includedFiles).not.toContain('file2.log');

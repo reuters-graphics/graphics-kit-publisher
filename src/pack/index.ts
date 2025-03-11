@@ -28,6 +28,7 @@ import { PKG } from '../pkg';
 import { getConnectOptions, getLynxOptions } from './publishOptions';
 import { multiselect } from '../prompts/multiselect';
 import picocolors from 'picocolors';
+import { SeparateAssets } from '../separateAssets';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -106,6 +107,7 @@ export class Pack {
     for (const archive of this.archives) {
       await archive.createOrUpdate();
     }
+    await new SeparateAssets().packAndUpload();
   }
 
   async packUp() {

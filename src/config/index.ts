@@ -65,6 +65,7 @@ export const defaultConfig: Config = {
       'EMBED.txt': ({ embedUrl }) => `${embedUrl}`,
     },
     ignore: [],
+    separateAssets: 'project-files/',
   },
   embedTemplate: {
     declaration: ({ embedUrl, embedSlug }) =>

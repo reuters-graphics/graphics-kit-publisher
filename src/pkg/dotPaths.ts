@@ -1,6 +1,7 @@
 export const dotPaths = {
   preview: 'reuters.preview',
   homepage: 'homepage',
+  separateAssets: 'reuters.separateAssets',
   pack: {
     id: 'reuters.graphic.pack',
     slugs: {

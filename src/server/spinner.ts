@@ -32,7 +32,7 @@ class ServerSpinner {
     if (isCi) {
       log.info(message);
     } else {
-      this.spinner.stop(message);
+      this.spinner.start(message);
     }
   }
 

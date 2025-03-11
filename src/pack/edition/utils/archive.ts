@@ -13,6 +13,7 @@ import {
 import { note } from '@reuters-graphics/clack';
 import dedent from 'dedent';
 import picocolors from 'picocolors';
+import { SeparateAssets } from '../../../separateAssets';
 
 const SPECIALLY_IGNORED_FILES = ['*.secret.*', '.graphics-kit/*'];
 const MAX_ARCHIVE_MB_SIZE = 150;
@@ -47,10 +48,12 @@ class SrcArchive {
       .add(fs.readFileSync(ignoreFile, 'utf8'))
       .createFilter();
 
+    const separateAssets = new SeparateAssets();
+
     const files = globSync('**/*', {
       cwd,
       nodir: true,
-      ignore: ['**/node_modules/**'],
+      ignore: ['**/node_modules/**', ...separateAssets.ignoreGlobs],
     }).filter(gitignoreFilter);
 
     const output = fs.createWriteStream(this.archivePath);
