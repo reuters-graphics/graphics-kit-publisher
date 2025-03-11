@@ -1,0 +1,106 @@
+---
+title: Announcing 3.0
+sidebar:
+  badge: New
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Version 3.0 of the graphics kit publisher is a wholesale rewrite of the library that, under the hood of the [graphics kit](https://github.com/reuters-graphics/bluprint_graphics-kit), packages and publishes projects to the graphics server.
+
+For most users and projects, there will be **no change** to the basic workflow for previewing or publishing projects with 3.0.
+
+Superficially, you'll hopefully notice some improvements in performance and a more streamlined interface in your terminal when you run the publisher. You'll also have more fine-tuned options when publishing.
+
+Here are the major changes:
+
+## New features ✨
+
+### New publishing options
+
+Previously, when publishing your project, your options were to send _ALL_ of your graphics to Connect or Lynx or _NONE_ of them.
+
+With 3.0, we're making it clearer what will happen when you publish by letting you choose which versions go to Connect or Lynx, _individually_, just like you can do in the graphics server portal.
+
+But, to go one better than the portal, we've coded in Matthew Weber-approved rules for which editions _should_ go to Lynx or Connect. Now, if you publish your project with the graphics kit publisher (i.e., in your terminal), you can be sure you haven't published the wrong thing to the wrong place and finely control exactly what parts of your graphic pack you're ready to publish and when.
+
+### Get more metadata directly from source files
+
+Previously, the publisher would ask for pack metadata you'd already entered somewhere else in your project, which was redundant and often annoying (for example, adding authors... 🤮).
+
+With the new [metadata pointers](/graphics-kit-publisher/config/metadatapointers/) feature, the publisher can be configured to retrieve, process and validate those metadata values from the files you've already entered them into.
+
+The pointers are a complex bit of config code, but you won't need to worry about any of that -- **just enjoy having to answer fewer questions** when you upload your project.
+
+
+### No more asking to resize images
+
+We've moved image resizing and optimising to a separate project, [savile](https://reuters-graphics.github.io/savile/), which allows you to trim oversize images in your own time and use git history to walk back unwanted results.
+
+Now, you'll simply get a courtesy warning, showing you how many images in your project _may_ be oversized, without stopping you every time you upload.
+
+### New build error logs
+
+Most of the errors you'll experience when previewing, uploading or publishing happen when building your project's code. Often the errors can be tricky to find in the massive stack of logs the publisher previously spit out.
+
+In this version, we've trimmed back the build logs, bigly. 
+
+Now, if all goes well, you'll get a nice spinner without getting spammed by unnecessary warning messages and logs from your project's dependencies.
+
+And if something goes wrong? We're specifically capturing the error messages that threw, so we can log those without all the other build details, giving you a better hint directly in your terminal what went wrong. And if that still doesn't cut it, we're outputting log files directly in your project. You can then more easily review them or share them with your nearest developer. 
+
+Those logs, too, are split between normal build logs and error messages, so you can get to the root of the problem faster.
+
+### A new system for dealing with `project-files`
+
+The Illustrator and other precursor files behind our graphics have always been an uneasy fit with the graphics server, which has a hard limit on the size of project we can upload that was often far short of the actual size of our projects with those assets.
+
+To stop us wrestling with that limit on every other project, the publisher previously simply excluded the entire directory of AI files -- the `project-files` folder in the graphics kit. But while that solved the hard bounce from the graphics server, it introduced very big, new problems.
+
+For clients who wanted to customise our graphics, they had zero access to the AI files behind them. And internally, too often files that were critical to a project would go missing when someone on another desk would be desperately trying to fix an error after the publishing desk had long gone to bed.
+
+The new publisher adds a feature to hopefully solve all these problems:
+
+In 3.0, the publisher will pack up all the files in `project-files` (or another [configured folder](/graphics-kit-publisher/config/archiveeditions/#separateassets)) into a ZIP file and upload it to S3 each time you upload your project to the graphics server. The URL to download it again is added to [a field](/graphics-kit-publisher/package/#separateassets) in your package.json.
+
+That means even large assets -- including those you've ignored from git because they're > 100MB -- will also have a remote source accessible to clients and your colleagues, alike.
+
+### New commands
+
+We've added a few non-standard commands for cases that occasionally come up, like needing to delete a pack or restart a new one. Check out the [Commands page](/graphics-kit-publisher/commands/) for details.
+
+### Other updates
+
+3.0 updates dependencies across the board, which hopefully means _fewer_ edge cases that block your uploads. We've also reviewed and added new safeguards to stop you uploading a graphics pack we know the graphics server will struggle, all with clearer error messages about what went wrong and how to fix it.
+
+## Future roadmap 🗺️
+
+In addition to all the above creature comforts, a lot of effort in 3.0 went into making the publisher more flexible and configurable for different types of projects.
+
+That work was been aimed at a few important targets:
+
+### LSEG interactives
+
+The final hurdle to making interactive graphics embeddable via Lynx is clearing the final hurdle to publishing them in LSEG. These changes _should_ make it far easier for us to give the LSEG development team custom metadata they will likely need when we nail down their system's requirements -- hopefully, later this year.
+
+### One publisher to rule them all
+
+The flexibility added in 3.0 is specifically designed to extend the publisher's reach beyond the graphics kit to other rigs, like those responsible for SREPs and AI embeds.
+
+Watch for updates in those rigs later this year, which should finally unify the publishing experience across all our projects.
+
+### One _rig_ to rule them all
+
+On the far horizon is the possibility of finally unifying all our rigs into the one graphics kit, so you can always start the same way whether you're publishing pages or embeds, or even if you change your mind halfway through a project.
+
+The 3.0 publisher will be the foundation for such a rig. More TK.
+
+## Troubleshooting
+
+Any large-scale rewrite of a complex library like the publisher creates an opportunity for bugs to creep in.
+
+To help combat that, we've writen dozens and dozens of new tests to help guarantee the code does what it says on the tin.
+
+But **if you still discover an issue with the publisher**, please do file a ticket on GitHub. We'll take them either on [graphics-kit-publisher](https://github.com/reuters-graphics/graphics-kit-publisher/issues) repo, directly, or on the [graphics-kit](https://github.com/reuters-graphics/bluprint_graphics-kit/issues) repo.
+
+**⭐️ For editors**, we recommend uploading your project to the graphics server a little early as you're first building with the new publisher. (Tbh, we _always_ recommend not leaving your first upload too late, but especially for the next month or two.) That'll make sure you're not caught out up against a hard deadline.

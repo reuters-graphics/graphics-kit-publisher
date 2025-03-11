@@ -4,49 +4,88 @@ sidebar:
   order: 2
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
 ## Preview
 
-```console
-pnpm graphics-publisher preview
-```
-
 Build and upload a preview of your project to our testfiles S3 bucket.
+
+<Tabs>
+  <TabItem label="CLI" icon="setting">
+    ```console
+    pnpm graphics-publisher preview
+    ```
+  </TabItem>
+  <TabItem label="Graphics kit" icon="laptop">
+    ```console
+    pnpm preview
+    ```
+  </TabItem>
+</Tabs>
 
 ## Upload
 
-```console
-pnpm graphics-publisher upload
-```
-
 Upload your project to the graphics server.
+
+<Tabs>
+  <TabItem label="CLI" icon="setting">
+    ```console
+    pnpm graphics-publisher upload
+    ```
+  </TabItem>
+  <TabItem label="Graphics kit" icon="laptop">
+    ```console
+    pnpm upload
+    ```
+  </TabItem>
+</Tabs>
+
+
 
 <Aside type="tip">
 **In a hurry?** To more quickly upload _just_ the `public` archive -- i.e., the page published on reuters.com, excluding all other embeds or editable editions -- run:
 
-```console
-pnpm graphics-publisher upload:quick
-```
+<Tabs>
+<TabItem label="CLI" icon="setting">
+  ```console
+  pnpm graphics-publisher upload:quick
+  ```
+</TabItem>
+<TabItem label="Graphics kit" icon="laptop">
+  ```console
+  pnpm upload:quick
+  ```
+</TabItem>
+</Tabs>
 </Aside>
 
 
 
 ## Publish
 
-```console
-pnpm graphics-publisher publish
-```
-
 Publish your project in the graphics server.
 
+<Tabs>
+  <TabItem label="CLI" icon="setting">
+    ```console
+    pnpm graphics-publisher publish
+    ```
+  </TabItem>
+  <TabItem label="Graphics kit" icon="laptop">
+    ```console
+    pnpm pub
+    ```
+  </TabItem>
+</Tabs>
+
+
 ## Restart
+
+Sometimes a graphic pack in the server gets mangled. Run this to remove existing pack IDs and URLs from `package.json`, allowing you to create a new pack next time you upload your project. This command will preserve all other pack metadata previously saved, e.g., titles, descriptions, etc.
 
 ```console
 pnpm graphics-publisher restart
 ```
-
-Sometimes a graphic pack in the server gets mangled. Run this to remove existing pack IDs and URLs from `package.json`, allowing you to create a new pack next time you upload your project. This command will preserve all other pack metadata previously saved, e.g., titles, descriptions, etc.
 
 <Aside>
 As a general rule, if your project hasn't published yet, you should use the [`delete`](#delete) command, which will also clear out all the previous pack's metadata from `package.json`.
@@ -56,11 +95,12 @@ If your project _has_ published, that isn't an option, so you can use this comma
 
 ## Delete
 
+If possible, delete a graphic pack in the graphics server and restart the pack.
+
 ```console
 pnpm graphics-publisher delete
 ```
 
-If possible, delete a graphic pack in the graphics server and restart the pack.
 
 <Aside>
 Projects that have been published in the graphics server **cannot** be deleted.
