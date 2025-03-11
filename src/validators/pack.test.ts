@@ -113,4 +113,32 @@ describe('pack validators', () => {
       ]);
     }).toThrowError('Expected "link"');
   });
+
+  it('should validate pack title', () => {
+    expect(() => {
+      validateOrThrow(pack.Title, 'Coronavirus in the US');
+    }).not.toThrowError();
+
+    expect(() => {
+      validateOrThrow(pack.Title, '');
+    }).toThrowError('Title is required');
+
+    expect(() => {
+      validateOrThrow(pack.Title, 'a');
+    }).toThrowError('3 characters');
+  });
+
+  it('should validate pack description', () => {
+    expect(() => {
+      validateOrThrow(pack.Description, 'Coronavirus in the US');
+    }).not.toThrowError();
+
+    expect(() => {
+      validateOrThrow(pack.Description, '');
+    }).toThrowError('Description is required');
+
+    expect(() => {
+      validateOrThrow(pack.Description, 'a');
+    }).toThrowError('3 characters');
+  });
 });

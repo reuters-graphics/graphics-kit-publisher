@@ -51,7 +51,7 @@ describe('archive validators', () => {
 
     expect(() => {
       validateOrThrow(archive.Title, '');
-    }).toThrowError('Invalid length');
+    }).toThrowError('3 characters');
   });
 
   it('should validate description', () => {
