@@ -35,6 +35,7 @@ export class Pack {
   public archives: Archive[] = [];
   public packRoot = '.graphics-kit/pack/' as const;
   public serverClient?: ReturnType<typeof getServerClient>;
+  private separateAssets = new SeparateAssets();
 
   private async getMetadata() {
     if (isValid(pack.Metadata, this.metadata))
@@ -95,6 +96,9 @@ export class Pack {
   public async upload(publicOnly = false) {
     await this.getMetadata();
     await this.createOrUpdate();
+
+    this.separateAssets.setUrl();
+
     await buildForProduction();
     const finder = new Finder(this);
     finder.findEditions(publicOnly);
@@ -107,7 +111,7 @@ export class Pack {
     for (const archive of this.archives) {
       await archive.createOrUpdate();
     }
-    await new SeparateAssets().packAndUpload();
+    if (!publicOnly) await this.separateAssets.packAndUpload();
   }
 
   async packUp() {
