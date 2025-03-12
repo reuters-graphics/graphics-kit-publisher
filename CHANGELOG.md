@@ -1,5 +1,11 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.0.2
+
+### Patch Changes
+
+- 86ac092: Fixes separate assets issues #95 and #96.
+
 ## 3.0.1
 
 ### Patch Changes
