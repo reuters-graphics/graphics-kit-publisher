@@ -7,6 +7,8 @@ import { globSync } from 'glob';
 import { PREVIEW_ORIGIN } from '../constants/preview';
 import { PKG } from '../pkg';
 import { spinner } from '@reuters-graphics/clack';
+import { log } from '@clack/prompts';
+import picocolors from 'picocolors';
 
 export class SeparateAssets {
   private dir?: string;
@@ -68,23 +70,49 @@ export class SeparateAssets {
     });
   }
 
-  async packAndUpload() {
+  private get bucketKey() {
     if (!this.dir) return;
     const packId = PKG.pack.id;
     if (!packId) return;
+    return `client-files/pack-assets/${packId}/assets.zip`;
+  }
+
+  setUrl() {
+    if (!this.bucketKey) return;
+    const url = `${PREVIEW_ORIGIN}/${this.bucketKey}`;
+    PKG.separateAssets = url;
+  }
+
+  private logFileSize(filepath: string) {
+    const sizeInBytes = fs.statSync(filepath).size;
+    const sizeInMb = sizeInBytes / (1024 * 1024);
+    const colour =
+      sizeInMb < 150 ? picocolors.green
+      : sizeInMb < 300 ? picocolors.yellow
+      : picocolors.red;
+    if (sizeInMb < 1024) {
+      // File size is under 1 GB, display in MB as an integer
+      log.step(`Archive size: ${colour(`${Math.floor(sizeInMb)} MB`)}`);
+    } else {
+      // Display size in GB rounded to one decimal place
+      const sizeInGb = sizeInMb / 1024;
+      log.step(`Archive size: ${colour(`${sizeInGb.toFixed(1)} GB`)}`);
+    }
+  }
+
+  async packAndUpload() {
+    if (!this.bucketKey) return;
     const s = spinner(2000);
     try {
       s.start('Packaging separate assets');
       await this.makeArchive();
       await s.stop('📦 All packed.');
 
-      const bucketKey = `client-files/pack-assets/${packId}/assets.zip`;
-      const url = `${PREVIEW_ORIGIN}/${bucketKey}`;
-      PKG.separateAssets = url;
+      this.logFileSize(this.tempArchivePath);
 
       s.start('Uploading separate assets archive to S3.');
       const s3 = new S3Client();
-      await s3.uploadLocalFile(this.tempArchivePath, bucketKey);
+      await s3.uploadLocalFile(this.tempArchivePath, this.bucketKey);
       await s.stop('Uploaded to S3.');
 
       fs.rmSync(this.tempArchivePath);
