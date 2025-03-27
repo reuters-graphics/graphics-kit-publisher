@@ -76,7 +76,6 @@ const ConfigSchema = v.required(
             contactEmail: optionalPointer,
             language: v.union([v.enum(Locale), optionalPointer]),
             title: optionalPointer,
-            description: optionalPointer,
           })
         ),
         edition: v.required(

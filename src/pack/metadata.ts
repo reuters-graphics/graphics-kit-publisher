@@ -47,20 +47,20 @@ export const title = async () =>
     PKG.dotPaths.pack.title,
     context.config.metadataPointers.pack.title,
     {
-      message: "What's the title for this graphic pack?",
+      message: "What's the title for this graphic pack (general topic)?",
       validate: (value) => validateOrMessage(pack.Title, value),
     }
   );
 
-export const description = async () =>
-  prompts.getOrSetPkgText(
-    PKG.dotPaths.pack.description,
-    context.config.metadataPointers.pack.description,
-    {
-      message: "What's the description for this graphic pack?",
-      validate: (value) => validateOrMessage(pack.Description, value),
-    }
-  );
+/**
+ * Pack description defaults to "Graphic" but can
+ * be overriden from package.json.
+ */
+export const description = () => {
+  if (PKG.pack.description) return PKG.pack.description;
+  PKG.pack.description = 'Graphic';
+  return PKG.pack.description!;
+};
 
 export const desk = async () =>
   prompts.getOrSetPkgTextSelect(

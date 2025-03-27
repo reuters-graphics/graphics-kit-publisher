@@ -155,10 +155,6 @@ interface MetadataPointers {
      */
     title: MetadataPointer<string, string>;
     /**
-     * @defaultValue `'dist/index.html?meta.og:description'`
-     */
-    description: MetadataPointer<string, string>;
-    /**
      * @defaultValue `'locales/en/content.json?story.authors'`
      */
     byline: MetadataPointerPath;
