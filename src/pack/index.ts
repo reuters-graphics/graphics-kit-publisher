@@ -37,6 +37,11 @@ export class Pack {
   public serverClient?: ReturnType<typeof getServerClient>;
   private separateAssets = new SeparateAssets();
 
+  private suffix(value: string, suffix = ':') {
+    const val = value.trim();
+    return val.endsWith(suffix) ? val : val + suffix;
+  }
+
   private async getMetadata() {
     if (isValid(pack.Metadata, this.metadata))
       return this.metadata as PackMetadata;
@@ -46,8 +51,8 @@ export class Pack {
     this.metadata.rootSlug = await rootSlug();
     this.metadata.wildSlug = await wildSlug();
     this.metadata.language = (await language()) as RNGS.Language;
-    this.metadata.title = await title();
-    this.metadata.description = await description();
+    this.metadata.title = this.suffix(await title());
+    this.metadata.description = this.suffix(description());
     this.metadata.byline = await byline();
     this.metadata.contactEmail = await contactEmail();
     return this.metadata as PackMetadata;

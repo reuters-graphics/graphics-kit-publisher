@@ -26,7 +26,7 @@ After uploading your project, pack metadata from the graphics server is saved in
       },
       "contactEmail": "jane.doe@thomsonreuters.com",
       "title": "A title",
-      "description": "A description",
+      "description": "Graphic",
       "authors": [
         {
           "name": "Jane Doe",
@@ -173,8 +173,13 @@ PKG.pack.title
 
 ```typescript
 PKG.pack.description
-// 'A description'
+// 'Graphic'
 ```
+
+<Aside>
+By default, the pack description is just `"Graphic"` but can be overriden from package.json.
+</Aside>
+
 
 #### authors
 

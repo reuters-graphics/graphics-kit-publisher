@@ -50,7 +50,6 @@ export const defaultConfig: Config = {
       },
       language: 'en',
       title: 'dist/index.html?title',
-      description: 'dist/index.html?meta.og:description',
       byline: 'locales/en/content.json?story.authors',
       contactEmail: '~/.reuters-graphics/profile.json?email',
     },
