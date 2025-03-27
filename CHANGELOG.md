@@ -1,5 +1,11 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.0.3
+
+### Patch Changes
+
+- 7842ecc: Changes handling for pack title and description.
+
 ## 3.0.2
 
 ### Patch Changes
