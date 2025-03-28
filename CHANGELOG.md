@@ -1,5 +1,11 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.0.4
+
+### Patch Changes
+
+- 658334a: Changes the prompt for a server token, which fixes cases on some computers where the long Sphinx token breaks integrated terminals.
+
 ## 3.0.3
 
 ### Patch Changes
