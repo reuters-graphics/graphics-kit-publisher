@@ -5,8 +5,9 @@ import { ServerError } from '../exceptions/errors';
 import fs from 'fs';
 import { isAxiosError } from 'axios';
 import { jwtDecode } from 'jwt-decode';
-import { cancel, isCancel, text } from '@clack/prompts';
+import { cancel } from '@clack/prompts';
 import { serverSpinner } from './spinner';
+import prompts from 'prompts';
 
 interface ApiCredentials {
   username: string;
@@ -82,14 +83,27 @@ export class Token {
     const tempToken = this._readCachedTempToken() as string | undefined;
     if (tempToken) return tempToken;
     serverSpinner.pause();
-    const token = await text({
-      message:
-        "Your server credentials don't have the correct permissions to publish graphics and may have expired. Get a temporary token from the graphics portal and paste it here:",
-    });
-    if (isCancel(token)) {
-      cancel('Exiting publisher');
-      process.exit(0);
-    }
+
+    console.log(''); // Silly to make the logs look nicer...
+    // We're using prompts here because clack is choking on some folks' machines
+    // when confronted with the 1000+ character token we get from Sphinx.
+    // cf. https://github.com/reuters-graphics/graphics-kit-publisher/issues/100
+    const { token }: { token: string } = await prompts(
+      {
+        type: 'text',
+        name: 'token',
+        message:
+          "Your server credentials don't have the correct permissions to publish graphics and may have expired.\n\nGet a temporary token from the graphics portal and paste it here:\n",
+      },
+      {
+        onCancel: () => {
+          cancel('Exiting publisher');
+          process.exit(0);
+        },
+      }
+    );
+    console.log('');
+
     this._writeCachedTempToken(token);
     serverSpinner.resume();
     return token;

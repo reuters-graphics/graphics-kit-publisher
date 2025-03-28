@@ -80,6 +80,9 @@ importers:
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
+      prompts:
+        specifier: ^2.4.2
+        version: 2.4.2
       rimraf:
         specifier: ^5.0.1
         version: 5.0.1
@@ -138,6 +141,9 @@ importers:
       '@types/node':
         specifier: ^22.9.0
         version: 22.9.0
+      '@types/prompts':
+        specifier: ^2.4.9
+        version: 2.4.9
       '@types/unzipper':
         specifier: ^0.10.7
         version: 0.10.7
@@ -1884,6 +1890,9 @@ packages:
 
   '@types/node@22.9.0':
     resolution: {integrity: sha512-vuyHg81vvWA1Z1ELfvLko2c8f34gyA0zaic0+Rllc5lbCnbSyuvb2Oxpm6TAUAC/2xZN3QGqxBNggD1nNR2AfQ==}
+
+  '@types/prompts@2.4.9':
+    resolution: {integrity: sha512-qTxFi6Buiu8+50/+3DGIWLHM6QuWsEKugJnnP6iv2Mc4ncxE4A/OJkjuVOA+5X0X1S/nq5VJRa8Lu+nwcvbrKA==}
 
   '@types/readdir-glob@1.1.1':
     resolution: {integrity: sha512-ImM6TmoF8bgOwvehGviEj3tRdRBbQujr1N+0ypaln/GWjaerOB26jb93vsRHmdMtvVQZQebOlqt2HROark87mQ==}
@@ -8233,6 +8242,11 @@ snapshots:
   '@types/node@22.9.0':
     dependencies:
       undici-types: 6.19.8
+
+  '@types/prompts@2.4.9':
+    dependencies:
+      '@types/node': 22.9.0
+      kleur: 3.0.3
 
   '@types/readdir-glob@1.1.1':
     dependencies:
