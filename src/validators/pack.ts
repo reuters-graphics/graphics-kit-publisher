@@ -65,7 +65,12 @@ export const WildSlug = v.pipe(
   )
 );
 
-const AuthorName = v.pipe(v.string(), v.trim(), v.nonEmpty(), v.minLength(3));
+export const AuthorName = v.pipe(
+  v.string(),
+  v.trim(),
+  v.nonEmpty(),
+  v.minLength(3)
+);
 
 export const AuthorLink = v.pipe(
   v.string(),
@@ -74,14 +79,17 @@ export const AuthorLink = v.pipe(
   v.url('Author link must be a valid URL.')
 );
 
-export const Authors = v.array(
-  v.required(
-    v.strictObject({
-      name: AuthorName,
-      link: AuthorLink,
-    }),
-    'Author must have a name and a valid link.'
-  )
+export const Authors = v.pipe(
+  v.array(
+    v.required(
+      v.strictObject({
+        name: AuthorName,
+        link: AuthorLink,
+      }),
+      'Author must have a name and a valid link.'
+    )
+  ),
+  v.minLength(1)
 );
 
 const Byline = v.pipe(v.string(), v.trim(), v.nonEmpty(), v.minLength(3));

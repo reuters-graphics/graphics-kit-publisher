@@ -111,6 +111,9 @@ export const language = async () =>
 const promptAuthor = async (authors: { name: string; link: string }[] = []) => {
   const name = await prompts.text({
     message: `What's the ${ordinal(authors.length + 1)} author's name?`,
+    validate: (value: string) => {
+      if (!isValid(pack.AuthorName, value)) return 'Name is invalid';
+    },
   });
   const link = await prompts.text({
     message: `What's the link to ${name}'s author page?`,
@@ -138,11 +141,17 @@ const promptAuthors = async () => {
 
 export const byline = async () => {
   const existingAuthors = PKG.pack.authors;
-  if (existingAuthors) return existingAuthors.map((d) => d.name).join(', ');
+
+  if (existingAuthors && isValid(pack.Authors, existingAuthors)) {
+    return existingAuthors.map((d) => d.name).join(', ');
+  }
+
   const pointerValue = utils.fs.get(
     context.config.metadataPointers.pack.byline
   ) as string[] | undefined;
-  if (!pointerValue) return promptAuthors();
+
+  if (!pointerValue || !Array.isArray(pointerValue)) return promptAuthors();
+
   const authors = pointerValue.map((name) => ({
     name,
     link: `https://www.reuters.com/authors/${slugify(name.trim(), { lower: true })}/`,
