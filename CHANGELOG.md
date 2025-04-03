@@ -1,5 +1,11 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.0.5
+
+### Patch Changes
+
+- 4d41e27: Fixes metadata validation to ensure project has at least one author
+
 ## 3.0.4
 
 ### Patch Changes
