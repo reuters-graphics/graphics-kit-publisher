@@ -14,13 +14,17 @@ import { reflowText } from '../utils/reflowText';
 
 const formatErrorConsoleLog = (err: string) => {
   if (err.trim().length === 0) return '';
+  const reflowedErrors = reflowText(err.trim(), 80);
   return (
     '\nPossible errors found:\n\n' +
-    reflowText(err.trim(), 80)
+    reflowedErrors
       .slice(0, 10)
       .map((line) => (line.length > 80 ? line.slice(0, 75) + ' ...' : line))
       .map((e) => `${picocolors.bold(picocolors.red(e.trim()))}\n`)
-      .join('')
+      .join('') +
+    (reflowedErrors.length > 10 ?
+      `${picocolors.dim(picocolors.red(`+${reflowedErrors.length - 10} more error lines...`))}\n`
+    : '')
   );
 };
 
@@ -78,7 +82,7 @@ const buildApp = async (buildScript: string) => {
         note(
           dedent`Your project failed to build. This usually means there's an error somewhere in\nyour app's code.
           ${errorsLog}
-          See the build logs in ${picocolors.cyan(logs.logDirName)} for details from the build process.
+          See the full logs in ${picocolors.cyan(logs.logDirName)} to diagnose what went wrong.
           `,
           '🚨 Build error'
         );
