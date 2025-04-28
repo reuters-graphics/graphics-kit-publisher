@@ -1,5 +1,11 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.0.6
+
+### Patch Changes
+
+- 428420b: Improved build log errors
+
 ## 3.0.5
 
 ### Patch Changes
