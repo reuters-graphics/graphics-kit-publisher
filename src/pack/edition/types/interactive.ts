@@ -12,6 +12,7 @@ import { PackageMetadataError } from '../../../exceptions/errors';
 import { context } from '../../../context';
 import { serverSpinner } from '../../../server/spinner';
 import picocolors from 'picocolors';
+import urljoin from 'url-join';
 import { PKG } from '../../../pkg';
 
 export class Interactive extends Edition {
@@ -50,15 +51,15 @@ export class Interactive extends Edition {
 
     const { serverClient } = this.pack;
 
-    const dummyArchive = path.join(
+    const dummyArchivePath = path.join(
       context.cwd,
       `.graphics-kit/temp/${this.archive.id}`
     );
-    const dummyPage = path.join(dummyArchive, 'interactive/index.html');
+    const dummyPagePath = path.join(dummyArchivePath, 'interactive/index.html');
 
-    utils.fs.ensureWriteFile(dummyPage, '<html></html>');
+    utils.fs.ensureWriteFile(dummyPagePath, '<html></html>');
 
-    const zipPath = await zipDir(dummyArchive);
+    const zipPath = await zipDir(dummyArchivePath);
     const fileBuffer = fs.readFileSync(zipPath);
 
     const editionMetadata = {
@@ -120,6 +121,7 @@ export class Interactive extends Edition {
       fs.copyFileSync(absSrc, absDest);
     }
     await this.makePreviewImage(archiveDir);
+    if (this.archive.type === 'media') await this.makeManifest(archiveDir);
   }
 
   private async makePreviewImage(archiveDir: string) {
@@ -130,6 +132,69 @@ export class Interactive extends Edition {
     fs.writeFileSync(
       path.join(archiveDir, this.type, '_gfxpreview.png'),
       previewImgBuffer
+    );
+  }
+
+  private async makeStaticImage(archiveDir: string) {
+    const previewImagePath = await getPreviewImagePath(this.path);
+    const previewImgBuffer = await sharp(fs.readFileSync(previewImagePath))
+      .png()
+      .toBuffer();
+    const staticImagePath = path.join(
+      archiveDir,
+      this.type,
+      'statics/graphic.png'
+    );
+    utils.fs.ensureDir(staticImagePath);
+    fs.writeFileSync(staticImagePath, previewImgBuffer);
+  }
+
+  private getEditionId() {
+    const edition = this.pack.serverClient?.pack?.graphic?.editions?.find(
+      (e) =>
+        e.file.fileName === `${this.archive.id}.zip` &&
+        e.editionName === this.type
+    );
+    if (!edition) return '';
+    return edition.id;
+  }
+
+  private async makeManifest(archiveDir: string) {
+    const editionUrl = PKG.archive(this.archive.id).url;
+    if (!editionUrl)
+      throw new PackageMetadataError(
+        'Must get URL for interactive edition before writing manifest'
+      );
+
+    await this.makeStaticImage(archiveDir);
+
+    const manifest = {
+      pack: {
+        id: this.pack.metadata.id || '',
+        canonicalUrl: PKG.homepage,
+        title: this.pack.metadata.title || '',
+        caption: this.pack.metadata.description || '',
+      },
+      id: this.getEditionId(),
+      rootUrl: editionUrl,
+      title: this.archive.metadata.title || '',
+      caption: this.archive.metadata.description || '',
+      embeds: {
+        url: editionUrl,
+        embedCode: {
+          declaration: this.archive.metadata.embed?.declaration || '',
+          dependencies: this.archive.metadata.embed?.dependencies || '',
+        },
+        image: {
+          id: '',
+          url: urljoin(editionUrl, 'statics/graphic.png'),
+        },
+      },
+    };
+
+    fs.writeFileSync(
+      path.join(archiveDir, this.type, 'manifest.json'),
+      JSON.stringify(manifest)
     );
   }
 }

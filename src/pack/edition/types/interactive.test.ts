@@ -50,6 +50,13 @@ describe('Interactive edition', async () => {
     expect(
       fs.existsSync('graphics-pack/public/interactive/_gfxpreview.png')
     ).toBe(true);
+    // Should not create manifest or static image
+    expect(
+      fs.existsSync('graphics-pack/public/interactive/manifest.json')
+    ).toBe(false);
+    expect(
+      fs.existsSync('graphics-pack/public/interactive/statics/graphic.png')
+    ).toBe(false);
   });
 
   it('should pack up media interactive', async () => {
@@ -64,6 +71,18 @@ describe('Interactive edition', async () => {
       'dist/cdn/images/my-image.jpg': mockFs.load(
         path.join(__dirname, 'test.jpg')
       ),
+      'package.json': JSON.stringify({
+        homepage: 'https://www.reuters.com/graphics/ABC123/',
+        reuters: {
+          graphic: {
+            archives: {
+              'media-en-page': {
+                url: 'https://www.reuters.com/graphics/XYZ789/',
+              },
+            },
+          },
+        },
+      }),
     });
 
     const pack = new Pack();
@@ -87,6 +106,45 @@ describe('Interactive edition', async () => {
     expect(
       fs.existsSync('graphics-pack/media-en-page/interactive/_gfxpreview.png')
     ).toBe(true);
+    expect(
+      fs.existsSync('graphics-pack/media-en-page/interactive/manifest.json')
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        'graphics-pack/media-en-page/interactive/statics/graphic.png'
+      )
+    ).toBe(true);
+    const manifest = JSON.parse(
+      fs.readFileSync(
+        'graphics-pack/media-en-page/interactive/manifest.json',
+        'utf8'
+      )
+    );
+    expect(manifest).toMatchInlineSnapshot(`
+      {
+        "caption": "",
+        "embeds": {
+          "embedCode": {
+            "declaration": "",
+            "dependencies": "",
+          },
+          "image": {
+            "id": "",
+            "url": "https://www.reuters.com/graphics/XYZ789/statics/graphic.png",
+          },
+          "url": "https://www.reuters.com/graphics/XYZ789/",
+        },
+        "id": "",
+        "pack": {
+          "canonicalUrl": "https://www.reuters.com/graphics/ABC123/",
+          "caption": "",
+          "id": "",
+          "title": "",
+        },
+        "rootUrl": "https://www.reuters.com/graphics/XYZ789/",
+        "title": "",
+      }
+    `);
   });
 
   it('getURL', async () => {
