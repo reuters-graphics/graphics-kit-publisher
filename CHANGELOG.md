@@ -1,5 +1,12 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.1.0
+
+### Minor Changes
+
+- 6e0de7d: Adds SRI attributes to assets in media index.html files
+- 8c238ba: Adds manifests to embeddable interactive editions for LSEG compatibility.
+
 ## 3.0.6
 
 ### Patch Changes
