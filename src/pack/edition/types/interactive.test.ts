@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach, vi, type Mock } from 'vitest';
 import mockFs from 'mock-fs';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
 import { Interactive } from './interactive';
 import { Pack } from '../..';
 import dedent from 'dedent';
@@ -24,13 +25,17 @@ afterEach(() => {
 describe('Interactive edition', async () => {
   it('should pack up public interactive', async () => {
     mockFs({
-      'dist/index.html': dedent`<html>
-      <head>
-      <link rel="canonical" href="https://www.reuters.com/graphics/my-project/" />
-      <meta property="og:image" content="https://www.reuters.com/graphics/my-project/cdn/images/my-image.jpg" />
-      </head>
-      </html>`,
-      'dist/cdn/scripts/app.js': '',
+      'dist/index.html': dedent`
+        <html>
+        <head>
+          <link rel="canonical" href="https://www.reuters.com/graphics/my-project/" />
+          <link rel="stylesheet" href="https://www.reuters.com/graphics/my-project/cdn/styles/main.css">
+          <script src="https://www.reuters.com/graphics/my-project/cdn/scripts/app.js"></script>
+          <meta property="og:image" content="https://www.reuters.com/graphics/my-project/cdn/images/my-image.jpg" />
+        </head>
+        </html>`,
+      'dist/cdn/scripts/app.js': 'console.log("public app");',
+      'dist/cdn/styles/main.css': 'body { padding: 0; }',
       'dist/cdn/images/my-image.jpg': mockFs.load(
         path.join(__dirname, 'test.jpg')
       ),
@@ -61,13 +66,19 @@ describe('Interactive edition', async () => {
 
   it('should pack up media interactive', async () => {
     mockFs({
-      'dist/embeds/en/page/index.html': dedent`<html>
-      <head>
-      <link rel="canonical" href="https://www.reuters.com/graphics/my-project/embeds/en/page" />
-      <meta property="og:image" content="https://www.reuters.com/graphics/my-project/cdn/images/my-image.jpg" />
-      </head>
-      </html>`,
-      'dist/cdn/scripts/app.js': '',
+      'dist/embeds/en/page/index.html': dedent`
+        <html>
+        <head>
+          <link rel="canonical" href="https://www.reuters.com/graphics/my-project/embeds/en/page/" />
+          <link rel="stylesheet" href="https://www.reuters.com/graphics/my-project/cdn/styles/main.css">
+          <link rel="modulepreload" href="https://www.reuters.com/graphics/my-project/cdn/scripts/chunk.js">
+          <script src="https://www.reuters.com/graphics/my-project/cdn/scripts/app.js"></script>
+          <meta property="og:image" content="https://www.reuters.com/graphics/my-project/cdn/images/my-image.jpg" />
+        </head>
+        </html>`,
+      'dist/cdn/scripts/app.js': "console.log('app');",
+      'dist/cdn/scripts/chunk.js': 'export const chunk = true;',
+      'dist/cdn/styles/main.css': 'body { margin: 0; }',
       'dist/cdn/images/my-image.jpg': mockFs.load(
         path.join(__dirname, 'test.jpg')
       ),
@@ -145,6 +156,46 @@ describe('Interactive edition', async () => {
         "title": "",
       }
     `);
+
+    // Verify SRI attributes were added to index.html
+    const indexHtml = fs.readFileSync(
+      'graphics-pack/media-en-page/interactive/index.html',
+      'utf8'
+    );
+
+    // Should have integrity attributes on all three resources
+    const integrityMatches = indexHtml.match(/integrity="sha384-/g);
+    expect(integrityMatches).toHaveLength(3);
+
+    // Verify each resource has the correct hash
+    // Calculate expected hashes
+    const appJsContent = "console.log('app');";
+    const appJsHash = `sha384-${crypto
+      .createHash('sha384')
+      .update(appJsContent)
+      .digest('base64')}`;
+
+    const chunkJsContent = 'export const chunk = true;';
+    const chunkJsHash = `sha384-${crypto
+      .createHash('sha384')
+      .update(chunkJsContent)
+      .digest('base64')}`;
+
+    const cssContent = 'body { margin: 0; }';
+    const cssHash = `sha384-${crypto
+      .createHash('sha384')
+      .update(cssContent)
+      .digest('base64')}`;
+
+    // Check that the hashes are present in the HTML
+    expect(indexHtml).toContain(`integrity="${appJsHash}"`);
+    expect(indexHtml).toContain(`integrity="${chunkJsHash}"`);
+    expect(indexHtml).toContain(`integrity="${cssHash}"`);
+
+    // Verify crossorigin attributes were added
+    expect(indexHtml).toContain('crossorigin="anonymous"');
+    const crossoriginMatches = indexHtml.match(/crossorigin="anonymous"/g);
+    expect(crossoriginMatches).toHaveLength(3);
   });
 
   it('getURL', async () => {

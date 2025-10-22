@@ -14,6 +14,7 @@ import { serverSpinner } from '../../../server/spinner';
 import picocolors from 'picocolors';
 import urljoin from 'url-join';
 import { PKG } from '../../../pkg';
+import { addSRI } from '../../../utils/sri';
 
 export class Interactive extends Edition {
   public static type = 'interactive' as const;
@@ -116,6 +117,19 @@ export class Interactive extends Edition {
     const files = globSync('**/*', { cwd, nodir: true });
     for (const file of files) {
       const absSrc = path.join(cwd, file);
+
+      // Add SRI attributes to media index.html files before copying
+      if (
+        this.archive.type === 'media' &&
+        path.basename(file) === 'index.html'
+      ) {
+        try {
+          addSRI(absSrc);
+        } catch {
+          // If SRI generation fails, continue without it
+        }
+      }
+
       const absDest = path.join(archiveDir, this.type, file);
       utils.fs.ensureDir(absDest);
       fs.copyFileSync(absSrc, absDest);
