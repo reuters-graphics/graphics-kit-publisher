@@ -1,5 +1,11 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.1.2
+
+### Patch Changes
+
+- e13517c: Cleans up invalid temp tokens.
+
 ## 3.1.1
 
 ### Patch Changes
