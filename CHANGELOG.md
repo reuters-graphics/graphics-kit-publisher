@@ -1,5 +1,11 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.1.1
+
+### Patch Changes
+
+- 5f1827e: Bump @reuters-graphics/server-client
+
 ## 3.1.0
 
 ### Minor Changes
