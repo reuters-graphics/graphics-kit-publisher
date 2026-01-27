@@ -79,6 +79,16 @@ export class Token {
     }
   }
 
+  private _clearCachedTempToken() {
+    try {
+      if (fs.existsSync(TEMP_SERVER_TOKEN_PATH)) {
+        fs.rmSync(TEMP_SERVER_TOKEN_PATH);
+      }
+    } catch {
+      // Handles file system write permissions...
+    }
+  }
+
   private async _promptForToken() {
     const tempToken = this._readCachedTempToken() as string | undefined;
     if (tempToken) return tempToken;
@@ -110,8 +120,20 @@ export class Token {
   }
 
   async validateToken(token: string, throwOnInvalid = false): Promise<string> {
-    const { rights } = jwtDecode(token) as { rights: string[] };
+    let rights: string[] | null = null;
+
+    try {
+      const jwt = jwtDecode(token) as { rights: string[] };
+      rights = jwt.rights;
+    } catch {
+      this._clearCachedTempToken();
+      throw new ServerError(
+        "Invalid API token. Couldn't decode the provided token."
+      );
+    }
+
     if (!rights) {
+      this._clearCachedTempToken();
       throw new ServerError('Invalid API token. Token has no rights.');
     }
 

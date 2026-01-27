@@ -13,7 +13,7 @@ jobs:
       node_version: '20'
       publish_docs: true
       docs_directory: './dist'
-  
+
   notify-downstream:
     needs: release
     if: needs.release.outputs.published == 'true'

@@ -140,7 +140,7 @@ describe('MediaInteractive edition', async () => {
         'utf8'
       )
     ).toMatchInlineSnapshot(
-      `"media-en-page : https://www.reuters.com/graphics/my-project/embeds/en/page/ : 2025"`
+      `"media-en-page : https://www.reuters.com/graphics/my-project/embeds/en/page/ : 2026"`
     );
   });
 });
