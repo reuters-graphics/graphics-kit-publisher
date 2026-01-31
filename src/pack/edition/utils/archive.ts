@@ -57,7 +57,7 @@ class SrcArchive {
     }).filter(gitignoreFilter);
 
     const output = fs.createWriteStream(this.archivePath);
-    const archive = archiver('zip', { zlib: { level: 9 } });
+    const archive = archiver('zip', { zlib: { level: 6 } });
 
     await new Promise<void>((resolve, reject) => {
       output.on('close', () => {
