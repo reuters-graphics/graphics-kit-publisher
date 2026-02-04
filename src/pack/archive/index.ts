@@ -82,9 +82,9 @@ export class Archive {
     );
     if (!fs.existsSync(archiveDir))
       fs.mkdirSync(archiveDir, { recursive: true });
-    for (const edition of this.editions) {
-      await edition.packUp(archiveDir);
-    }
+    await Promise.all(
+      this.editions.map((edition) => edition.packUp(archiveDir))
+    );
     return zipDir(archiveDir);
   }
 

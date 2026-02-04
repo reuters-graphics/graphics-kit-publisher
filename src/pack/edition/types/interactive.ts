@@ -15,6 +15,7 @@ import picocolors from 'picocolors';
 import urljoin from 'url-join';
 import { PKG } from '../../../pkg';
 import { addSRI } from '../../../utils/sri';
+import pLimit from 'p-limit';
 
 export class Interactive extends Edition {
   public static type = 'interactive' as const;
@@ -115,25 +116,34 @@ export class Interactive extends Edition {
   async packUp(archiveDir: string) {
     const cwd = path.dirname(this.path);
     const files = globSync('**/*', { cwd, nodir: true });
-    for (const file of files) {
-      const absSrc = path.join(cwd, file);
+    
+    // Limit concurrent file operations to 10
+    const limit = pLimit(10);
+    
+    await Promise.all(
+      files.map((file) =>
+        limit(async () => {
+          const absSrc = path.join(cwd, file);
 
-      // Add SRI attributes to media index.html files before copying
-      if (
-        this.archive.type === 'media' &&
-        path.basename(file) === 'index.html'
-      ) {
-        try {
-          addSRI(absSrc);
-        } catch {
-          // If SRI generation fails, continue without it
-        }
-      }
+          // Add SRI attributes to media index.html files before copying
+          if (
+            this.archive.type === 'media' &&
+            path.basename(file) === 'index.html'
+          ) {
+            try {
+              addSRI(absSrc);
+            } catch {
+              // If SRI generation fails, continue without it
+            }
+          }
 
-      const absDest = path.join(archiveDir, this.type, file);
-      utils.fs.ensureDir(absDest);
-      fs.copyFileSync(absSrc, absDest);
-    }
+          const absDest = path.join(archiveDir, this.type, file);
+          utils.fs.ensureDir(absDest);
+          await fs.promises.copyFile(absSrc, absDest);
+        })
+      )
+    );
+    
     await this.makePreviewImage(archiveDir);
     if (this.archive.type === 'media') await this.makeManifest(archiveDir);
   }
