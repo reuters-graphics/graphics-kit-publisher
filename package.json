@@ -90,6 +90,7 @@
     "open": "^10.1.0",
     "open-graph-scraper": "^6.9.0",
     "ordinal": "^1.0.3",
+    "p-limit": "^7.3.0",
     "package-manager-detector": "^0.2.9",
     "parse5": "^8.0.0",
     "picocolors": "^1.1.1",
