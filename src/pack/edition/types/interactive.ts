@@ -116,10 +116,10 @@ export class Interactive extends Edition {
   async packUp(archiveDir: string) {
     const cwd = path.dirname(this.path);
     const files = globSync('**/*', { cwd, nodir: true });
-    
+
     // Limit concurrent file operations to 10
     const limit = pLimit(10);
-    
+
     await Promise.all(
       files.map((file) =>
         limit(async () => {
@@ -143,7 +143,7 @@ export class Interactive extends Edition {
         })
       )
     );
-    
+
     await this.makePreviewImage(archiveDir);
     if (this.archive.type === 'media') await this.makeManifest(archiveDir);
   }

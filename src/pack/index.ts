@@ -123,7 +123,7 @@ export class Pack {
     const s = spinner(2000);
     s.start('Packing up graphic pack');
     utils.fs.ensureDir(this.packRoot);
-    await Promise.all(this.archives.map(archive => archive.packUp()));
+    await Promise.all(this.archives.map((archive) => archive.packUp()));
     await s.stop('📦 All packed.');
   }
 
