@@ -108,10 +108,20 @@ export class Pack {
     const finder = new Finder(this);
     finder.findEditions(publicOnly);
     finder.logFound();
+
+    // Check if we already have a homepage URL before getMetadata
+    const hadHomepage = !!PKG.homepage;
+
     for (const archive of this.archives) {
       await archive.getMetadata();
     }
-    await buildForProduction();
+
+    // Only rebuild if we didn't have a URL before (first upload)
+    // On subsequent uploads, PKG.homepage is already set, so no rebuild needed
+    if (!hadHomepage && PKG.homepage) {
+      await buildForProduction();
+    }
+
     await this.packUp();
     for (const archive of this.archives) {
       await archive.createOrUpdate();
