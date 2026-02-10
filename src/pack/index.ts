@@ -3,7 +3,8 @@ import type {
   Publishing,
   RNGS,
 } from '@reuters-graphics/server-client';
-import { Archive } from './archive';
+import { Archive, type ArchiveUploadResult } from './archive';
+import pLimit from 'p-limit';
 import {
   byline,
   contactEmail,
@@ -113,14 +114,60 @@ export class Pack {
     }
     await buildForProduction();
     await this.packUp();
-    for (const archive of this.archives) {
-      await archive.createOrUpdate();
+
+    const limit = pLimit(5);
+    const archiveCount = this.archives.length;
+    serverSpinner.start(
+      `Uploading ${archiveCount} archive${archiveCount !== 1 ? 's' : ''}`
+    );
+
+    const uploadTasks = this.archives.map((archive) =>
+      limit(() => archive.createOrUpdate())
+    );
+
+    const settled = await Promise.allSettled(uploadTasks);
+
+    const successes: ArchiveUploadResult[] = [];
+    const failures: { archiveId: string; error: unknown }[] = [];
+    settled.forEach((r, i) => {
+      if (r.status === 'fulfilled') successes.push(r.value);
+      else failures.push({ archiveId: this.archives[i].id, error: r.reason });
+    });
+
+    // Stop spinner before logging individual results
+    if (failures.length === 0) {
+      serverSpinner.stop(
+        `Uploaded ${successes.length} archive${successes.length !== 1 ? 's' : ''}`
+      );
+    } else {
+      serverSpinner.stop(
+        `Uploaded ${successes.length}/${archiveCount} archive${archiveCount !== 1 ? 's' : ''} (${failures.length} failed)`
+      );
     }
+
+    // Log individual results after spinner is stopped
+    for (const result of successes) {
+      log.info(`${result.action} archive ${picocolors.cyan(result.archiveId)}`);
+    }
+    for (const f of failures) {
+      log.error(`Failed to upload archive ${picocolors.cyan(f.archiveId)}`);
+    }
+
+    // Write PKG data sequentially to avoid concurrent package.json writes
+    for (const result of successes) {
+      PKG.archive(result.archiveId).uploaded = result.uploaded;
+      PKG.archive(result.archiveId).editions = result.editions;
+    }
+
+    if (failures.length > 0) {
+      throw new Error(`${failures.length} archive upload(s) failed`);
+    }
+
     if (!publicOnly) await this.separateAssets.packAndUpload();
   }
 
   async packUp() {
-    const s = spinner(2000);
+    const s = spinner(1000);
     s.start('Packing up graphic pack');
     utils.fs.ensureDir(this.packRoot);
     for (const archive of this.archives) {
