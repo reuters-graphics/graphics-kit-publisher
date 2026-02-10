@@ -9,9 +9,15 @@ import { utils } from '@reuters-graphics/graphics-bin';
 import { context } from '../../context';
 import { zipDir } from '../../utils/zipDir';
 import { PackageMetadataError } from '../../exceptions/errors';
-import { serverSpinner } from '../../server/spinner';
-import picocolors from 'picocolors';
 import { PKG } from '../../pkg';
+import type { EditionType } from '../edition/types/base';
+
+export interface ArchiveUploadResult {
+  archiveId: string;
+  action: 'Created' | 'Updated';
+  uploaded: string;
+  editions: EditionType[];
+}
 
 type ArchiveType = 'public' | 'media';
 
@@ -88,41 +94,30 @@ export class Archive {
     return zipDir(archiveDir);
   }
 
-  async createOrUpdate() {
+  public get zipPath() {
+    return path.join(utils.path.absolute(this.pack.packRoot), `${this.id}.zip`);
+  }
+
+  async createOrUpdate(): Promise<ArchiveUploadResult> {
     if (!this.pack.serverClient)
       throw new PackageMetadataError('Must create graphic pack first');
     const { serverClient } = this.pack;
     const metadata = await this.getMetadata();
-    const zipPath = await this.packUp();
-    const zipBuffer = fs.readFileSync(zipPath);
+    const zipBuffer = fs.readFileSync(this.zipPath);
 
     const hasBeenUploaded = PKG.archive(this.id).uploaded;
 
-    const logId = picocolors.cyan(this.id);
-    try {
-      if (!hasBeenUploaded) {
-        serverSpinner.start(`Creating archive ${logId}`);
-        await serverClient.createEditions(
-          `${this.id}.zip`,
-          zipBuffer,
-          metadata
-        );
-        serverSpinner.stop(`Created archive ${logId}`);
-      } else {
-        serverSpinner.start(`Updating archive ${logId}`);
-        await serverClient.updateEditions(
-          `${this.id}.zip`,
-          zipBuffer,
-          metadata
-        );
-        serverSpinner.stop(`Updated archive ${logId}`);
-      }
-    } catch (err) {
-      serverSpinner.stop(`Error creating or updating archive ${logId}`);
-      throw err;
+    if (!hasBeenUploaded) {
+      await serverClient.createEditions(`${this.id}.zip`, zipBuffer, metadata);
+    } else {
+      await serverClient.updateEditions(`${this.id}.zip`, zipBuffer, metadata);
     }
 
-    PKG.archive(this.id).uploaded = new Date().toISOString();
-    PKG.archive(this.id).editions = this.editions.map((e) => e.type);
+    return {
+      archiveId: this.id,
+      action: hasBeenUploaded ? 'Updated' : 'Created',
+      uploaded: new Date().toISOString(),
+      editions: this.editions.map((e) => e.type),
+    };
   }
 }
