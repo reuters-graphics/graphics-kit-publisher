@@ -12,8 +12,10 @@ const EDITION_TYPES_ELIGIBLE_FOR_CONNECT = [
 
 const EDITION_TYPES_ELIGIBLE_FOR_LYNX = [
   'interactive',
-  'JPG',
-  'PNG',
+  // Image editions no longer go to Lynx since LSEG and Arc
+  // began accepting interactives from LEON, June 2026.
+  // 'JPG',
+  // 'PNG',
 ] as EditionType[];
 
 const connectFilter = (editionType: EditionType) =>

@@ -61,10 +61,7 @@ describe('Edition options module', () => {
   describe('getLynxOptions()', () => {
     it('includes only archives that have Lynx-eligible editions and whose publishingLocations.lynx is true', () => {
       const result = getLynxOptions();
-      expect(result).toEqual([
-        ['media-en-page.zip', 'interactive'],
-        ['media-de-map.zip', 'PNG'],
-      ]);
+      expect(result).toEqual([['media-en-page.zip', 'interactive']]);
     });
 
     it('excludes archives that either do not have Lynx-eligible editions or have lynx=false in config', () => {
