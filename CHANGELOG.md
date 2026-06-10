@@ -1,5 +1,11 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.2.0
+
+### Minor Changes
+
+- f79b054: Removes PNG/JPG editions from eligibility to promote in Lynx following LSEG updates to accept interactives.
+
 ## 3.1.2
 
 ### Patch Changes
