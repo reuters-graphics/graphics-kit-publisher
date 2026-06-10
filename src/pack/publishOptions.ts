@@ -13,7 +13,7 @@ const EDITION_TYPES_ELIGIBLE_FOR_CONNECT = [
 const EDITION_TYPES_ELIGIBLE_FOR_LYNX = [
   'interactive',
   // Image editions no longer go to Lynx since LSEG and Arc
-  // began excepting interactives, June 2026.
+  // began accepting interactives from LEON, June 2026.
   // 'JPG',
   // 'PNG',
 ] as EditionType[];
