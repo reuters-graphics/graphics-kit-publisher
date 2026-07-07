@@ -9,4 +9,4 @@ jobs:
     secrets: inherit
     with:
       docs_directory: './dist'
-      node_version: '20'
+      node_version: '22'
