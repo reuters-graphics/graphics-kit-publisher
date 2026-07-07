@@ -10,4 +10,4 @@ jobs:
     uses: reuters-graphics/action-workflows/.github/workflows/test.yaml@main
     secrets: inherit
     with:
-      node_versions: '[18,20,22]'
+      node_versions: '[20,22]'
