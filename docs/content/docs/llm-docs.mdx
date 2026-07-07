@@ -1,0 +1,61 @@
+---
+title: LLM context docs
+sidebar:
+  order: 40
+---
+
+import { Aside, FileTree } from '@astrojs/starlight/components';
+
+This package ships a set of documentation written specifically for **large language models** — the coding agents developers use to build graphics projects.
+
+These are separate from the docs you're reading now. The docs on this site are for humans; the LLM docs are terse, structured reference files designed to give an agent accurate context about how the publisher, pack metadata, routing rules and the graphics server work.
+
+## Where they live
+
+The LLM docs are markdown files in the [`llms/`](https://github.com/reuters-graphics/graphics-kit-publisher/tree/main/llms) folder of this package, and they're published to npm as part of it.
+
+<FileTree>
+- llms
+  - index.md Root doc — links to the others
+  - graphics-server.md
+  - pack-metadata.md
+  - page-building.md
+  - config.md
+  - glossary.md
+</FileTree>
+
+The package declares them under an `llms` key in its `package.json`:
+
+```jsonc
+// package.json
+{
+  "files": ["dist/**/*", "llms/**/*"], // published to npm
+  "llms": {
+    "description": ["A filesystem-based publisher for Reuters Graphics projects.", "..."],
+    "files": ["./llms/**/*"]
+  }
+}
+```
+
+## How they're used
+
+Because the docs ship with the package, they're present in the consuming project's `node_modules`. Tooling in the [graphics kit](https://github.com/reuters-graphics/bluprint_graphics-kit) reads the `llms` field, copies the docs into the project's `.claude/llms/` directory, and links them from the project's agent instructions. `index.md` is the entry point; it points to the other docs so an agent can pull just the context it needs, on demand.
+
+## For developers of this library
+
+<Aside type="caution">
+  When you change the publisher's behavior, the LLM docs may need updating too —
+  not just this site.
+</Aside>
+
+The `llms/` docs describe the same system these human docs do, so they can drift out of date the same way. When you make a change that affects how the publisher behaves, check whether the relevant LLM doc needs to change as well:
+
+- **Routing / build rules, `packLocations`, build logs** (`.graphics-kit/logs/`, `src/logging`, `src/build`) → `llms/page-building.md`
+- **Pack metadata, the `reuters` key, `PKG` getters, metadata pointers** → `llms/pack-metadata.md`
+- **Metadata validation rules** in `src/validators/pack.ts` (slug patterns, field lengths, allowed `desk`/`language`, email domain) and `src/pack/archive/metadata.ts` (the shared 255-char title/description budget) → `llms/pack-metadata.md`
+- **Graphics server model** (packs, archives, editions, publishing locations) → `llms/graphics-server.md`
+- **Config options** → `llms/config.md`
+- **New or renamed terms** → `llms/glossary.md`
+- **Overview, workflow, or the set of docs itself** → `llms/index.md`
+
+Keep them **succinct and factual** — they're context for a model, not a tutorial. Prefer rules, constraints and naming conventions over prose, and cross-link between the docs rather than repeating detail.

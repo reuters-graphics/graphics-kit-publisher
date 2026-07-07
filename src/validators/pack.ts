@@ -99,7 +99,7 @@ export const Title = v.pipe(
   v.trim(),
   v.nonEmpty('Title is required'),
   v.minLength(3, 'Title must be at least 3 characters'),
-  v.maxLength(150, 'Description must be less than 150 characters')
+  v.maxLength(150, 'Title must be less than 150 characters')
 );
 
 export const Description = v.pipe(

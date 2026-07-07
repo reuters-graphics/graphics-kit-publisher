@@ -17,8 +17,19 @@
   "private": false,
   "keywords": [],
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "llms/**/*"
   ],
+  "llms": {
+    "description": [
+      "A filesystem-based publisher for Reuters Graphics projects.",
+      "Compiles a project's built pages and static graphics into the archive/edition structure the Sphinx graphics server expects, then uploads them for publishing to reuters.com and to media clients via Reuters Connect.",
+      "You're most likely working with it in a project that has a `publisher.config.ts`, a `reuters` key in its `package.json`, or `preview`, `upload` and `pub` npm scripts — i.e. when building, previewing, publishing, or wiring up base paths, pack metadata or embed codes for a graphic."
+    ],
+    "files": [
+      "./llms/**/*"
+    ]
+  },
   "scripts": {
     "build": "rollup --config rollup.config.js",
     "build:docs": "astro build",
