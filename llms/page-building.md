@@ -40,10 +40,16 @@ const mode =
   : process.env.NODE_ENV === 'production' ? 'prod'
   : 'dev';
 
-const basePath = getBasePath(mode, { trailingSlash: false, rootRelative: true });
+const basePath = getBasePath(mode, {
+  trailingSlash: false,
+  rootRelative: true,
+});
 // e.g. "/graphics/ROOT-SLUG/WILD/asdjuspodfg"
 
-const assetsPath = getBasePath(mode, 'cdn', { trailingSlash: false, rootRelative: false });
+const assetsPath = getBasePath(mode, 'cdn', {
+  trailingSlash: false,
+  rootRelative: false,
+});
 // e.g. "https://www.reuters.com/graphics/ROOT-SLUG/WILD/asdjuspodfg/cdn"
 ```
 
@@ -80,7 +86,10 @@ Each file is overwritten on every build and prefixed with a timestamp. So when a
 
 - an `og:image` meta tag in the page (if the image is among the build's assets):
   ```html
-  <meta property="og:image" content="https://www.reuters.com/graphics/.../share.jpg" />
+  <meta
+    property="og:image"
+    content="https://www.reuters.com/graphics/.../share.jpg"
+  />
   ```
 - or an image file at the edition root named `_gfxpreview.png` or `_gfxpreview.jpg`.
 
@@ -93,9 +102,9 @@ Valid preview types: `.jpg`, `.jpeg`, `.png`.
 ```typescript
 export default defineConfig({
   packLocations: {
-    dotcom: 'dist/',                         // default
-    embeds: 'dist/embeds/{locale}/{slug}/',  // default
-    statics: 'media-assets/{locale}/{slug}/',// default
+    dotcom: 'dist/', // default
+    embeds: 'dist/embeds/{locale}/{slug}/', // default
+    statics: 'media-assets/{locale}/{slug}/', // default
   },
 });
 ```

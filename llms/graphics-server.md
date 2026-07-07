@@ -32,6 +32,7 @@ Archives are named by convention:
 - `media-{locale}-{slug}.zip` — a media/client archive.
 
 Where:
+
 - **locale** is a valid RNGS language code (`en`, `de`, `es`, …).
 - **slug** identifies the graphic (`map`, `bar-chart`, `page`, …).
 
@@ -41,13 +42,14 @@ Each edition is a folder containing a **root file** at its top level. The root f
 
 ### Edition types
 
-| Edition | Root file | Contains | Represents |
-|---|---|---|---|
-| **interactive** | `index.html` | HTML page(s) + assets | A page published on reuters.com |
-| **media-interactive** | `README.txt` | a zipped copy of the project (`app.zip`) | An embeddable graphic purchasable/embeddable via Connect, Lynx or Arc |
-| **static** (`JPG`/`PNG`/`EPS`/`PDF`) | file matching the edition name (e.g. `map.png`) | one static/editable file | A static image (JPG/PNG) or editable source (EPS/PDF) |
+| Edition                              | Root file                                       | Contains                                 | Represents                                                            |
+| ------------------------------------ | ----------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| **interactive**                      | `index.html`                                    | HTML page(s) + assets                    | A page published on reuters.com                                       |
+| **media-interactive**                | `README.txt`                                    | a zipped copy of the project (`app.zip`) | An embeddable graphic purchasable/embeddable via Connect, Lynx or Arc |
+| **static** (`JPG`/`PNG`/`EPS`/`PDF`) | file matching the edition name (e.g. `map.png`) | one static/editable file                 | A static image (JPG/PNG) or editable source (EPS/PDF)                 |
 
 Notes:
+
 - **interactive**: additional HTML pages should be at least one directory below the root `index.html`; CSS/JS/images may sit alongside it. Requires a preview image at the edition root (`_gfxpreview.png`/`.jpg`) or an `og:image` in the page.
 - **media-interactive**: also requires a preview image at the edition root.
 - **static**: the root file can be named anything but should match the edition's type (e.g. the `PNG` edition's root is a `.png`). An edition folder may hold companion files (e.g. an `EPS` edition containing both `my-map.eps` and a `map.jpg`).
@@ -62,11 +64,11 @@ Editions ultimately reach readers on reuters.com or media clients on Reuters Con
 
 Summary of routing:
 
-| Edition | Public RNGS | Reuters Connect | Lynx searchable |
-|---|---|---|---|
-| interactive | ✅ | — | ✅ (interactive only) |
-| media-interactive | — | ✅ | — |
-| JPG / PNG (static) | ✅ | — | — |
-| EPS / PDF (static) | — | ✅ | — |
+| Edition            | Public RNGS | Reuters Connect | Lynx searchable       |
+| ------------------ | ----------- | --------------- | --------------------- |
+| interactive        | ✅          | —               | ✅ (interactive only) |
+| media-interactive  | —           | ✅              | —                     |
+| JPG / PNG (static) | ✅          | —               | —                     |
+| EPS / PDF (static) | —           | ✅              | —                     |
 
 Publishing options are set per edition and determine if and where a graphic actually publishes. See [pack-metadata.md](./pack-metadata.md) for how archive/edition state is recorded, and [page-building.md](./page-building.md) for how local built files map to these editions.

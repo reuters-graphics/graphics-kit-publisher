@@ -17,34 +17,39 @@ After uploading, metadata is saved mostly under `reuters` (plus a top-level `hom
 ```jsonc
 {
   "reuters": {
-    "preview": "https://graphics.thomsonreuters.com/.../",       // preview URL
+    "preview": "https://graphics.thomsonreuters.com/.../", // preview URL
     "separateAssets": "https://graphics.thomsonreuters.com/.../assets.zip",
     "graphic": {
-      "pack": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",             // pack ID in Sphinx
+      "pack": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX", // pack ID in Sphinx
       "desk": "london",
       "slugs": { "root": "ROOT-SLUG", "wild": "WILD" },
       "contactEmail": "jane.doe@thomsonreuters.com",
       "title": "A title",
-      "description": "Graphic",                                    // defaults to "Graphic"
-      "authors": [{ "name": "Jane Doe", "link": "https://www.reuters.com/authors/jane-doe/" }],
-      "published": "2025-02-23T00:00:00.000Z",                     // first publish
-      "updated": "2025-02-24T00:00:00.000Z",                       // latest publish
+      "description": "Graphic", // defaults to "Graphic"
+      "authors": [
+        {
+          "name": "Jane Doe",
+          "link": "https://www.reuters.com/authors/jane-doe/",
+        },
+      ],
+      "published": "2025-02-23T00:00:00.000Z", // first publish
+      "updated": "2025-02-24T00:00:00.000Z", // latest publish
       "archives": {
         "public": {
           "url": "https://www.reuters.com/graphics/.../",
           "title": "A title",
           "description": "A description",
           "uploaded": "2025-02-24T00:00:00.000Z",
-          "editions": ["interactive"]
+          "editions": ["interactive"],
         },
         "media-en-page": {
           "url": "https://www.reuters.com/graphics/.../",
-          "editions": ["interactive", "media-interactive", "EPS", "JPG"]
-        }
-      }
-    }
+          "editions": ["interactive", "media-interactive", "EPS", "JPG"],
+        },
+      },
+    },
   },
-  "homepage": "https://www.reuters.com/graphics/.../"              // set if a `public` archive exists
+  "homepage": "https://www.reuters.com/graphics/.../", // set if a `public` archive exists
 }
 ```
 
@@ -58,23 +63,23 @@ These fields are **required by the Sphinx server** to upload a pack _and_ are hu
 
 Under `reuters.graphic`:
 
-| Field | Requirement |
-|---|---|
-| `desk` | One of `london`, `new york`, `singapore`, `bengaluru`. |
-| `slugs.root` | Strict server pattern; identifies the graphic in URLs. **Ask the user — do not invent one** (see below). |
-| `slugs.wild` | Strict server pattern; **may be `""`** (empty). **Ask the user** (see below). |
-| `language` | RNGS language code: one of `en`, `ar`, `fr`, `es`, `de`, `it`, `ja`, `pt`, `ru` (usually `en`). |
-| `title` | The graphic pack's title. Describes the specific topic the graphics pack covers, e.g., "Iran crisis blog". 3–150 characters. |
-| `description` | The graphic pack's description. Often kept as short as the string "Graphic:". 3–150 characters. |
-| `contactEmail` | A valid email ending in `@thomsonreuters.com`. |
-| `authors` | Array with **at least one** entry; each requires a `name` (≥3 chars) and a `link` (valid URL). (Sourced by the publisher from the `byline` pointer.) |
+| Field          | Requirement                                                                                                                                          |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `desk`         | One of `london`, `new york`, `singapore`, `bengaluru`.                                                                                               |
+| `slugs.root`   | Strict server pattern; identifies the graphic in URLs. **Ask the user — do not invent one** (see below).                                             |
+| `slugs.wild`   | Strict server pattern; **may be `""`** (empty). **Ask the user** (see below).                                                                        |
+| `language`     | RNGS language code: one of `en`, `ar`, `fr`, `es`, `de`, `it`, `ja`, `pt`, `ru` (usually `en`).                                                      |
+| `title`        | The graphic pack's title. Describes the specific topic the graphics pack covers, e.g., "Iran crisis blog". 3–150 characters.                         |
+| `description`  | The graphic pack's description. Often kept as short as the string "Graphic:". 3–150 characters.                                                      |
+| `contactEmail` | A valid email ending in `@thomsonreuters.com`.                                                                                                       |
+| `authors`      | Array with **at least one** entry; each requires a `name` (≥3 chars) and a `link` (valid URL). (Sourced by the publisher from the `byline` pointer.) |
 
 Under each `reuters.graphic.archives.<id>`:
 
-| Field | Requirement |
-|---|---|
-| `title` | The archive's specific title (≥3 chars). Describes the specific graphic it contains. Shares a 255-char budget with the pack title — see below. |
-| `description` | The archive's description; **doubles as the graphic's alt text**. Shares a 255-char budget with the pack description — see below. |
+| Field         | Requirement                                                                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`       | The archive's specific title (≥3 chars). Describes the specific graphic it contains. Shares a 255-char budget with the pack title — see below. |
+| `description` | The archive's description; **doubles as the graphic's alt text**. Shares a 255-char budget with the pack description — see below.              |
 
 Everything else — the pack-level `pack`, `preview`, `separateAssets`, `published`, `updated`, top-level `homepage`, and each archive's `url`, `uploaded` and `editions` — is written by the server. ⛔ Never set or edit those (rule 2).
 
@@ -105,27 +110,27 @@ Use `PKG` getters for typed access instead of reading `package.json` directly:
 ```typescript
 import { PKG } from '@reuters-graphics/graphics-kit-publisher';
 
-PKG.homepage;                       // 'https://www.reuters.com/graphics/.../'
-PKG.preview;                        // preview URL
-PKG.separateAssets;                 // S3 assets.zip URL
-PKG.pack.id;                        // Sphinx pack ID
-PKG.pack.desk;                      // 'london'
-PKG.pack.rootSlug;                  // 'ROOT-SLUG'
-PKG.pack.wildSlug;                  // 'WILD'
-PKG.pack.language;                  // 'en'
+PKG.homepage; // 'https://www.reuters.com/graphics/.../'
+PKG.preview; // preview URL
+PKG.separateAssets; // S3 assets.zip URL
+PKG.pack.id; // Sphinx pack ID
+PKG.pack.desk; // 'london'
+PKG.pack.rootSlug; // 'ROOT-SLUG'
+PKG.pack.wildSlug; // 'WILD'
+PKG.pack.language; // 'en'
 PKG.pack.contactEmail;
 PKG.pack.title;
-PKG.pack.description;               // defaults to 'Graphic'
-PKG.pack.authors;                   // [{ name, link }, ...]
-PKG.pack.published;                 // ISO timestamp of first publish
-PKG.pack.updated;                   // ISO timestamp of latest publish
+PKG.pack.description; // defaults to 'Graphic'
+PKG.pack.authors; // [{ name, link }, ...]
+PKG.pack.published; // ISO timestamp of first publish
+PKG.pack.updated; // ISO timestamp of latest publish
 
 // Archive metadata is accessed by archive ID:
 PKG.archive('media-en-page').url;
 PKG.archive('media-en-page').title;
 PKG.archive('media-en-page').description;
 PKG.archive('media-en-page').uploaded;
-PKG.archive('media-en-page').editions;   // ['interactive', 'media-interactive', 'EPS', 'JPG']
+PKG.archive('media-en-page').editions; // ['interactive', 'media-interactive', 'EPS', 'JPG']
 ```
 
 The `PKG` properties technically work as setters too (the publisher uses them internally), but **avoid setting them** — e.g. `PKG.homepage = '...'` is almost always a mistake.
@@ -164,14 +169,17 @@ export default defineConfig({
     pack: {
       rootSlug: 'locales/en/content.json?story.rootSlug',
       wildSlug: 'locales/en/content.json?story.wildSlug',
-      desk: { path: '~/.reuters-graphics/profile.json?desk', promptAsInitial: true },
-      language: 'en',                                   // no shorthand — a bare string is a language code
+      desk: {
+        path: '~/.reuters-graphics/profile.json?desk',
+        promptAsInitial: true,
+      },
+      language: 'en', // no shorthand — a bare string is a language code
       title: 'dist/index.html?title',
       byline: 'locales/en/content.json?story.authors',
       contactEmail: '~/.reuters-graphics/profile.json?email',
     },
     edition: {
-      title: 'index.html?title',                        // file path is relative to the edition root
+      title: 'index.html?title', // file path is relative to the edition root
       description: 'index.html?meta.og:description',
     },
   },

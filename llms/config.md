@@ -115,7 +115,7 @@ Rules for where archives are allowed to publish. An array; each entry matches ar
 publishingLocations: [
   { archive: 'public', availableLocations: { lynx: false, connect: false } },
   { archive: /-referral$/, availableLocations: { lynx: true, connect: false } },
-]
+];
 ```
 
 - **archive** — a `string` or `RegExp` matching an [archive ID](./graphics-server.md#archive-naming).
