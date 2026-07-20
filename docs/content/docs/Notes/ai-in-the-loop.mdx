@@ -1,0 +1,33 @@
+---
+title: AI in the loop (3.4.0)
+sidebar:
+  badge: New
+  order: 102
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+As of 3.4.0, when a command fails, you're one keystroke away from having AI diagnose it — inside your project, with all the context it needs.
+
+## When something breaks
+
+Uploads and builds fail. Usually it's a real bug in your code, buried in a wall of build output that's hard to read and easy to misjudge.
+
+Now, when a publisher command fails, we hand the problem to [Claude Code](https://claude.com/claude-code). The publisher writes a diagnostics file — the error, the likely cause pulled from your build logs, and pointers to the publisher's own rules — then offers to open it:
+
+- **Open a Claude Code session** — the VSCode extension opens a chat right next to your code, pre-filled and ready. It can read your project, find the real cause, and propose a fix.
+- **Ask Claude what went wrong** — a quick, read-only diagnosis in your terminal.
+
+No copying stack traces into a chat window. No guessing which log line matters. The agent starts with everything the publisher already knows about the failure, scoped to _your_ project — not generic advice.
+
+## It's already on
+
+The prompt appears automatically the next time a command fails in your terminal. Missed it, or don't want to re-run a slow build just to look again? Run [`graphics-publisher diagnose`](/graphics-kit-publisher/commands/#diagnose) to re-open the last one.
+
+<Aside>
+Not into it? Set [`ai: 'off'`](/graphics-kit-publisher/config/ai/) in your `publisher.config.ts`, or pass `--no-ai` on any command. The prompt never shows in CI.
+
+The publisher doesn't touch authentication — it uses however you've set up Claude Code. We recommend the [Claude Code VSCode extension](https://claude.com/claude-code).
+</Aside>
+
+This is the first step of bringing AI into the publishing process — a small one, aimed at the moment it's most useful: when you're stuck. More to come.

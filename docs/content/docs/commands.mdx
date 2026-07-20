@@ -107,3 +107,17 @@ pnpm graphics-publisher delete
 <Aside>
 Projects that have been published in the graphics server **cannot** be deleted.
 </Aside>
+
+## Diagnose
+
+Re-open an AI diagnosis of the last command that failed. Handy when you dismissed the prompt, or want to look into a failure without re-running a slow command like a build.
+
+```console
+pnpm graphics-publisher diagnose
+```
+
+This reuses the diagnostics file written to `.graphics-kit/diagnostics/latest.md` on the last failure and offers the same [Claude Code handoff](/graphics-kit-publisher/config/ai/). See the [`ai`](/graphics-kit-publisher/config/ai/) config option for what the handoff does and how to turn it off.
+
+<Aside>
+If nothing has failed yet, there's no diagnostics file to open — run a command that fails first.
+</Aside>
