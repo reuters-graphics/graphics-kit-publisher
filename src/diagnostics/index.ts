@@ -141,9 +141,8 @@ const buildContent = (error: unknown, command?: string): string => {
   lines.push('');
 
   lines.push('## Project');
-  lines.push(
-    '- Config: `publisher.config.ts` (or the `reuters` key in `package.json`)'
-  );
+  lines.push('- Publisher config: `publisher.config.ts`');
+  lines.push('- Graphic metadata: the `reuters` key in `package.json`');
   lines.push(`- Build output dir: \`${context.config.build.outDir}\``);
   lines.push('');
 

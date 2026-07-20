@@ -125,7 +125,7 @@ export const validateConfig = (config: Config) => {
       }
       throw new ConfigError(errorMessages.join('\n'), {
         code: 'INVALID_CONFIG',
-        hint: 'Fix the listed fields in your publisher config (publisher.config.ts or the `reuters` key in package.json).',
+        hint: 'Fix the listed fields in your publisher.config.ts.',
         context: { issues },
         cause: err,
       });
