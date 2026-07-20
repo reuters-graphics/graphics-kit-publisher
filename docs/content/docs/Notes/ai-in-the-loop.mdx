@@ -22,12 +22,12 @@ No copying stack traces into a chat window. No guessing which log line matters. 
 
 ## It's already on
 
-The prompt appears automatically the next time a command fails in your terminal. Missed it, or don't want to re-run a slow build just to look again? Run [`graphics-publisher diagnose`](/graphics-kit-publisher/commands/#diagnose) to re-open the last one.
+The prompt appears automatically the next time a command fails in your terminal. 
+
+Missed it, or don't want to re-run a slow build just to look again? Run [`graphics-publisher diagnose`](/graphics-kit-publisher/commands/#diagnose) to re-open the last one.
 
 <Aside>
-Not into it? Set [`ai: 'off'`](/graphics-kit-publisher/config/ai/) in your `publisher.config.ts`, or pass `--no-ai` on any command. The prompt never shows in CI.
-
-The publisher doesn't touch authentication — it uses however you've set up Claude Code. We recommend the [Claude Code VSCode extension](https://claude.com/claude-code).
+The publisher doesn't handle authenticating Claude — it assumes you've already done that yourself. Read more about our recommended setup for the Claude Code VSCode extension in our [Notion docs](https://app.notion.com/p/Setting-up-Claude-for-VSCode-359e5f6c99bc801c8494de7ea3f07cbe).
 </Aside>
 
 This is the first step of bringing AI into the publishing process — a small one, aimed at the moment it's most useful: when you're stuck. More to come.
