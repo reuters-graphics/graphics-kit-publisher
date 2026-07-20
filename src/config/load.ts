@@ -18,13 +18,23 @@ export const loadUserConfig = async () => {
 
   if (!fs.existsSync(pkgPath)) {
     throw new FileSystemError(
-      `Could not find "package.json" in ${process.cwd()}. Publisher must be run from the root of the project.`
+      `Could not find "package.json" in ${process.cwd()}.`,
+      {
+        code: 'NOT_PROJECT_ROOT',
+        hint: 'Run the publisher from the root of your project (where package.json lives).',
+        context: { cwd: process.cwd() },
+      }
     );
   }
 
   if (!fs.existsSync(configPath)) {
     throw new FileNotFoundError(
-      `Could not find "publisher.config.ts" in ${process.cwd()}`
+      `Could not find "publisher.config.ts" in ${process.cwd()}`,
+      {
+        code: 'MISSING_PUBLISHER_CONFIG',
+        hint: 'Add a publisher.config.ts to your project root (see the publisher docs / `defineConfig`).',
+        context: { configPath },
+      }
     );
   }
 

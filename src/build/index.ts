@@ -7,26 +7,6 @@ import { spinner } from '@clack/prompts';
 import { cleanOutDir, deleteZeroLengthFiles } from './clean';
 import { validateOutDir } from './validate';
 import { logs } from '../logging';
-import { note } from '@reuters-graphics/clack';
-import dedent from 'dedent';
-import picocolors from 'picocolors';
-import { reflowText } from '../utils/reflowText';
-
-const formatErrorConsoleLog = (err: string) => {
-  if (err.trim().length === 0) return '';
-  const reflowedErrors = reflowText(err.trim(), 80);
-  return (
-    '\nPossible errors found:\n\n' +
-    reflowedErrors
-      .slice(0, 10)
-      .map((line) => (line.length > 80 ? line.slice(0, 75) + ' ...' : line))
-      .map((e) => `${picocolors.bold(picocolors.red(e.trim()))}\n`)
-      .join('') +
-    (reflowedErrors.length > 10 ?
-      `${picocolors.dim(picocolors.red(`+${reflowedErrors.length - 10} more error lines...`))}\n`
-    : '')
-  );
-};
 
 /**
  * Calls a project's build script and validates the build process completed successfully
@@ -41,7 +21,15 @@ const buildApp = async (buildScript: string) => {
 
   if (!pkg.scripts[buildScript]) {
     throw new PackageConfigError(
-      `package.json has no "${buildScript}" script. Check your package scripts or adjust your publisher config.`
+      `package.json has no "${buildScript}" script.`,
+      {
+        code: 'MISSING_BUILD_SCRIPT',
+        hint: 'Add the script to package.json, or point the publisher config at the right script name.',
+        context: {
+          buildScript,
+          availableScripts: Object.keys(pkg.scripts ?? {}),
+        },
+      }
     );
   }
 
@@ -65,8 +53,15 @@ const buildApp = async (buildScript: string) => {
       stderr += data.toString();
     });
 
-    child.on('error', () => {
-      reject(new BuildError('App failed to build'));
+    child.on('error', (cause) => {
+      reject(
+        new BuildError(`Could not start the "${buildScript}" build script.`, {
+          code: 'BUILD_SPAWN_FAILED',
+          hint: `Check that "${buildScript}" runs on its own (e.g. \`${pkgMgr?.agent || 'npm'} run ${buildScript}\`).`,
+          context: { buildScript, packageManager: pkgMgr?.agent },
+          cause,
+        })
+      );
     });
 
     child.on('close', (code) => {
@@ -76,17 +71,17 @@ const buildApp = async (buildScript: string) => {
 
       if (code !== 0) {
         s.stop('Build failed');
-
-        const errorsLog = formatErrorConsoleLog(stderr);
-
-        note(
-          dedent`Your project failed to build. This usually means there's an error somewhere in\nyour app's code.
-          ${errorsLog}
-          See the full logs in ${picocolors.cyan(logs.logDirName)} to diagnose what went wrong.
-          `,
-          '🚨 Build error'
+        reject(
+          new BuildError(
+            "Your project failed to build. This usually means there's an error in your app's code.",
+            {
+              code: 'BUILD_FAILED',
+              logPaths: [logs.errLogPath, logs.outLogPath],
+              hint: `See the full logs in ${logs.logDirName} to diagnose what went wrong.`,
+              context: { buildScript, exitCode: code },
+            }
+          )
         );
-        reject(new BuildError('App failed to build'));
         return;
       }
 

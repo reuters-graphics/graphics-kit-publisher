@@ -37,7 +37,12 @@ class SrcArchive {
     const ignoreFile = find.up('.gitignore', { cwd });
     if (!ignoreFile)
       throw new FileNotFoundError(
-        'Error finding .gitignore in this project. One should be in the project root.'
+        'Error finding .gitignore in this project. One should be in the project root.',
+        {
+          code: 'MISSING_GITIGNORE',
+          hint: 'Add a .gitignore to your project root.',
+          context: { cwd },
+        }
       );
 
     const gitignoreFilter = ignore()
@@ -98,7 +103,16 @@ class SrcArchive {
         'Project zip too large'
       );
       throw new EditionArchiveError(
-        `Project archive is over ${MAX_ARCHIVE_MB_SIZE}MB limit.`
+        `Project archive is over ${MAX_ARCHIVE_MB_SIZE}MB limit.`,
+        {
+          code: 'ARCHIVE_TOO_LARGE',
+          hint: `Remove large files or add them to the \`archiveEditions.ignore\` setting in publisher.config.ts.`,
+          context: {
+            sizeMb: Number(fileSizeInMegabytes.toFixed(1)),
+            limitMb: MAX_ARCHIVE_MB_SIZE,
+            archivePath: this.archivePath,
+          },
+        }
       );
     }
 

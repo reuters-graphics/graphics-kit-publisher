@@ -32,9 +32,17 @@ export const getPreviewImagePath = async (htmlPath: string) => {
   const { ogUrl, ogImage } = await getLocalHTMLPageMetadata(htmlPath);
 
   if (!ogImage)
-    throw new PageMetadataError(`No "og:image" tag found in ${htmlPath}`);
+    throw new PageMetadataError(`No "og:image" tag found in ${htmlPath}`, {
+      code: 'MISSING_OG_IMAGE',
+      hint: 'Add an <meta property="og:image"> tag to the page.',
+      context: { htmlPath },
+    });
   if (!ogUrl)
-    throw new PageMetadataError(`No canonical link found in ${htmlPath}`);
+    throw new PageMetadataError(`No canonical link found in ${htmlPath}`, {
+      code: 'MISSING_CANONICAL_LINK',
+      hint: 'Add a <link rel="canonical"> tag to the page.',
+      context: { htmlPath },
+    });
 
   const imgUrl = ogImage[0].url;
 
@@ -60,12 +68,25 @@ export const getPreviewImagePath = async (htmlPath: string) => {
 
   if (!VALID_IMAGE_FORMATS.includes(path.extname(pathToPreviewImage)))
     throw new InvalidFileTypeError(
-      `Invalid preview image type: ${path.basename(pathToPreviewImage)}`
+      `Invalid preview image type: ${path.basename(pathToPreviewImage)}`,
+      {
+        code: 'INVALID_PREVIEW_IMAGE_TYPE',
+        hint: 'Use a supported preview image format.',
+        context: {
+          previewImage: pathToPreviewImage,
+          allowed: VALID_IMAGE_FORMATS,
+        },
+      }
     );
 
   if (!fs.existsSync(pathToPreviewImage))
     throw new FileNotFoundError(
-      `Preview image detected in metadata but not found: ${pathToPreviewImage}`
+      `Preview image detected in metadata but not found: ${pathToPreviewImage}`,
+      {
+        code: 'PREVIEW_IMAGE_NOT_FOUND',
+        hint: 'Ensure the og:image referenced in your HTML exists in the build output.',
+        context: { previewImage: pathToPreviewImage, htmlPath },
+      }
     );
   return pathToPreviewImage;
 };

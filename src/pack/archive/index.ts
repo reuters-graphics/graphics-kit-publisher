@@ -90,7 +90,10 @@ export class Archive {
 
   async createOrUpdate() {
     if (!this.pack.serverClient)
-      throw new PackageMetadataError('Must create graphic pack first');
+      throw new PackageMetadataError('Must create graphic pack first', {
+        code: 'PACK_NOT_CREATED',
+        hint: 'Run the upload step (which creates the pack) before this operation.',
+      });
     const { serverClient } = this.pack;
     const metadata = await this.getMetadata();
     const zipPath = await this.packUp();

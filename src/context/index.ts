@@ -26,7 +26,11 @@ export class Context {
   private _validateCWD() {
     const cwd = process.cwd();
     if (!fs.existsSync(path.join(cwd, 'package.json'))) {
-      throw new LocationError('Must run publisher from project root');
+      throw new LocationError('Must run publisher from project root', {
+        code: 'NOT_PROJECT_ROOT',
+        hint: 'Run the publisher from the root of your project (where package.json lives).',
+        context: { cwd },
+      });
     }
     return cwd;
   }

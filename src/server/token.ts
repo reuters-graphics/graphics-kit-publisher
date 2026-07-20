@@ -125,16 +125,24 @@ export class Token {
     try {
       const jwt = jwtDecode(token) as { rights: string[] };
       rights = jwt.rights;
-    } catch {
+    } catch (cause) {
       this._clearCachedTempToken();
       throw new ServerError(
-        "Invalid API token. Couldn't decode the provided token."
+        "Invalid API token. Couldn't decode the provided token.",
+        {
+          code: 'INVALID_API_TOKEN',
+          hint: 'Copy a fresh token from the graphics server portal and try again.',
+          cause,
+        }
       );
     }
 
     if (!rights) {
       this._clearCachedTempToken();
-      throw new ServerError('Invalid API token. Token has no rights.');
+      throw new ServerError('Invalid API token. Token has no rights.', {
+        code: 'API_TOKEN_NO_RIGHTS',
+        hint: 'Copy a fresh token from the graphics server portal and try again.',
+      });
     }
 
     /**
@@ -147,7 +155,12 @@ export class Token {
 
     if (throwOnInvalid) {
       throw new ServerError(
-        'Invalid API token. Token missing rights to publish to graphics server.'
+        'Invalid API token. Token missing rights to publish to graphics server.',
+        {
+          code: 'API_TOKEN_MISSING_GFX_RIGHTS',
+          hint: 'Your token lacks GFX_ publishing rights — request graphics-server access.',
+          context: { rights },
+        }
       );
     }
 
