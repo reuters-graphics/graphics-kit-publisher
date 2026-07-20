@@ -9,6 +9,10 @@ const mockSpinner = {
   stop: vi.fn(),
   start: vi.fn(),
   message: vi.fn(),
+  cancel: vi.fn(),
+  error: vi.fn(),
+  clear: vi.fn(),
+  isCancelled: false,
 };
 
 // Mock the context, logs, and note

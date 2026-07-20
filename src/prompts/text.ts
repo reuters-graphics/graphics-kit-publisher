@@ -54,7 +54,10 @@ export const text = async ({
     message,
     initialValue,
     placeholder,
-    validate,
+    // clack@1 widened `validate`'s argument to `string | undefined` (a blank
+    // prompt yields `undefined`); coerce to '' so our `(value: string) => …`
+    // validators keep working.
+    validate: validate ? (value) => validate(value ?? '') : undefined,
   });
 
   if (isCancel(value)) {
