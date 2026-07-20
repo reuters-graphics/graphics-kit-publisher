@@ -30,6 +30,33 @@ describe('extractLikelyErrors', () => {
     );
   });
 
+  it('surfaces a vite-plugin-svelte compile error over surrounding noise', () => {
+    const log = [
+      'vite v8.1.4 building for production...',
+      'transforming (243) src/lib/Foo.svelte',
+      '[plugin:vite-plugin-svelte] src/lib/Chart.svelte:20:4 `$props` is not defined',
+      'error during build:',
+    ].join('\n');
+    expect(extractLikelyErrors(log).join('\n')).toContain('Chart.svelte:20:4');
+  });
+
+  it('surfaces a SassError with its file location', () => {
+    const log = [
+      'rendering chunks...',
+      "src/lib/styles/app.scss:4:1: SassError: Can't find stylesheet to import.",
+      'x Build failed',
+    ].join('\n');
+    expect(extractLikelyErrors(log).join('\n')).toContain('SassError');
+  });
+
+  it('ignores node_modules lines when a project line is also present', () => {
+    const log = [
+      'node_modules/some-dep/dist/index.js: SyntaxError: Unexpected token',
+      'src/routes/+page.ts:3:10: SyntaxError: Unexpected token',
+    ].join('\n');
+    expect(extractLikelyErrors(log).join('\n')).toContain('+page.ts:3:10');
+  });
+
   it('falls back to the first N lines when nothing matches', () => {
     const out = extractLikelyErrors('line one\nline two\nline three', {
       maxLines: 2,

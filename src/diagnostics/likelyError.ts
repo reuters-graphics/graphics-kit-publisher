@@ -3,21 +3,50 @@ import { reflowText } from '../utils/reflowText';
 /**
  * Ranked toolchain error signatures. Earlier entries are higher priority — when
  * several lines match, the one matching an earlier signature wins.
+ *
+ * Tuned for the stack the publisher actually builds: `vite build` over a
+ * SvelteKit 2 / Svelte 5 / sass project (the bluprint_graphics-kit template).
+ * Ordered specific → generic so a Svelte/sass/Rollup error outranks a bare
+ * `Error:` line.
  */
 const ERROR_SIGNATURES: RegExp[] = [
-  /error TS\d+/i,
-  /\bSyntaxError\b/,
+  // Svelte compiler (surfaced through vite-plugin-svelte)
+  /\[plugin:vite-plugin-svelte\]/i,
+  /\bCompileError\b/,
+  // Sass / PostCSS
+  /\bSassError\b/i,
+  /\[sass\]/i,
+  /Failed to load PostCSS/i,
+  /\[postcss\]/i,
+  // Vite / Rollup / esbuild build failures
+  /failed to resolve import/i,
+  /Could not resolve/i,
+  /\bRollupError\b/,
+  /✘ \[ERROR\]/, // esbuild
   /Transform failed/i,
-  /Failed to resolve import/i,
+  // Node / module resolution
   /Cannot find module/i,
-  /is not exported/i,
-  /Unexpected token/i,
+  /ERR_MODULE_NOT_FOUND/,
+  /Cannot find package/i,
   /\bENOENT\b/,
-  /\[vite\]/i,
+  // SvelteKit prerender (adapter-static)
+  /prerender/i,
+  // TypeScript (rare in `vite build`, but cheap to keep)
+  /error TS\d+/i,
+  // Generic JS runtime/syntax
+  /\bReferenceError\b/,
+  /\bSyntaxError\b/,
+  /\bTypeError\b/,
+  /is not defined\b/,
+  /is not exported\b/,
+  /Unexpected (?:token|end|EOF)/i,
+  // Low-signal fallbacks
+  /error during build:/i,
+  /\[vite[:\]-]/i,
   /\[rollup\]/i,
   /ELIFECYCLE/i,
   /npm ERR!/i,
-  /\bERR!/i,
+  /\bERR!/,
   /\bError:/,
   /\bfailed\b/i,
 ];
@@ -60,8 +89,16 @@ export function extractLikelyErrors(
     const signatureRank = ERROR_SIGNATURES.findIndex((re) => re.test(line));
     if (signatureRank === -1) continue;
 
+    // A line points at the user's own code if it names their src/ tree, a
+    // `.svelte` file, or a `file.ext:line` location — but not if it's inside
+    // node_modules (that's dependency noise, not their bug).
+    const inNodeModules = /node_modules/.test(line);
     const referencesProject =
-      (!!cwd && line.includes(cwd)) || /(^|[^\w])src[\\/]/.test(line);
+      !inNodeModules &&
+      ((!!cwd && line.includes(cwd)) ||
+        /(^|[^\w])src[\\/]/.test(line) ||
+        /\.svelte\b/.test(line) ||
+        /\.(?:svelte|ts|js|mjs|scss|css):\d+/.test(line));
     // Lower score is better; a project reference strongly outranks signature order.
     const score =
       signatureRank - (referencesProject ? PROJECT_REFERENCE_BOOST : 0);
