@@ -118,14 +118,17 @@ export interface HandleErrorOptions {
 }
 
 /**
- * Render an error to the terminal and exit the process.
+ * Render an error to the terminal — WITHOUT exiting.
  *
  * For a {@link PublisherError} this surfaces the code, a heuristic "likely cause"
  * (for delegated errors, extracted from the captured logs), the remediation
  * hint, and pointers to the logs + diagnostics file. The raw stack is hidden
  * unless `--verbose` / `DEBUG` is set.
+ *
+ * Split from {@link handleError} so an interactive step (e.g. the Claude Code
+ * handoff) can run after the error is shown but before the process exits.
  */
-export const handleError = (e: unknown, options: HandleErrorOptions = {}) => {
+export const renderError = (e: unknown, options: HandleErrorOptions = {}) => {
   const error = coalesceToError(e);
   const isPublisherError = error instanceof PublisherError;
 
@@ -166,6 +169,12 @@ export const handleError = (e: unknown, options: HandleErrorOptions = {}) => {
       `\n${picocolors.gray(error.stack.split('\n').slice(1).join('\n'))}`
     );
   }
+};
 
+/**
+ * Render an error and exit the process with code 1.
+ */
+export const handleError = (e: unknown, options: HandleErrorOptions = {}) => {
+  renderError(e, options);
   process.exit(1);
 };

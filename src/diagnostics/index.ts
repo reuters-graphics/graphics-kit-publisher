@@ -127,6 +127,10 @@ const buildContent = (error: unknown, command?: string): string => {
   return lines.join('\n');
 };
 
+/** Absolute path to the stable `latest.md` diagnostics file for this project. */
+export const latestDiagnosticsPath = (): string =>
+  path.join(context.cwd, DIAGNOSTICS_DIR, 'latest.md');
+
 /**
  * Write a prompt-ready diagnostics markdown file for a failed command. Secrets
  * are redacted, and `.graphics-kit/` is ensured git-ignored first so the file is
@@ -146,7 +150,7 @@ export const writeDiagnostics = (
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const content = redactSecrets(buildContent(error, command));
     const absTimestamped = path.join(cwd, DIAGNOSTICS_DIR, `${timestamp}.md`);
-    const absLatest = path.join(cwd, DIAGNOSTICS_DIR, 'latest.md');
+    const absLatest = latestDiagnosticsPath();
 
     utils.fs.ensureWriteFile(absTimestamped, content);
     utils.fs.ensureWriteFile(absLatest, content);

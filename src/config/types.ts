@@ -235,6 +235,11 @@ export type Config = {
   archiveEditions: ArchiveEditions;
   embedTemplate: EmbedTemplate;
   publishingLocations: PublishingLocations;
+  /**
+   * When a command fails, whether to offer an AI diagnosis handoff to Claude
+   * Code. `'prompt'` (default) asks interactively; `'off'` disables it.
+   */
+  ai: 'prompt' | 'off';
 };
 
 type PartialDeep<K> = {

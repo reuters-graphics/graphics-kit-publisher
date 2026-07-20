@@ -108,6 +108,7 @@ const ConfigSchema = v.required(
         ),
       })
     ),
+    ai: v.union([v.literal('prompt'), v.literal('off')]),
   })
 );
 
