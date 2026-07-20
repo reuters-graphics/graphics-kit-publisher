@@ -52,7 +52,9 @@ describe('writeDiagnostics', () => {
     vi.clearAllMocks();
   });
 
-  it('writes latest.md when .graphics-kit is git-ignored', () => {
+  const GITIGNORE = '/fake/project/.gitignore';
+
+  it('writes latest.md when .graphics-kit is already git-ignored (no .gitignore edit)', () => {
     mockFs(projectFs({ gitignore: '.graphics-kit/\nnode_modules/' }));
 
     const written = writeDiagnostics(buildErr(), 'upload');
@@ -66,24 +68,41 @@ describe('writeDiagnostics', () => {
     // secret from the log tail is redacted
     expect(content).not.toContain('abcdef0123456789abcdef0123456789abcdef01');
     expect(content).toContain('[redacted]');
+    // already ignored → no edit, no note
+    expect(fs.readFileSync(GITIGNORE, 'utf8')).toBe(
+      '.graphics-kit/\nnode_modules/'
+    );
+    expect(note).not.toHaveBeenCalled();
   });
 
-  it('skips and warns when the path is not git-ignored', () => {
+  it('appends .graphics-kit/ to .gitignore when not yet ignored, then writes', () => {
     mockFs(projectFs({ gitignore: 'node_modules/' }));
 
     const written = writeDiagnostics(buildErr(), 'upload');
 
-    expect(written).toBeNull();
+    expect(written).toBe(LATEST);
+    expect(fs.existsSync(LATEST)).toBe(true);
+    expect(fs.readFileSync(GITIGNORE, 'utf8')).toContain('.graphics-kit/');
     expect(note).toHaveBeenCalled();
-    expect(fs.existsSync(LATEST)).toBe(false);
   });
 
-  it('writes anyway when not in a git repo', () => {
+  it('creates a .gitignore when the git repo has none, then writes', () => {
+    mockFs(projectFs({ gitignore: undefined }));
+
+    const written = writeDiagnostics(buildErr(), 'publish');
+
+    expect(written).toBe(LATEST);
+    expect(fs.existsSync(GITIGNORE)).toBe(true);
+    expect(fs.readFileSync(GITIGNORE, 'utf8')).toContain('.graphics-kit/');
+  });
+
+  it('writes anyway when not in a git repo (no .gitignore created)', () => {
     mockFs(projectFs({ git: false }));
 
     const written = writeDiagnostics(buildErr(), 'preview');
 
     expect(written).toBe(LATEST);
     expect(fs.existsSync(LATEST)).toBe(true);
+    expect(fs.existsSync(GITIGNORE)).toBe(false);
   });
 });

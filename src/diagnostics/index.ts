@@ -1,12 +1,8 @@
 import path from 'path';
 import fs from 'fs';
-import * as find from 'empathic/find';
-import ignore from 'ignore';
 import { utils } from '@reuters-graphics/graphics-bin';
-import { note } from '@reuters-graphics/clack';
-import picocolors from 'picocolors';
 import { context } from '../context';
-import { logs } from '../logging';
+import { logs, ensureGraphicsKitIgnored } from '../logging';
 import { PublisherError } from '../exceptions/errors';
 import { extractLikelyErrors } from './likelyError';
 import { redactSecrets } from './redact';
@@ -17,29 +13,6 @@ const LLMS_DIR =
   './node_modules/@reuters-graphics/graphics-kit-publisher/llms/';
 /** Cap each embedded log tail so the file stays a usable prompt. */
 const MAX_LOG_TAIL_BYTES = 8_000;
-
-/**
- * Decide whether it is safe to write the diagnostics file, i.e. whether it would
- * be caught by git and never committed.
- *
- * - Not a git repo → no commit risk → write.
- * - Git repo, path git-ignored → write.
- * - Git repo, path NOT ignored → skip (caller warns), so a file with logs can't
- *   be accidentally committed.
- */
-const isSafeToWrite = (cwd: string, relPath: string): boolean => {
-  const gitDir = find.up('.git', { cwd });
-  if (!gitDir) return true;
-
-  const ignoreFile = find.up('.gitignore', { cwd });
-  if (!ignoreFile) return false;
-
-  // `ignore().createFilter()` returns true for paths that are NOT ignored.
-  const notIgnored = ignore()
-    .add(fs.readFileSync(ignoreFile, 'utf8'))
-    .createFilter();
-  return !notIgnored(relPath);
-};
 
 /** Read the last `maxBytes` of a file, or null if it doesn't exist / can't be read. */
 const readTail = (
@@ -155,35 +128,31 @@ const buildContent = (error: unknown, command?: string): string => {
 };
 
 /**
- * Write a prompt-ready diagnostics markdown file for a failed command, gated on
- * the path being git-ignored so it is never committed. Secrets are redacted.
+ * Write a prompt-ready diagnostics markdown file for a failed command. Secrets
+ * are redacted, and `.graphics-kit/` is ensured git-ignored first so the file is
+ * never committed.
  *
- * @returns the absolute path to `latest.md`, or `null` if writing was skipped.
+ * Best-effort: returns the absolute path to `latest.md`, or `null` if writing
+ * failed (a diagnostics failure must never mask the real error).
  */
 export const writeDiagnostics = (
   error: unknown,
   command?: string
 ): string | null => {
-  const { cwd } = context;
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const relLatest = path.join(DIAGNOSTICS_DIR, 'latest.md');
+  try {
+    const { cwd } = context;
+    ensureGraphicsKitIgnored();
 
-  if (!isSafeToWrite(cwd, relLatest)) {
-    note(
-      `Add ${picocolors.cyan('.graphics-kit/')} to your ${picocolors.cyan(
-        '.gitignore'
-      )} to enable diagnostics.`,
-      'Diagnostics skipped'
-    );
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const content = redactSecrets(buildContent(error, command));
+    const absTimestamped = path.join(cwd, DIAGNOSTICS_DIR, `${timestamp}.md`);
+    const absLatest = path.join(cwd, DIAGNOSTICS_DIR, 'latest.md');
+
+    utils.fs.ensureWriteFile(absTimestamped, content);
+    utils.fs.ensureWriteFile(absLatest, content);
+
+    return absLatest;
+  } catch {
     return null;
   }
-
-  const content = redactSecrets(buildContent(error, command));
-  const absTimestamped = path.join(cwd, DIAGNOSTICS_DIR, `${timestamp}.md`);
-  const absLatest = path.join(cwd, relLatest);
-
-  utils.fs.ensureWriteFile(absTimestamped, content);
-  utils.fs.ensureWriteFile(absLatest, content);
-
-  return absLatest;
 };
