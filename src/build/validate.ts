@@ -35,7 +35,12 @@ const validateOutDirFileTypes = (s: ReturnType<typeof spinner>) => {
       'Invalid file types'
     );
     throw new InvalidFileTypeError(
-      `Found invalid file types in this project's built files.`
+      `Found invalid file types in this project's built files.`,
+      {
+        code: 'INVALID_BUILT_FILE_TYPES',
+        hint: 'Remove the listed files from your build output — the graphics server rejects these types.',
+        context: { invalidFiles: warnFiles, allowed: VALID_FILE_TYPES },
+      }
     );
   }
 };
@@ -60,7 +65,13 @@ const validateOutDirIndex = (s: ReturnType<typeof spinner>) => {
       'Build error'
     );
     throw new FileSystemError(
-      `Build did not create a root index.html file in ${outDir}.`
+      `Build did not create a root index.html file in ${outDir}.`,
+      {
+        code: 'MISSING_INDEX_HTML',
+        logPaths: [logs.errLogPath, logs.outLogPath],
+        hint: `See the logs in ${logs.logDirName} for details from the build process.`,
+        context: { outDir },
+      }
     );
   }
 };

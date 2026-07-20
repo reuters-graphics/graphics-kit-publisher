@@ -1,7 +1,8 @@
 import sade from 'sade';
 import { version } from '../package.json';
 import { GraphicsKitPublisher } from '.';
-import { handleError } from './exceptions/errors';
+import { handleError, PublisherError } from './exceptions/errors';
+import { writeDiagnostics } from './diagnostics';
 
 const prog = sade('graphics-publisher');
 
@@ -22,12 +23,15 @@ prog.version(version);
  *
  * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/137
  */
-const runCommand = async (action: () => Promise<void>) => {
+const runCommand = async (command: string, action: () => Promise<void>) => {
   try {
     await action();
     exitCleanly(0);
   } catch (error) {
-    handleError(error);
+    // Stamp the command onto the error at the boundary (throw sites don't know it).
+    if (error instanceof PublisherError) error.command = command;
+    const diagnosticsPath = writeDiagnostics(error, command);
+    handleError(error, { command, diagnosticsPath });
   }
 };
 
@@ -53,28 +57,40 @@ const exitCleanly = (code: number) => {
 
 prog
   .command('preview')
-  .action(() => runCommand(() => new GraphicsKitPublisher().preview()));
+  .action(() =>
+    runCommand('preview', () => new GraphicsKitPublisher().preview())
+  );
 
 prog
   .command('upload')
-  .action(() => runCommand(() => new GraphicsKitPublisher().upload()));
+  .action(() =>
+    runCommand('upload', () => new GraphicsKitPublisher().upload())
+  );
 
 prog
   .command('upload:quick')
   .action(() =>
-    runCommand(() => new GraphicsKitPublisher().uploadPublicOnly())
+    runCommand('upload:quick', () =>
+      new GraphicsKitPublisher().uploadPublicOnly()
+    )
   );
 
 prog
   .command('publish')
-  .action(() => runCommand(() => new GraphicsKitPublisher().publish()));
+  .action(() =>
+    runCommand('publish', () => new GraphicsKitPublisher().publish())
+  );
 
 prog
   .command('restart')
-  .action(() => runCommand(() => new GraphicsKitPublisher().restart()));
+  .action(() =>
+    runCommand('restart', () => new GraphicsKitPublisher().restart())
+  );
 
 prog
   .command('delete')
-  .action(() => runCommand(() => new GraphicsKitPublisher().delete()));
+  .action(() =>
+    runCommand('delete', () => new GraphicsKitPublisher().delete())
+  );
 
 prog.parse(process.argv);

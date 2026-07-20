@@ -43,11 +43,19 @@ export class Interactive extends Edition {
       !this.pack.metadata.description
     )
       throw new PackageMetadataError(
-        'Must create or update graphic pack first'
+        'Must create or update graphic pack first',
+        {
+          code: 'PACK_METADATA_INCOMPLETE',
+          hint: 'Ensure the pack has an id, title, and description before uploading editions.',
+        }
       );
     if (!this.pack.serverClient)
       throw new PackageMetadataError(
-        'Must create or update graphic pack first'
+        'Must create or update graphic pack first',
+        {
+          code: 'PACK_NOT_CREATED',
+          hint: 'Run the upload step (which creates the pack) before this operation.',
+        }
       );
 
     const { serverClient } = this.pack;
@@ -177,7 +185,11 @@ export class Interactive extends Edition {
     const editionUrl = PKG.archive(this.archive.id).url;
     if (!editionUrl)
       throw new PackageMetadataError(
-        'Must get URL for interactive edition before writing manifest'
+        'Must get URL for interactive edition before writing manifest',
+        {
+          code: 'MISSING_EDITION_URL',
+          context: { archiveId: this.archive.id },
+        }
       );
 
     await this.makeStaticImage(archiveDir);

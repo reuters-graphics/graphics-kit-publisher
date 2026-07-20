@@ -19,8 +19,17 @@ type ServerCreds = v.InferInput<typeof ServerCredsSchema>;
 const validate = (creds: ServerCreds) => {
   try {
     v.parse(ServerCredsSchema, creds);
-  } catch {
-    throw new ServerCredentialsError('Invalid graphics server credentials');
+  } catch (cause) {
+    // Only field NAMES go in context — never the credential values.
+    const missingFields = Object.entries(creds ?? {})
+      .filter(([, value]) => !value)
+      .map(([key]) => key);
+    throw new ServerCredentialsError('Invalid graphics server credentials', {
+      code: 'INVALID_SERVER_CREDENTIALS',
+      hint: 'Check your username, password, and API key for the graphics server.',
+      context: { missingFields },
+      cause,
+    });
   }
   return creds;
 };
@@ -40,7 +49,12 @@ export const getServerCredentials = () => {
   );
   if (!fs.existsSync(credFilePath)) {
     throw new UserConfigError(
-      `Can't find graphics server credentials file ${picocolors.cyan('~/.reuters-graphics/graphics-server.json')}`
+      `Can't find graphics server credentials file ${picocolors.cyan('~/.reuters-graphics/graphics-server.json')}`,
+      {
+        code: 'MISSING_CREDENTIALS_FILE',
+        hint: 'Create the credentials file at ~/.reuters-graphics/graphics-server.json with your server username, password, and API key.',
+        context: { credFilePath },
+      }
     );
   }
   return validate(fs.readJsonSync(credFilePath));

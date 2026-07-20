@@ -40,11 +40,20 @@ export class Edition {
     this.archive.editions.push(this);
     if (!fs.existsSync(path))
       throw new FileSystemError(
-        `Local path for edition detected but not found on file system: ${path}`
+        `Local path for edition detected but not found on file system: ${path}`,
+        {
+          code: 'EDITION_PATH_NOT_FOUND',
+          context: { path, locale, mediaSlug },
+        }
       );
     if (!VALID_LOCALES.includes(locale))
       throw new InvalidLocaleError(
-        `Found invalid locale "${locale}" for edition at: ${this.path}`
+        `Found invalid locale "${locale}" for edition at: ${this.path}`,
+        {
+          code: 'INVALID_LOCALE',
+          hint: 'Use a supported locale code for this edition.',
+          context: { locale, validLocales: VALID_LOCALES },
+        }
       );
   }
 

@@ -32,6 +32,11 @@ export const validateOrThrow = <T extends GenericSchema, V>(
     return result.output;
   } else {
     const errorMsgs = result.issues.map((issue) => issue.message).join(' ');
-    throw new PackageMetadataError(errorMsgs || 'Data is invalid');
+    throw new PackageMetadataError(errorMsgs || 'Data is invalid', {
+      code: 'INVALID_PACK_METADATA',
+      context: {
+        issues: result.issues.map((issue) => issue.message),
+      },
+    });
   }
 };

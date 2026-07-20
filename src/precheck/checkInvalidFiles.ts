@@ -17,7 +17,12 @@ export const checkInvalidfiles = () => {
 
   if (!ignoreFile)
     throw new FileNotFoundError(
-      'Error finding .gitignore in this project. One should be in the project root.'
+      'Error finding .gitignore in this project. One should be in the project root.',
+      {
+        code: 'MISSING_GITIGNORE',
+        hint: 'Add a .gitignore to your project root.',
+        context: { cwd },
+      }
     );
 
   const gitignoreFilter = ignore()
@@ -45,6 +50,10 @@ export const checkInvalidfiles = () => {
       'Invalid files found'
     );
 
-    throw new FileSystemError('Invalid files found');
+    throw new FileSystemError('Invalid files found', {
+      code: 'INVALID_PROJECT_FILES',
+      hint: 'Remove the listed files (e.g. stray .zip archives) and try again.',
+      context: { invalidFiles },
+    });
   }
 };

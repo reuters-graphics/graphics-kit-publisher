@@ -117,13 +117,23 @@ export const validateConfig = (config: Config) => {
   } catch (err: unknown) {
     if (v.isValiError(err)) {
       const errorMessages: string[] = [];
+      const issues: { path: string; message: string }[] = [];
       for (const e of err.issues) {
-        const dotPath = v.getDotPath(e);
+        const dotPath = v.getDotPath(e) ?? '(root)';
         errorMessages.push(`${dotPath} ${e.message}`);
+        issues.push({ path: dotPath, message: e.message });
       }
-      throw new ConfigError(errorMessages.join('\n'));
+      throw new ConfigError(errorMessages.join('\n'), {
+        code: 'INVALID_CONFIG',
+        hint: 'Fix the listed fields in your publisher config (publisher.config.ts or the `reuters` key in package.json).',
+        context: { issues },
+        cause: err,
+      });
     }
-    throw new ConfigError('unknown config error');
+    throw new ConfigError('unknown config error', {
+      code: 'UNKNOWN_CONFIG_ERROR',
+      cause: err,
+    });
   }
   return;
 };
