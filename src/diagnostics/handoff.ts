@@ -70,6 +70,19 @@ export const buildExtensionUrl = (pointer: string): string =>
   `vscode://anthropic.claude-code/open?prompt=${encodeURIComponent(pointer)}`;
 
 /**
+ * The select-prompt question. The automatic prompt fires right after a command
+ * failed, so it names that command; the `diagnose` command (`reopened`) instead
+ * re-opens the last failure on demand, so it must not claim `diagnose` itself
+ * failed.
+ */
+export const buildPromptMessage = (
+  opts: { command?: string; reopened?: boolean } = {}
+): string =>
+  opts.reopened ?
+    'Diagnose the last failed command with AI?'
+  : `Your "${opts.command ?? 'command'}" command failed. Diagnose it with AI?`;
+
+/**
  * Whether a real `claude` executable is on PATH. A shell *alias* is not found —
  * correct, since `spawn` can't use aliases either (see {@link resolveClaudeBin}
  * for the native-installer location that aliases point at).
@@ -248,7 +261,7 @@ export const offerDiagnosisHandoff = async ({
     options.push({ value: 'no', label: 'No thanks' });
 
     const choice = await select({
-      message: `Your "${command ?? 'command'}" command failed. Diagnose it with AI?`,
+      message: buildPromptMessage({ command, reopened: force }),
       options,
     });
 
