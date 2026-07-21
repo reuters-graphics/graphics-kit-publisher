@@ -46,22 +46,28 @@ const buildContent = (error: unknown, command?: string): string => {
   const isPublisherError = err instanceof PublisherError;
   const cmd = command ?? (isPublisherError ? err.command : undefined);
 
-  const errLog = readTail(logs.errLogPath);
-  const outLog = readTail(logs.outLogPath);
+  // A delegated error names the log files where the *real* failure lives (a
+  // build/subprocess), so we scrape a likely cause from them and include the
+  // log tails. An internal rule error (e.g. MISSING_OG_IMAGE) is thrown by the
+  // publisher *after* the build succeeded — its build logs are unrelated noise
+  // and a red herring, so we surface neither and let the error message, hint,
+  // and rule docs carry the diagnosis.
+  const logPaths = isPublisherError && err.logPaths?.length ? err.logPaths : [];
+  const isDelegated = logPaths.length > 0;
 
-  // Prefer the error's own logPaths (delegated errors); otherwise fall back to error.log.
   let likely: string[] = [];
-  const logPaths = isPublisherError && err.logPaths ? err.logPaths : [];
-  for (const logPath of logPaths) {
-    const tail = readTail(logPath);
-    if (tail) {
-      likely = extractLikelyErrors(tail, { cwd: context.cwd });
-      if (likely.length) break;
+  if (isDelegated) {
+    for (const logPath of logPaths) {
+      const tail = readTail(logPath);
+      if (tail) {
+        likely = extractLikelyErrors(tail, { cwd: context.cwd });
+        if (likely.length) break;
+      }
     }
   }
-  if (!likely.length && errLog) {
-    likely = extractLikelyErrors(errLog, { cwd: context.cwd });
-  }
+
+  const errLog = isDelegated ? readTail(logs.errLogPath) : null;
+  const outLog = isDelegated ? readTail(logs.outLogPath) : null;
 
   const lines: string[] = [];
   lines.push('# Publisher diagnostics');
