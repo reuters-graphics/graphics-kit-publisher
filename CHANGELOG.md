@@ -1,5 +1,13 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.4.0
+
+### Minor Changes
+
+- 39b6918: Add the Claude Code handoff (issue #141, part 2 of 2). When a command fails in an interactive terminal, the publisher now offers to diagnose it with Claude Code — either opening the VSCode extension (chat next to your code, via a `vscode://` deep-link pre-filled with the diagnostics file) or running a one-shot `claude -p` in the terminal. Availability is detected (VSCode integrated terminal, `claude` on PATH), not credentials — authentication is however you've configured Claude Code. A new `graphics-publisher diagnose` command re-opens the handoff against the last failure without re-running the command, and a `publisher.config.ts` `ai: 'prompt' | 'off'` setting (plus `--no-ai`) controls the automatic prompt. Skipped in CI / non-TTY.
+- 3324f6b: Improve error diagnostics (issue #141, part 1 of 2). Custom errors now extend a `PublisherError` base class carrying a machine-readable `code`, the running `command`, `logPaths`, a remediation `hint`, and structured `context`. On any failure the CLI writes a prompt-ready, secret-redacted diagnostics file to `.graphics-kit/diagnostics/latest.md` (only when git-ignored, so it can't be committed), and the terminal output now leads with a heuristic "likely cause" from the build logs plus the fix hint, hiding the raw stack behind `--verbose`/`DEBUG`.
+- f7cd913: Update `@clack/prompts` (0.10 → 1.7) and `@reuters-graphics/clack` (0.0.2 → 1.0) to their v1 releases. These are ESM-only and require Node ≥20.12, so the publisher's minimum Node version is now `>=20.12.0`. No consumer-facing API changes.
+
 ## 3.3.1
 
 ### Patch Changes
