@@ -122,11 +122,19 @@ export class Pack {
   async packUp() {
     const s = spinner(2000);
     s.start('Packing up graphic pack');
-    utils.fs.ensureDir(this.packRoot);
-    for (const archive of this.archives) {
-      await archive.packUp();
+    try {
+      utils.fs.ensureDir(this.packRoot);
+      for (const archive of this.archives) {
+        await archive.packUp();
+      }
+      await s.stop('📦 All packed.');
+    } catch (error) {
+      // Stop the spinner on failure so it doesn't keep animating under the
+      // rendered error and the AI-handoff prompt. Rethrow so the failure still
+      // reaches the CLI error boundary.
+      await s.stop('Could not finish packing up.', 2);
+      throw error;
     }
-    await s.stop('📦 All packed.');
   }
 
   async resetPackData(askToConfirm = true) {
