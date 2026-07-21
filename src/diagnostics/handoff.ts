@@ -3,11 +3,12 @@ import fs from 'fs';
 import os from 'os';
 import { spawn } from 'node:child_process';
 import { select, isCancel } from '@clack/prompts';
-import { note } from '@reuters-graphics/clack';
+import { note, spinner } from '@reuters-graphics/clack';
 import picocolors from 'picocolors';
 import open from 'open';
 import { utils } from '@reuters-graphics/graphics-bin';
 import { context } from '../context';
+import { reflowText } from '../utils/reflowText';
 
 export interface HandoffOptions {
   /** Absolute path to the diagnostics file, or null if none was written. */
@@ -136,15 +137,62 @@ const isInteractive = (): boolean =>
   !!process.stdout.isTTY &&
   !!process.stdin.isTTY;
 
-/** Run a one-shot `claude -p` diagnosis, streaming to the terminal. Never rejects. */
-const runTerminalDiagnosis = (pointer: string, bin: string): Promise<void> =>
+/**
+ * Print a note, word-wrapping the message to the terminal width first. `note`
+ * sizes its box to the longest line and does not wrap, so an LLM's long
+ * unwrapped paragraph lines would otherwise blow the box past the terminal.
+ */
+const reflowedNote = (message: string, title: string): void => {
+  // Leave room for the box chrome (`│  ` … `  │`); cap width for readability.
+  const width = Math.max(40, Math.min(process.stdout.columns ?? 80, 100) - 6);
+  note(reflowText(message, width).join('\n'), title);
+};
+
+/**
+ * Run a one-shot `claude -p` diagnosis. Shows a spinner while Claude works so
+ * the terminal doesn't look hung, and captures both streams.
+ *
+ * On success (exit 0 with output) it prints the diagnosis and drops stderr —
+ * Claude emits operational notices there (e.g. auth/connector warnings) that
+ * are just noise on the happy path. On failure it surfaces the captured stderr
+ * so a real problem (an auth error, say) isn't silently swallowed. Resolves
+ * true when a diagnosis was produced; never rejects.
+ */
+const runTerminalDiagnosis = (pointer: string, bin: string): Promise<boolean> =>
   new Promise((resolve) => {
+    const s = spinner(2000);
+    s.start('Asking Claude to look at the error');
+
+    const out: Buffer[] = [];
+    const err: Buffer[] = [];
     const child = spawn(bin, ['-p', pointer, '--output-format', 'text'], {
       cwd: context.cwd,
-      stdio: 'inherit',
+      // Capture both streams (the spinner owns the parent terminal); we decide
+      // what to surface once we know the exit code.
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
-    child.on('close', () => resolve());
-    child.on('error', () => resolve());
+
+    child.stdout?.on('data', (chunk: Buffer) => out.push(chunk));
+    child.stderr?.on('data', (chunk: Buffer) => err.push(chunk));
+
+    child.on('close', async (code) => {
+      const text = Buffer.concat(out).toString('utf8').trim();
+      if (code === 0 && text) {
+        await s.stop('Claude looked at your error:');
+        reflowedNote(text, 'AI diagnosis');
+        resolve(true);
+      } else {
+        await s.stop("Claude couldn't diagnose the error.");
+        const errText = Buffer.concat(err).toString('utf8').trim();
+        if (errText) reflowedNote(errText, 'Claude error');
+        resolve(false);
+      }
+    });
+
+    child.on('error', async () => {
+      await s.stop("Couldn't run Claude.");
+      resolve(false);
+    });
   });
 
 /**
@@ -215,7 +263,8 @@ export const offerDiagnosisHandoff = async ({
     }
 
     if (choice === 'terminal' && claudeBin) {
-      await runTerminalDiagnosis(pointer, claudeBin);
+      const ok = await runTerminalDiagnosis(pointer, claudeBin);
+      if (!ok) copyPasteNote();
     }
   } catch {
     // Never let the handoff mask the original failure.
