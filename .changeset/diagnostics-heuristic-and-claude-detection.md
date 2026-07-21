@@ -1,5 +1,5 @@
 ---
-'@reuters-graphics/graphics-kit-publisher': minor
+'@reuters-graphics/graphics-kit-publisher': patch
 ---
 
 Improve failure diagnostics: surface the real error and detect natively-installed Claude
