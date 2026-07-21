@@ -29,8 +29,13 @@ const ERROR_SIGNATURES: RegExp[] = [
   /ERR_MODULE_NOT_FOUND/,
   /Cannot find package/i,
   /\bENOENT\b/,
-  // SvelteKit prerender (adapter-static)
-  /prerender/i,
+  // NOTE: we deliberately do NOT match SvelteKit's prerender HTTP-error
+  // wrapper (`Error: <code> /route` + the `handleHttpError` / `#prerender`
+  // advice line). When a page throws during prerender, SvelteKit always wraps
+  // the failure in that wrapper — it's a symptom, and the real error (a
+  // ReferenceError, etc.) is printed just above it. Leaving the wrapper
+  // unmatched lets the actual thrown error win. A genuine prerender *config*
+  // error still starts with `Error:` and is caught by the generic fallback.
   // TypeScript (rare in `vite build`, but cheap to keep)
   /error TS\d+/i,
   // Generic JS runtime/syntax
@@ -53,6 +58,34 @@ const ERROR_SIGNATURES: RegExp[] = [
 
 /** Boost applied to a line that references the user's own project source. */
 const PROJECT_REFERENCE_BOOST = 100;
+
+/**
+ * Penalty applied when an error's entire associated stack trace sits inside
+ * `node_modules` — dependency-internal noise that should lose to anything
+ * pointing at the user's own code.
+ */
+const NODE_MODULES_PENALTY = 50;
+
+/** A stack-trace frame line, e.g. `    at foo (file:///…/x.js:1:2)`. */
+function isStackFrame(line: string): boolean {
+  return /^\s*at\s/.test(line) || /\bfile:\/\//.test(line);
+}
+
+/**
+ * Whether a single line points at the user's own code: it names their `src/`
+ * tree, a `.svelte` file, a `file.ext:line` location, or (when known) the
+ * project root — but never a `node_modules` path (that's dependency noise,
+ * and the guard also stops a `.../node_modules/.../src/...` false positive).
+ */
+function referencesProjectLine(line: string, cwd?: string): boolean {
+  if (/node_modules/.test(line)) return false;
+  return (
+    (!!cwd && line.includes(cwd)) ||
+    /(^|[^\w])src[\\/]/.test(line) ||
+    /\.svelte\b/.test(line) ||
+    /\.(?:svelte|ts|js|mjs|scss|css):\d+/.test(line)
+  );
+}
 
 export interface ExtractLikelyErrorsOptions {
   /** Absolute project root; lines mentioning it are preferred. */
@@ -89,19 +122,30 @@ export function extractLikelyErrors(
     const signatureRank = ERROR_SIGNATURES.findIndex((re) => re.test(line));
     if (signatureRank === -1) continue;
 
-    // A line points at the user's own code if it names their src/ tree, a
-    // `.svelte` file, or a `file.ext:line` location — but not if it's inside
-    // node_modules (that's dependency noise, not their bug).
-    const inNodeModules = /node_modules/.test(line);
+    // Associate the contiguous stack-trace block beneath this line with it, so
+    // a bare error header ("ReferenceError: x is not defined") inherits the
+    // project signal from its frames — the decisive clue for whether the fault
+    // is in the user's code or a dependency.
+    const trace: string[] = [];
+    for (let j = i + 1; j < lines.length && isStackFrame(lines[j]); j++) {
+      trace.push(lines[j]);
+    }
+
+    // The error points at the user's own code if the header or any of its
+    // frames does; it's dependency noise if it has a trace and every frame
+    // lives in node_modules.
     const referencesProject =
-      !inNodeModules &&
-      ((!!cwd && line.includes(cwd)) ||
-        /(^|[^\w])src[\\/]/.test(line) ||
-        /\.svelte\b/.test(line) ||
-        /\.(?:svelte|ts|js|mjs|scss|css):\d+/.test(line));
-    // Lower score is better; a project reference strongly outranks signature order.
-    const score =
-      signatureRank - (referencesProject ? PROJECT_REFERENCE_BOOST : 0);
+      referencesProjectLine(line, cwd) ||
+      trace.some((frame) => referencesProjectLine(frame, cwd));
+    const allFramesInNodeModules =
+      trace.length > 0 && trace.every((frame) => /node_modules/.test(frame));
+
+    // Lower score is better; a project reference strongly outranks signature
+    // order, while an all-node_modules trace is demoted below it.
+    let score = signatureRank;
+    if (referencesProject) score -= PROJECT_REFERENCE_BOOST;
+    else if (allFramesInNodeModules) score += NODE_MODULES_PENALTY;
+
     if (score < bestScore) {
       bestScore = score;
       bestIndex = i;
@@ -115,8 +159,18 @@ export function extractLikelyErrors(
       .slice(0, maxLines);
   }
 
-  // Return a small window around the best match (one line of lead-in for context).
+  // Return a small window around the best match (one line of lead-in for
+  // context), capped at maxLines. Stop at the first blank line after the match:
+  // build logs use blank lines to delimit separate error blocks, so this keeps
+  // the window from bleeding into an unrelated downstream error (e.g. the
+  // SvelteKit prerender wrapper printed below a page's thrown error).
   const start = Math.max(0, bestIndex - 1);
-  const end = Math.min(lines.length, start + maxLines);
+  let end = Math.min(lines.length, start + maxLines);
+  for (let i = bestIndex + 1; i < end; i++) {
+    if (lines[i].trim().length === 0) {
+      end = i;
+      break;
+    }
+  }
   return reflowText(lines.slice(start, end).join('\n'), width);
 }

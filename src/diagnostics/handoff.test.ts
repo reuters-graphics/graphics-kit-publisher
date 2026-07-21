@@ -6,6 +6,7 @@ import {
   buildPointer,
   buildExtensionUrl,
   isClaudeOnPath,
+  resolveClaudeBin,
 } from './handoff';
 
 describe('isAiEnabled', () => {
@@ -25,21 +26,22 @@ describe('isAiEnabled', () => {
 describe('detectSurfaces', () => {
   it('offers the extension only in a VSCode integrated terminal', () => {
     expect(
-      detectSurfaces({ termProgram: 'vscode', claudeOnPath: false }).extension
+      detectSurfaces({ termProgram: 'vscode', claudeBin: null }).extension
     ).toBe(true);
     expect(
-      detectSurfaces({ termProgram: 'Apple_Terminal', claudeOnPath: false })
+      detectSurfaces({ termProgram: 'Apple_Terminal', claudeBin: null })
         .extension
     ).toBe(false);
   });
 
-  it('offers the terminal only when claude is on PATH', () => {
+  it('offers the terminal only when a spawnable claude was resolved', () => {
     expect(
-      detectSurfaces({ termProgram: '', claudeOnPath: true }).terminal
+      detectSurfaces({ termProgram: '', claudeBin: '/usr/local/bin/claude' })
+        .terminal
     ).toBe(true);
-    expect(
-      detectSurfaces({ termProgram: '', claudeOnPath: false }).terminal
-    ).toBe(false);
+    expect(detectSurfaces({ termProgram: '', claudeBin: null }).terminal).toBe(
+      false
+    );
   });
 });
 
@@ -85,5 +87,37 @@ describe('isClaudeOnPath', () => {
     process.env.PATH = '/fake/bin';
     mockFs({ '/fake/bin/other': mockFs.file({ mode: 0o755, content: '' }) });
     expect(isClaudeOnPath()).toBe(false);
+  });
+});
+
+describe('resolveClaudeBin', () => {
+  afterEach(() => mockFs.restore());
+
+  it('returns the bare name when claude is a real executable on PATH', () => {
+    mockFs({ '/fake/bin/claude': mockFs.file({ mode: 0o755, content: '' }) });
+    expect(resolveClaudeBin({ path: '/fake/bin', home: '/home/me' })).toBe(
+      'claude'
+    );
+  });
+
+  it('falls back to the native-installer path when only the alias target exists', () => {
+    // The common native-install case: nothing on PATH, but the executable
+    // lives at ~/.claude/local/claude (exposed to the shell only via an alias).
+    mockFs({
+      '/home/me/.claude/local/claude': mockFs.file({
+        mode: 0o755,
+        content: '',
+      }),
+    });
+    expect(
+      resolveClaudeBin({ path: '/empty', home: '/home/me', platform: 'darwin' })
+    ).toBe('/home/me/.claude/local/claude');
+  });
+
+  it('returns null when claude is neither on PATH nor in the native location', () => {
+    mockFs({ '/home/me/.claude/local/other': mockFs.file({ mode: 0o755 }) });
+    expect(
+      resolveClaudeBin({ path: '/empty', home: '/home/me', platform: 'darwin' })
+    ).toBeNull();
   });
 });

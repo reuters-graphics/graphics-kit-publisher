@@ -57,6 +57,28 @@ describe('extractLikelyErrors', () => {
     expect(extractLikelyErrors(log).join('\n')).toContain('+page.ts:3:10');
   });
 
+  it('surfaces the thrown error over the SvelteKit prerender wrapper below it', () => {
+    // Real shape of a SvelteKit prerender failure: the page's actual error is
+    // printed first, its frames point into the project's build output, and
+    // SvelteKit then wraps the failure in a 500 whose frames are all inside
+    // node_modules. We want the thrown error, not the wrapper/advice line.
+    const cwd = '/Users/me/project';
+    const log = [
+      '[500] GET /testfiles/2026/a4ui4SKDY2K/',
+      'ReferenceError: A_FAKE_VARIABLE is not defined',
+      `    at file://${cwd}/.svelte-kit/output/server/entries/pages/_page.svelte.js:11:15`,
+      `    at Renderer.child (file://${cwd}/.svelte-kit/output/server/chunks/server.js:3564:18)`,
+      '',
+      'Error: 500 /testfiles/2026/a4ui4SKDY2K/',
+      'To suppress or handle this error, implement `handleHttpError` in https://svelte.dev/docs/kit/configuration#prerender',
+      `    at file://${cwd}/node_modules/@sveltejs/kit/src/core/config/options.js:230:13`,
+      `    at save (file://${cwd}/node_modules/@sveltejs/kit/src/core/postbuild/prerender.js:492:4)`,
+    ].join('\n');
+    const out = extractLikelyErrors(log, { cwd }).join('\n');
+    expect(out).toContain('A_FAKE_VARIABLE is not defined');
+    expect(out).not.toContain('handleHttpError');
+  });
+
   it('falls back to the first N lines when nothing matches', () => {
     const out = extractLikelyErrors('line one\nline two\nline three', {
       maxLines: 2,
