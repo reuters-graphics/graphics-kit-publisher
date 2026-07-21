@@ -1,6 +1,6 @@
 {
   "name": "@reuters-graphics/graphics-kit-publisher",
-  "version": "3.4.4",
+  "version": "3.4.5",
   "type": "module",
   "main": "./dist/index.js",
   "exports": "./dist/index.js",
