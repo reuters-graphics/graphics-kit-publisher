@@ -5,6 +5,7 @@ import {
   detectSurfaces,
   buildPointer,
   buildExtensionUrl,
+  buildPromptMessage,
   isClaudeOnPath,
   resolveClaudeBin,
 } from './handoff';
@@ -55,6 +56,20 @@ describe('buildPointer', () => {
   it('omits the command when absent', () => {
     expect(buildPointer('/p/latest.md')).toBe(
       'Read /p/latest.md and diagnose the failure.'
+    );
+  });
+});
+
+describe('buildPromptMessage', () => {
+  it('names the failed command for the automatic post-failure prompt', () => {
+    expect(buildPromptMessage({ command: 'preview' })).toBe(
+      'Your "preview" command failed. Diagnose it with AI?'
+    );
+  });
+
+  it('does not claim a failure when re-opened via the diagnose command', () => {
+    expect(buildPromptMessage({ command: 'diagnose', reopened: true })).toBe(
+      'Diagnose the last failed command with AI?'
     );
   });
 });
