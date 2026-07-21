@@ -47,7 +47,7 @@ const runCommand = async (command: string, action: () => Promise<void>) => {
     if (terminalDiagnosed) {
       console.error(
         picocolors.dim(
-          `\n↑ Claude's diagnosis is above. Errors from the failed "${command}" command below ↓`
+          `\n↑ Claude's diagnosis is above. Errors from the failed "${command}" command below ↓\n`
         )
       );
     }
