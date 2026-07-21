@@ -61,16 +61,23 @@ describe('buildPointer', () => {
 });
 
 describe('buildPromptMessage', () => {
+  // The message is styled (bold + colour); assert on the semantic text so the
+  // tests hold whether or not colour is enabled in the run environment.
+  // eslint-disable-next-line no-control-regex
+  const stripAnsi = (s: string): string => s.replace(/\x1b\[[0-9;]*m/g, '');
+
   it('names the failed command for the automatic post-failure prompt', () => {
-    expect(buildPromptMessage({ command: 'preview' })).toBe(
+    expect(stripAnsi(buildPromptMessage({ command: 'preview' }))).toContain(
       'Your "preview" command failed. Diagnose it with AI?'
     );
   });
 
   it('does not claim a failure when re-opened via the diagnose command', () => {
-    expect(buildPromptMessage({ command: 'diagnose', reopened: true })).toBe(
-      'Diagnose the last failed command with AI?'
+    const out = stripAnsi(
+      buildPromptMessage({ command: 'diagnose', reopened: true })
     );
+    expect(out).toContain('Diagnose the last failed command with AI?');
+    expect(out).not.toContain('"diagnose" command failed');
   });
 });
 

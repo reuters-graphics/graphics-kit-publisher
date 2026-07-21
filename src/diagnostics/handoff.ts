@@ -70,17 +70,28 @@ export const buildExtensionUrl = (pointer: string): string =>
   `vscode://anthropic.claude-code/open?prompt=${encodeURIComponent(pointer)}`;
 
 /**
- * The select-prompt question. The automatic prompt fires right after a command
- * failed, so it names that command; the `diagnose` command (`reopened`) instead
- * re-opens the last failure on demand, so it must not claim `diagnose` itself
- * failed.
+ * The styled select-prompt question — one source of truth for both wordings.
+ * The automatic prompt fires right after a command failed, so it names that
+ * command; the `diagnose` command (`reopened`) re-opens the last failure on
+ * demand, so it must not claim `diagnose` itself failed.
+ *
+ * The command name and "AI" are coloured to draw the eye, and the whole line is
+ * bold behind a ⛔ so this one interactive decision point stands out from the
+ * error output above and the options below. (⛔ is a single-codepoint,
+ * default-emoji glyph, so it keeps a consistent 2-cell width across terminals,
+ * unlike ⚠️, which needs a variation selector.) The trailing newline gives the
+ * question breathing room from the option list.
  */
 export const buildPromptMessage = (
   opts: { command?: string; reopened?: boolean } = {}
-): string =>
-  opts.reopened ?
-    'Diagnose the last failed command with AI?'
-  : `Your "${opts.command ?? 'command'}" command failed. Diagnose it with AI?`;
+): string => {
+  const ai = picocolors.yellow('AI');
+  const question =
+    opts.reopened ?
+      `Diagnose the last failed command with ${ai}?`
+    : `Your "${picocolors.cyan(opts.command ?? 'command')}" command failed. Diagnose it with ${ai}?`;
+  return `${picocolors.bold(`⛔ ${question}`)}\n`;
+};
 
 /**
  * Whether a real `claude` executable is on PATH. A shell *alias* is not found —
