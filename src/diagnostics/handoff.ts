@@ -1,5 +1,6 @@
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { spawn } from 'node:child_process';
 import { select, isCancel } from '@clack/prompts';
 import { note } from '@reuters-graphics/clack';
@@ -40,7 +41,7 @@ export const isAiEnabled = (
 export interface Surfaces {
   /** VSCode extension deep-link is viable (we're in an integrated terminal). */
   extension: boolean;
-  /** `claude` CLI is on PATH. */
+  /** A `claude` CLI we can actually spawn is available. */
   terminal: boolean;
 }
 
@@ -48,11 +49,12 @@ export interface Surfaces {
  * Which Claude Code surfaces are available — availability only, not credentials.
  */
 export const detectSurfaces = (
-  opts: { termProgram?: string; claudeOnPath?: boolean } = {}
+  opts: { termProgram?: string; claudeBin?: string | null } = {}
 ): Surfaces => {
   const termProgram = opts.termProgram ?? process.env.TERM_PROGRAM;
-  const claudeOnPath = opts.claudeOnPath ?? isClaudeOnPath();
-  return { extension: termProgram === 'vscode', terminal: claudeOnPath };
+  const claudeBin =
+    opts.claudeBin !== undefined ? opts.claudeBin : resolveClaudeBin();
+  return { extension: termProgram === 'vscode', terminal: !!claudeBin };
 };
 
 /** The short prompt handed to Claude — points at the file, never inlines it. */
@@ -67,11 +69,12 @@ export const buildExtensionUrl = (pointer: string): string =>
   `vscode://anthropic.claude-code/open?prompt=${encodeURIComponent(pointer)}`;
 
 /**
- * Resolve whether a real `claude` executable is on PATH. A shell *alias* is not
- * found — correct, since `spawn` can't use aliases either.
+ * Whether a real `claude` executable is on PATH. A shell *alias* is not found —
+ * correct, since `spawn` can't use aliases either (see {@link resolveClaudeBin}
+ * for the native-installer location that aliases point at).
  */
-export const isClaudeOnPath = (): boolean => {
-  const envPath = process.env.PATH;
+export const isClaudeOnPath = (opts: { path?: string } = {}): boolean => {
+  const envPath = opts.path ?? process.env.PATH;
   if (!envPath) return false;
   const extensions =
     process.platform === 'win32' ?
@@ -91,6 +94,39 @@ export const isClaudeOnPath = (): boolean => {
   return false;
 };
 
+/**
+ * Resolve a `claude` command we can actually {@link spawn}: the bare name when
+ * it's a real executable on PATH, otherwise the absolute path to the native
+ * installer's binary at `~/.claude/local/claude`.
+ *
+ * The native installer exposes Claude only through a shell *alias* pointing at
+ * that path — invisible to PATH and to `spawn`, so a PATH scan alone reports
+ * "not available" for those users even though Claude is installed. Checking the
+ * known location (and returning the absolute path for the caller to spawn) is
+ * what makes the terminal handoff appear for them. Returns null when neither is
+ * found.
+ */
+export const resolveClaudeBin = (
+  opts: { path?: string; home?: string; platform?: NodeJS.Platform } = {}
+): string | null => {
+  if (isClaudeOnPath({ path: opts.path })) return 'claude';
+
+  const home = opts.home ?? os.homedir();
+  const platform = opts.platform ?? process.platform;
+  const names =
+    platform === 'win32' ? ['claude.exe', 'claude.cmd', 'claude'] : ['claude'];
+  for (const name of names) {
+    const candidate = path.join(home, '.claude', 'local', name);
+    try {
+      fs.accessSync(candidate, fs.constants.X_OK);
+      return candidate;
+    } catch {
+      // not the native-installer location
+    }
+  }
+  return null;
+};
+
 /* ------------------------------------------------------------------ */
 /* Interactive handoff                                                 */
 /* ------------------------------------------------------------------ */
@@ -101,9 +137,9 @@ const isInteractive = (): boolean =>
   !!process.stdin.isTTY;
 
 /** Run a one-shot `claude -p` diagnosis, streaming to the terminal. Never rejects. */
-const runTerminalDiagnosis = (pointer: string): Promise<void> =>
+const runTerminalDiagnosis = (pointer: string, bin: string): Promise<void> =>
   new Promise((resolve) => {
-    const child = spawn('claude', ['-p', pointer, '--output-format', 'text'], {
+    const child = spawn(bin, ['-p', pointer, '--output-format', 'text'], {
       cwd: context.cwd,
       stdio: 'inherit',
     });
@@ -126,7 +162,8 @@ export const offerDiagnosisHandoff = async ({
     if (!diagnosticsPath || !isInteractive()) return;
     if (!force && !isAiEnabled()) return;
 
-    const surfaces = detectSurfaces();
+    const claudeBin = resolveClaudeBin();
+    const surfaces = detectSurfaces({ claudeBin });
     const pointer = buildPointer(diagnosticsPath, command);
     const copyPasteNote = () =>
       note(
@@ -177,8 +214,8 @@ export const offerDiagnosisHandoff = async ({
       return;
     }
 
-    if (choice === 'terminal') {
-      await runTerminalDiagnosis(pointer);
+    if (choice === 'terminal' && claudeBin) {
+      await runTerminalDiagnosis(pointer, claudeBin);
     }
   } catch {
     // Never let the handoff mask the original failure.
