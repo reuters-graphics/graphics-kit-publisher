@@ -200,15 +200,23 @@ const runTerminalDiagnosis = (pointer: string, bin: string): Promise<boolean> =>
  * VSCode extension (chat next to the code) or a one-shot `claude -p` in the
  * terminal. Best-effort and never throws; returns without prompting when a
  * handoff isn't possible (disabled, non-interactive, or nothing available).
+ *
+ * Resolves `true` only when a diagnosis was printed *to this terminal* (the
+ * `claude -p` path). The caller does NOT use this to change the exit code — the
+ * command still failed and must exit non-zero so script runners (e.g.
+ * npm-run-all) halt and CI fails — but to frame the runner's trailing error,
+ * which only makes sense when the diagnosis is right there above it. The
+ * extension path opens the diagnosis in VSCode, not the terminal, so it
+ * resolves `false`.
  */
 export const offerDiagnosisHandoff = async ({
   diagnosticsPath,
   command,
   force = false,
-}: HandoffOptions): Promise<void> => {
+}: HandoffOptions): Promise<boolean> => {
   try {
-    if (!diagnosticsPath || !isInteractive()) return;
-    if (!force && !isAiEnabled()) return;
+    if (!diagnosticsPath || !isInteractive()) return false;
+    if (!force && !isAiEnabled()) return false;
 
     const claudeBin = resolveClaudeBin();
     const surfaces = detectSurfaces({ claudeBin });
@@ -221,7 +229,7 @@ export const offerDiagnosisHandoff = async ({
 
     if (!surfaces.extension && !surfaces.terminal) {
       copyPasteNote();
-      return;
+      return false;
     }
 
     const options: { value: string; label: string; hint?: string }[] = [];
@@ -246,7 +254,7 @@ export const offerDiagnosisHandoff = async ({
 
     if (isCancel(choice) || choice === 'no') {
       copyPasteNote();
-      return;
+      return false;
     }
 
     if (choice === 'extension') {
@@ -259,14 +267,20 @@ export const offerDiagnosisHandoff = async ({
       } catch {
         copyPasteNote();
       }
-      return;
+      // The diagnosis opens in VSCode, not this terminal, so there's nothing
+      // above the runner's error to frame — resolve false either way.
+      return false;
     }
 
     if (choice === 'terminal' && claudeBin) {
       const ok = await runTerminalDiagnosis(pointer, claudeBin);
       if (!ok) copyPasteNote();
+      return ok;
     }
+
+    return false;
   } catch {
     // Never let the handoff mask the original failure.
+    return false;
   }
 };

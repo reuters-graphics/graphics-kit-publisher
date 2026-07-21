@@ -1,4 +1,5 @@
 import sade from 'sade';
+import picocolors from 'picocolors';
 import { version } from '../package.json';
 import { GraphicsKitPublisher } from '.';
 import { renderError, PublisherError } from './exceptions/errors';
@@ -34,7 +35,22 @@ const runCommand = async (command: string, action: () => Promise<void>) => {
     const diagnosticsPath = writeDiagnostics(error, command);
     renderError(error, { command, diagnosticsPath });
     // Offer the Claude Code handoff after the error is shown, before we exit.
-    await offerDiagnosisHandoff({ diagnosticsPath, command });
+    const terminalDiagnosed = await offerDiagnosisHandoff({
+      diagnosticsPath,
+      command,
+    });
+    // The command genuinely failed, so we always exit non-zero — script runners
+    // like npm-run-all must halt (and never proceed to commit/push a broken
+    // build), and CI must fail. But when Claude just printed a diagnosis in this
+    // terminal, frame the runner's trailing "exited with 1" so it doesn't read
+    // as Claude itself erroring.
+    if (terminalDiagnosed) {
+      console.error(
+        picocolors.dim(
+          `\n↑ Claude's diagnosis is above. Errors from the failed "${command}" command below ↓`
+        )
+      );
+    }
     exitCleanly(1);
   }
 };
