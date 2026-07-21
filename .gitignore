@@ -159,3 +159,4 @@ dist
 
 dist/
 .size-snapshot.json
+.claude/

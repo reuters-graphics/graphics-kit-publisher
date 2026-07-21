@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { PublisherError, BuildError, handleError } from './errors';
+import { PublisherError, BuildError, handleError, renderError } from './errors';
 
 describe('PublisherError', () => {
   it('defaults code to the class name and stores options', () => {
@@ -69,6 +69,16 @@ describe('handleError', () => {
     expect(out).toContain('latest.md');
     expect(out).not.toMatch(/\n\s+at /); // no stack frames
     expect(exitSpy).toHaveBeenCalledWith(1);
+  });
+
+  it('renderError renders WITHOUT exiting', () => {
+    const err = new BuildError('App failed to build', {
+      code: 'BUILD_FAILED',
+      hint: 'See the logs',
+    });
+    renderError(err, { command: 'upload' });
+    expect(output()).toContain('BUILD_FAILED');
+    expect(exitSpy).not.toHaveBeenCalled();
   });
 
   it('shows the stack when --verbose is set', () => {

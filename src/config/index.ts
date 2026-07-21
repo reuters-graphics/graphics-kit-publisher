@@ -73,4 +73,5 @@ export const defaultConfig: Config = {
       '<script type="text/javascript" src="//graphics.thomsonreuters.com/pym.min.js"></script>',
   },
   publishingLocations: [],
+  ai: 'prompt',
 };

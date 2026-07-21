@@ -1,0 +1,59 @@
+---
+title: AI
+sidebar:
+  order: 17
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Controls whether the publisher offers an AI diagnosis when a command fails.
+
+## ai
+
+- **Type:**
+  ```typescript
+  'prompt' | 'off';
+  ```
+- **Default:**
+  ```typescript
+  'prompt';
+  ```
+
+When a command fails, the publisher writes a diagnostics file (the error, the
+build logs, and pointers to the relevant rules) to
+`.graphics-kit/diagnostics/latest.md` and, when this is set to `'prompt'`, offers
+to hand it off to [Claude Code](https://claude.com/claude-code) to diagnose:
+
+- **Open a Claude Code session** — opens the Claude Code VSCode extension in a
+  chat next to your code, pre-filled with the diagnostics (you review and press
+  Enter).
+- **Ask Claude what went wrong** — runs a one-shot diagnosis in your terminal.
+
+Set it to `'off'` to never show the prompt.
+
+```typescript
+// publisher.config.ts
+import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
+export default defineConfig({
+  ai: 'prompt',
+});
+```
+
+<Aside>
+The prompt only appears in an interactive terminal — it's skipped in CI. It's
+also skipped for the run if you pass `--no-ai`, e.g. `graphics-publisher upload
+--no-ai`.
+
+The publisher never handles authentication — it uses however you've already
+configured Claude Code (the VSCode extension option is offered when you're in a
+VSCode terminal; the terminal option when the `claude` CLI is on your `PATH`). We
+recommend installing the Claude Code VSCode extension.
+</Aside>
+
+<Aside type="tip">
+Missed the prompt, or want to look into a failure later without re-running a slow
+command? Run
+[`graphics-publisher diagnose`](/graphics-kit-publisher/commands/#diagnose) to
+re-open the diagnosis of the last command that failed.
+</Aside>

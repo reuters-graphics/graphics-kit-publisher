@@ -1,0 +1,46 @@
+---
+title: AI in the loop (3.4.0)
+sidebar:
+  badge: New
+  order: 102
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+As of 3.4.0, when a publisher command like `upload` or `preview` fails, you're one keystroke away from having AI diagnose what went wrong — inside your project, with all the context it needs.
+
+## When something breaks
+
+Uploads and builds sometimes fail. Usually it's a real bug in your code, buried in a wall of build output that's hard to read and easy to misjudge.
+
+Now, when a publisher command fails, we hand the problem to [Claude Code](https://claude.com/claude-code). The publisher writes a diagnostics file — the error, the likely cause pulled from your build logs and pointers to the publisher's own rules — then offers two ways you can use it with AI:
+
+- **Open a Claude Code session:** The VSCode extension opens a chat right next to your code, pre-filled and ready. It can read your project files and the error diagnostics, find the real cause and propose a fix in the chat. (And it won't edit files until you confirm you want to.)
+- **Ask Claude what went wrong:** Sends the error diagnostics to Claude in your terminal and prints back a quick, read-only synopsis of what the likeliest cause is.
+
+No copying stack traces into a chat window. No guessing which log line matters. The agent starts with everything the publisher already knows about the failure, scoped to _your_ project — not generic advice.
+
+## It's already on
+
+The prompt appears automatically the next time a command fails in your terminal. 
+
+Missed it, or don't want to re-run a slow build just to look again? You can run the new [`diagnose`](/graphics-kit-publisher/commands/#diagnose) command, which will read the error diagnostics from your last failed attempt.
+
+<Tabs>
+  <TabItem label="CLI" icon="setting">
+    ```console
+    pnpm graphics-publisher diagnose
+    ```
+  </TabItem>
+  <TabItem label="Graphics kit" icon="laptop">
+    ```console
+    pnpm diagnose
+    ```
+  </TabItem>
+</Tabs>
+
+<Aside>
+The publisher **does not** handle setting up or authenticating Claude — it assumes you've already done that yourself. Read more about our recommended setup for Claude Code and the VSCode extension in our [Notion docs](https://app.notion.com/p/Setting-up-Claude-for-VSCode-359e5f6c99bc801c8494de7ea3f07cbe).
+</Aside>
+
+This is the first step of bringing AI into the publishing process — a small one, aimed at the moment it's most useful: when you're stuck. More to come.

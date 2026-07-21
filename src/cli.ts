@@ -1,8 +1,9 @@
 import sade from 'sade';
 import { version } from '../package.json';
 import { GraphicsKitPublisher } from '.';
-import { handleError, PublisherError } from './exceptions/errors';
+import { renderError, PublisherError } from './exceptions/errors';
 import { writeDiagnostics } from './diagnostics';
+import { offerDiagnosisHandoff } from './diagnostics/handoff';
 
 const prog = sade('graphics-publisher');
 
@@ -31,7 +32,10 @@ const runCommand = async (command: string, action: () => Promise<void>) => {
     // Stamp the command onto the error at the boundary (throw sites don't know it).
     if (error instanceof PublisherError) error.command = command;
     const diagnosticsPath = writeDiagnostics(error, command);
-    handleError(error, { command, diagnosticsPath });
+    renderError(error, { command, diagnosticsPath });
+    // Offer the Claude Code handoff after the error is shown, before we exit.
+    await offerDiagnosisHandoff({ diagnosticsPath, command });
+    exitCleanly(1);
   }
 };
 
@@ -91,6 +95,13 @@ prog
   .command('delete')
   .action(() =>
     runCommand('delete', () => new GraphicsKitPublisher().delete())
+  );
+
+prog
+  .command('diagnose')
+  .describe('Re-open an AI diagnosis of the last command that failed')
+  .action(() =>
+    runCommand('diagnose', () => new GraphicsKitPublisher().diagnose())
   );
 
 prog.parse(process.argv);
