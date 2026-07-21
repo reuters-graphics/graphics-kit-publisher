@@ -1,5 +1,17 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.4.4
+
+### Patch Changes
+
+- 4494538: Fix the AI-handoff prompt wording for the `diagnose` command
+
+  The `diagnose` command re-opens the last failure on demand, but reused the automatic post-failure prompt — so it asked "Your \"diagnose\" command failed. Diagnose it with AI?", which read as though `diagnose` itself had errored. It now asks "Diagnose the last failed command with AI?".
+
+- f6d2b02: Stop the "Packing up graphic pack" spinner when packing fails
+
+  If a pack failed mid-way (e.g. a missing `og:image` tag), the packing spinner kept animating underneath the rendered error and the AI-handoff prompt, making it look like the process was still running. `packUp` now stops the spinner on failure and rethrows, matching how every other spinner in the publisher already handles errors.
+
 ## 3.4.3
 
 ### Patch Changes
