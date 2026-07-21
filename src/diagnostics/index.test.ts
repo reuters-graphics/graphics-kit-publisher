@@ -13,7 +13,7 @@ vi.mock('../context', () => ({
 vi.mock('@reuters-graphics/clack', () => ({ note: vi.fn() }));
 
 import { writeDiagnostics } from './index';
-import { BuildError } from '../exceptions/errors';
+import { BuildError, PageMetadataError } from '../exceptions/errors';
 import { note } from '@reuters-graphics/clack';
 
 const LATEST = path.join(
@@ -104,5 +104,28 @@ describe('writeDiagnostics', () => {
     expect(written).toBe(LATEST);
     expect(fs.existsSync(LATEST)).toBe(true);
     expect(fs.existsSync(GITIGNORE)).toBe(false);
+  });
+
+  it('omits build logs for an internal rule error (no logPaths)', () => {
+    // The build succeeded; the failure was thrown by a publisher rule. The
+    // build logs on disk are unrelated noise and must not be surfaced.
+    mockFs(projectFs({ gitignore: '.graphics-kit/\n' }));
+
+    const ruleErr = new PageMetadataError(
+      'No "og:image" tag found in map.html',
+      {
+        code: 'MISSING_OG_IMAGE',
+        hint: 'Add an <meta property="og:image"> tag to the page.',
+      }
+    );
+    const written = writeDiagnostics(ruleErr, 'upload');
+
+    const content = fs.readFileSync(written!, 'utf8');
+    // The self-describing error still leads the diagnosis...
+    expect(content).toContain('MISSING_OG_IMAGE');
+    // ...but the build logs and scraped "likely cause" are gone.
+    expect(content).not.toContain('Likely cause');
+    expect(content).not.toContain('Log: error.log');
+    expect(content).not.toContain('Log: out.log');
   });
 });
