@@ -284,14 +284,14 @@ export const offerDiagnosisHandoff = async ({
     if (surfaces.extension)
       options.push({
         value: 'extension',
-        label: 'Open a Claude Code session to diagnose & fix it',
-        hint: 'VSCode extension',
+        label: 'Open a Claude Code chat to fix it',
+        hint: 'in VSCode',
       });
     if (surfaces.terminal)
       options.push({
         value: 'terminal',
-        label: 'Ask Claude what went wrong',
-        hint: 'claude in terminal',
+        label: 'Just tell me what went wrong',
+        hint: 'in terminal',
       });
     options.push({ value: 'no', label: 'No thanks' });
 
