@@ -9,6 +9,7 @@ import open from 'open';
 import { utils } from '@reuters-graphics/graphics-bin';
 import { context } from '../context';
 import { reflowText } from '../utils/reflowText';
+import { renderMarkdownForTerminal } from './renderMarkdown';
 
 export interface HandoffOptions {
   /** Absolute path to the diagnostics file, or null if none was written. */
@@ -64,6 +65,25 @@ export const buildPointer = (
   command?: string
 ): string =>
   `Read ${diagnosticsPath} and diagnose the ${command ? `"${command}" ` : ''}failure.`;
+
+/**
+ * The prompt for the terminal `claude -p` diagnosis. It's the same pointer plus
+ * output guidance for a one-shot, non-interactive render — the VSCode extension
+ * opens a chat (Markdown renders, the user can reply) and keeps the plain
+ * pointer, so this adapts *only* the terminal surface without touching the
+ * shared diagnostics file.
+ */
+export const buildTerminalPrompt = (
+  diagnosticsPath: string,
+  command?: string
+): string =>
+  buildPointer(diagnosticsPath, command) +
+  '\n\nYour reply is printed directly into a terminal as a single, ' +
+  'non-interactive `claude -p` turn — this is not a chat, and the user cannot ' +
+  'reply. So: keep it concise; reference files as `path:line`, not Markdown ' +
+  'links; use only light Markdown (short headings, **bold**, `code`, and ' +
+  'hyphen bullets); and end with the concrete fix — do not ask a question or ' +
+  'offer to make the edit yourself.';
 
 /** The VSCode extension deep-link that pre-fills (but does not submit) the prompt. */
 export const buildExtensionUrl = (pointer: string): string =>
@@ -161,15 +181,17 @@ const isInteractive = (): boolean =>
   !!process.stdout.isTTY &&
   !!process.stdin.isTTY;
 
+/** Content width for a note: terminal width minus box chrome, capped for readability. */
+const noteWidth = (): number =>
+  Math.max(40, Math.min(process.stdout.columns ?? 80, 100) - 6);
+
 /**
  * Print a note, word-wrapping the message to the terminal width first. `note`
  * sizes its box to the longest line and does not wrap, so an LLM's long
  * unwrapped paragraph lines would otherwise blow the box past the terminal.
  */
 const reflowedNote = (message: string, title: string): void => {
-  // Leave room for the box chrome (`│  ` … `  │`); cap width for readability.
-  const width = Math.max(40, Math.min(process.stdout.columns ?? 80, 100) - 6);
-  note(reflowText(message, width).join('\n'), title);
+  note(reflowText(message, noteWidth()).join('\n'), title);
 };
 
 /**
@@ -203,7 +225,9 @@ const runTerminalDiagnosis = (pointer: string, bin: string): Promise<boolean> =>
       const text = Buffer.concat(out).toString('utf8').trim();
       if (code === 0 && text) {
         await s.stop('Claude looked at your error:');
-        reflowedNote(text, 'AI diagnosis');
+        // Claude replies in Markdown; render it to coloured terminal text
+        // rather than dumping raw ##/**/[]() syntax into the note.
+        note(renderMarkdownForTerminal(text, noteWidth()), 'AI diagnosis');
         resolve(true);
       } else {
         await s.stop("Claude couldn't diagnose the error.");
@@ -297,7 +321,12 @@ export const offerDiagnosisHandoff = async ({
     }
 
     if (choice === 'terminal' && claudeBin) {
-      const ok = await runTerminalDiagnosis(pointer, claudeBin);
+      // Terminal-specific prompt (one-shot, no Markdown links, no closing
+      // question); the extension above keeps the plain `pointer`.
+      const ok = await runTerminalDiagnosis(
+        buildTerminalPrompt(diagnosticsPath, command),
+        claudeBin
+      );
       if (!ok) copyPasteNote();
       return ok;
     }

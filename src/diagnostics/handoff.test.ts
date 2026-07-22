@@ -4,6 +4,7 @@ import {
   isAiEnabled,
   detectSurfaces,
   buildPointer,
+  buildTerminalPrompt,
   buildExtensionUrl,
   buildPromptMessage,
   isClaudeOnPath,
@@ -57,6 +58,18 @@ describe('buildPointer', () => {
     expect(buildPointer('/p/latest.md')).toBe(
       'Read /p/latest.md and diagnose the failure.'
     );
+  });
+});
+
+describe('buildTerminalPrompt', () => {
+  it('keeps the base pointer and appends terminal-only output guidance', () => {
+    const prompt = buildTerminalPrompt('/p/latest.md', 'upload');
+    // still points Claude at the same diagnostics file
+    expect(prompt).toContain(buildPointer('/p/latest.md', 'upload'));
+    // adapts the output for a one-shot, non-interactive terminal render
+    expect(prompt).toContain('path:line');
+    expect(prompt).toContain('do not ask a question');
+    expect(prompt).toMatch(/not a chat/i);
   });
 });
 
