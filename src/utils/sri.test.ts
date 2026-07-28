@@ -1,17 +1,13 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import mockFs from 'mock-fs';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { setProject } from '../__test__/project';
 import dedent from 'dedent';
 import fs from 'fs';
 import { addSRI } from './sri';
 
 describe('addSRI', () => {
-  afterEach(() => {
-    mockFs.restore();
-  });
-
   describe('relative paths', () => {
     beforeEach(() => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -42,7 +38,7 @@ describe('addSRI', () => {
     });
 
     it('preserves existing crossorigin attributes', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -62,7 +58,7 @@ describe('addSRI', () => {
     });
 
     it('does not modify HTML if no resources to process', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -81,7 +77,7 @@ describe('addSRI', () => {
     });
 
     it('skips resources that do not exist on disk', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -106,7 +102,7 @@ describe('addSRI', () => {
 
   describe('absolute same-domain URLs with canonical URL', () => {
     beforeEach(() => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -133,7 +129,7 @@ describe('addSRI', () => {
     });
 
     it('resolves paths relative to HTML file location', () => {
-      mockFs({
+      setProject({
         dist: {
           page: {
             'index.html': dedent`
@@ -157,7 +153,7 @@ describe('addSRI', () => {
     });
 
     it('skips external cross-domain URLs', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -178,7 +174,7 @@ describe('addSRI', () => {
     });
 
     it('handles URLs without canonical tag by only processing relative paths', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -205,7 +201,7 @@ describe('addSRI', () => {
 
   describe('modulepreload links', () => {
     beforeEach(() => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -242,7 +238,7 @@ describe('addSRI', () => {
     });
 
     it('adds SRI to modulepreload with absolute same-domain URLs', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -265,7 +261,7 @@ describe('addSRI', () => {
 
   describe('mixed scenarios', () => {
     beforeEach(() => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -329,7 +325,7 @@ describe('addSRI', () => {
 
   describe('nested pages with separate CDN directories', () => {
     it('handles nested HTML files with absolute URLs to CDN assets', () => {
-      mockFs({
+      setProject({
         embeds: {
           en: {
             map: {
@@ -369,7 +365,7 @@ describe('addSRI', () => {
     });
 
     it('handles mix of relative and absolute CDN paths from nested HTML', () => {
-      mockFs({
+      setProject({
         embeds: {
           en: {
             map: {
@@ -413,13 +409,13 @@ describe('addSRI', () => {
 
   describe('error handling', () => {
     it('throws error if HTML file does not exist', () => {
-      mockFs({});
+      setProject({});
 
       expect(() => addSRI('nonexistent.html')).toThrow('HTML file not found: ');
     });
 
     it('handles nested directory structures', () => {
-      mockFs({
+      setProject({
         dist: {
           assets: {
             'app.js': 'console.log("app");',
@@ -444,7 +440,7 @@ describe('addSRI', () => {
     });
 
     it('handles protocol-relative URLs as external', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -464,7 +460,7 @@ describe('addSRI', () => {
 
   describe('hash generation', () => {
     beforeEach(() => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -492,9 +488,8 @@ describe('addSRI', () => {
       const html1 = fs.readFileSync('index.html', 'utf8');
       const hash1 = html1.match(/integrity="(sha384-[^"]+)"/)?.[1];
 
-      // Restore and re-run
-      mockFs.restore();
-      mockFs({
+      // Re-seed the same input and re-run
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -516,7 +511,7 @@ describe('addSRI', () => {
 
   describe('edge cases', () => {
     it('handles empty href/src attributes', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -538,7 +533,7 @@ describe('addSRI', () => {
     });
 
     it('handles links without href attribute', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -554,7 +549,7 @@ describe('addSRI', () => {
     });
 
     it('handles files with special characters in paths', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>
@@ -573,7 +568,7 @@ describe('addSRI', () => {
     });
 
     it('handles multiple canonical tags by using the first one', () => {
-      mockFs({
+      setProject({
         'index.html': dedent`
           <!DOCTYPE html>
           <html>

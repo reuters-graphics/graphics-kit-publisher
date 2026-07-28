@@ -1,5 +1,5 @@
-import { describe, it, expect, afterEach } from 'vitest';
-import mockFs from 'mock-fs';
+import { describe, it, expect } from 'vitest';
+import { setProject } from '../../../__test__/project';
 import path from 'path';
 import fs from 'fs';
 import { MediaInteractive } from './media-interactive';
@@ -13,13 +13,9 @@ import { srcArchive } from '../utils/archive';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-afterEach(() => {
-  mockFs.restore();
-});
-
 describe('MediaInteractive edition', async () => {
   it('should pack up', async () => {
-    mockFs({
+    setProject({
       'dist/embeds/en/page/index.html': dedent`<html>
       <head>
       <link rel="canonical" href="https://www.reuters.com/graphics/my-project/embeds/en/page/" />
@@ -27,7 +23,7 @@ describe('MediaInteractive edition', async () => {
       </head>
       </html>`,
       'dist/cdn/scripts/app.js': '',
-      'dist/cdn/images/my-image.jpg': mockFs.load(
+      'dist/cdn/images/my-image.jpg': fs.readFileSync(
         path.join(__dirname, 'test.jpg')
       ),
       '.gitignore': dedent`
@@ -96,7 +92,7 @@ describe('MediaInteractive edition', async () => {
     srcArchive.hasArchived = false;
     const originalValue = context.config.archiveEditions.docs['README.txt'];
     context.config.archiveEditions.docs['README.txt'] = 'template.txt';
-    mockFs({
+    setProject({
       'dist/embeds/en/page/index.html': dedent`<html>
       <head>
       <link rel="canonical" href="https://www.reuters.com/graphics/my-project/embeds/en/page/" />
@@ -104,7 +100,7 @@ describe('MediaInteractive edition', async () => {
       </head>
       </html>`,
       'dist/cdn/scripts/app.js': '',
-      'dist/cdn/images/my-image.jpg': mockFs.load(
+      'dist/cdn/images/my-image.jpg': fs.readFileSync(
         path.join(__dirname, 'test.jpg')
       ),
       '.gitignore': dedent`

@@ -1,21 +1,25 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import mockFs from 'mock-fs';
+import { setProject } from '../__test__/project';
 
 import { checkInvalidfiles } from './checkInvalidFiles';
 import { context } from '../context';
 import { FileNotFoundError, FileSystemError } from '../exceptions/errors';
 
 describe('checkInvalidfiles', () => {
+  // The publisher's project root, i.e. the temp project the harness created.
+  const projectRoot = context.cwd;
+
   beforeEach(() => {
+    // These fixtures live in a subdirectory, so point the publisher at it.
     context.cwd = 'project';
   });
 
   afterEach(() => {
-    mockFs.restore();
+    context.cwd = projectRoot;
   });
 
   it('throws FileNotFoundError if no .gitignore is found in the project', () => {
-    mockFs({
+    setProject({
       project: {
         'file.txt': 'Some text',
       },
@@ -25,7 +29,7 @@ describe('checkInvalidfiles', () => {
   });
 
   it('does not throw an error when no invalid files exist', () => {
-    mockFs({
+    setProject({
       project: {
         '.gitignore': 'node_modules\n.env\n',
         'file.txt': 'Valid file',
@@ -37,7 +41,7 @@ describe('checkInvalidfiles', () => {
   });
 
   it('throws FileSystemError when .zip files are present', () => {
-    mockFs({
+    setProject({
       project: {
         '.gitignore': 'node_modules\n.env\n',
         'file.txt': 'Valid file',
@@ -51,7 +55,7 @@ describe('checkInvalidfiles', () => {
   });
 
   it('ignores files/directories specified in .gitignore', () => {
-    mockFs({
+    setProject({
       project: {
         '.gitignore': 'node_modules\ndist',
         node_modules: {

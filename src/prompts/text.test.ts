@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { type Mock } from 'vitest';
-import mockFs from 'mock-fs';
+import { setProject } from '../__test__/project';
 import { text as textPrompt, isCancel, cancel } from '@clack/prompts';
 import { text, getOrPromptText, getOrSetPkgText } from './text';
 import { utils } from '@reuters-graphics/graphics-bin';
@@ -18,7 +18,7 @@ const processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
 });
 
 beforeEach(() => {
-  mockFs({
+  setProject({
     'locales/en/metadata.json': JSON.stringify({
       story: { title: 'Hello world', authors: ['Alice', 'Bob'] },
       rootSlug: 'my-graphic',
@@ -28,7 +28,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  mockFs.restore();
   vi.resetAllMocks();
 });
 
@@ -172,7 +171,7 @@ describe('text prompts', () => {
 
   describe('getOrSetPkgText', () => {
     it('should return value if already in package.json', async () => {
-      mockFs({
+      setProject({
         'locales/en/metadata.json': JSON.stringify({
           rootSlug: 'my-graphic',
         }),
@@ -196,7 +195,7 @@ describe('text prompts', () => {
     });
 
     it('should get from pointer file if not in package.json, then save to package.json', async () => {
-      mockFs({
+      setProject({
         'locales/en/metadata.json': JSON.stringify({
           rootSlug: 'my-graphic',
         }),
@@ -214,7 +213,7 @@ describe('text prompts', () => {
     });
 
     it('should validate user input before saving and error if invalid', async () => {
-      mockFs({
+      setProject({
         'locales/en/metadata.json': JSON.stringify({}),
         'package.json': JSON.stringify({}),
       });

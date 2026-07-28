@@ -1,7 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import mockFs from 'mock-fs';
-import path from 'path';
-import os from 'os';
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import { resetProject, writeHome } from '../__test__/project';
 
 import { getServerCredentials } from './credentials';
 import { ServerCredentialsError, UserConfigError } from '../exceptions/errors';
@@ -20,23 +18,17 @@ vi.mock('@reuters-graphics/graphics-bin', async () => {
 });
 
 describe('getServerCredentials', () => {
-  const homeDir = '/fake-home';
-
-  beforeEach(() => {
-    // Mock the home directory so that `~/.reuters-graphics` goes to our fake directory
-    vi.spyOn(os, 'homedir').mockReturnValue(homeDir);
-  });
-
+  // The credentials live at `~/.reuters-graphics/graphics-server.json`. The
+  // harness points the home directory at a temp one, so these fixtures can't
+  // collide with the developer's real credentials — and a missing fixture can't
+  // silently read them either.
   afterEach(() => {
-    // Restore all mocks and reset the mocked filesystem
     vi.restoreAllMocks();
-    mockFs.restore();
   });
 
   it('throws UserConfigError if the credentials file does not exist', () => {
-    mockFs({
-      // No ~/.reuters-graphics folder
-    });
+    // No ~/.reuters-graphics folder
+    resetProject();
 
     expect(() => getServerCredentials()).toThrowError(UserConfigError);
   });
@@ -49,8 +41,8 @@ describe('getServerCredentials', () => {
       apiKey: '1234567890abcdefghijkl', // length 20
     };
 
-    mockFs({
-      [path.join(homeDir, '.reuters-graphics')]: {
+    writeHome({
+      '.reuters-graphics': {
         'graphics-server.json': JSON.stringify(validCreds),
       },
     });
@@ -67,8 +59,8 @@ describe('getServerCredentials', () => {
       apiKey: 'shortKey',
     };
 
-    mockFs({
-      [path.join(homeDir, '.reuters-graphics')]: {
+    writeHome({
+      '.reuters-graphics': {
         'graphics-server.json': JSON.stringify(invalidCreds),
       },
     });

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import mockFs from 'mock-fs';
+import { setProject } from '../../../__test__/project';
 import fs from 'fs';
 import unzipper from 'unzipper';
 import {
@@ -11,7 +11,6 @@ import dedent from 'dedent';
 
 describe('srcArchive', () => {
   afterEach(() => {
-    mockFs.restore();
     // @ts-ignore OK to access private in test
     srcArchive.hasArchived = false;
     vi.clearAllMocks();
@@ -19,14 +18,14 @@ describe('srcArchive', () => {
 
   describe('when .gitignore is missing', () => {
     beforeEach(() => {
-      mockFs({
+      setProject({
         // No .gitignore file
         'file1.txt': 'Hello world',
       });
     });
 
     it('should throw FileNotFoundError', async () => {
-      await expect(srcArchive.makeArchive('/outpath/app.zip')).rejects.toThrow(
+      await expect(srcArchive.makeArchive('outpath/app.zip')).rejects.toThrow(
         FileNotFoundError
       );
     });
@@ -34,7 +33,7 @@ describe('srcArchive', () => {
 
   describe('archiving behavior', () => {
     beforeEach(() => {
-      mockFs({
+      setProject({
         '.graphics-kit': {
           'config.json': '{}',
         },
@@ -61,7 +60,7 @@ describe('srcArchive', () => {
     });
 
     it('should create an archive and exclude ignored patterns', async () => {
-      const outZip = '/myOutput/app.zip';
+      const outZip = 'myOutput/app.zip';
       await srcArchive.makeArchive(outZip);
 
       expect(fs.existsSync(outZip)).toBe(true);
@@ -92,7 +91,7 @@ describe('srcArchive', () => {
     });
 
     it('should not recreate the archive if already archived', async () => {
-      const outZip = '/myOutput/app.zip';
+      const outZip = 'myOutput/app.zip';
       const tmpZip = '.graphics-kit/archive/app.zip';
       await srcArchive.makeArchive(outZip);
 
@@ -118,7 +117,7 @@ describe('srcArchive', () => {
         size: 150.0000001 * 1024 * 1024,
       } as unknown as fs.Stats);
 
-      const outZip = '/myOutput/app.zip';
+      const outZip = 'myOutput/app.zip';
       await expect(srcArchive.makeArchive(outZip)).rejects.toThrowError(
         EditionArchiveError
       );
