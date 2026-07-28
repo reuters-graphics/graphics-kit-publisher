@@ -40,24 +40,31 @@ export const loadUserConfig = async () => {
 
   const configFileURL = pathToFileURL(configPath).toString();
 
-  let jiti: Jiti;
-
-  // Alias the library and disable caching for testing
-  // using mocked filesystem
-  if (process.env.VITEST && process.env.MOCK_FS) {
-    jiti = createJiti(import.meta.url, {
-      alias: {
-        '@reuters-graphics/graphics-kit-publisher': path.join(
-          __dirname,
-          'index.ts'
-        ),
-      },
-      fsCache: false,
-      moduleCache: false,
-    });
-  } else {
-    jiti = createJiti(import.meta.url);
-  }
+  const jiti: Jiti = createJiti(import.meta.url, {
+    /**
+     * The config is loaded once per command, so caching buys nothing here — and
+     * a warm module cache would hide a config file rewritten between tests.
+     */
+    fsCache: false,
+    moduleCache: false,
+    /**
+     * The publisher's own tests load fixture configs from a temp project where
+     * this package isn't installed, so resolve it to source for them. Real
+     * projects resolve it from their own node_modules.
+     *
+     * @see src/__test__/project.ts
+     */
+    ...(process.env.PUBLISHER_SELF_TEST ?
+      {
+        alias: {
+          '@reuters-graphics/graphics-kit-publisher': path.join(
+            __dirname,
+            'index.ts'
+          ),
+        },
+      }
+    : {}),
+  });
 
   const configModule = (await jiti.import(configFileURL, {
     default: true,

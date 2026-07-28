@@ -20,7 +20,13 @@ const MAX_ARCHIVE_MB_SIZE = 150;
 
 class SrcArchive {
   private hasArchived = false;
-  private archivePath = path.join(context.cwd, '.graphics-kit/archive/app.zip');
+  /**
+   * A getter, not a field: this class is instantiated at module scope, so a
+   * field initialiser would read `context.cwd` at import time.
+   */
+  private get archivePath() {
+    return path.join(context.cwd, '.graphics-kit/archive/app.zip');
+  }
   private static instance: SrcArchive;
   public static getInstance(): SrcArchive {
     if (!SrcArchive.instance) SrcArchive.instance = new SrcArchive();

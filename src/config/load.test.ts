@@ -1,34 +1,18 @@
-import mock from 'mock-fs';
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
-import path from 'path';
+import { describe, it, expect, beforeEach } from 'vitest';
 import dedent from 'dedent';
 import fs from 'fs';
 import { loadUserConfig } from './load';
-import { mockedNodeModules } from '../__test__/utils';
-
-const CONFIG_PATH = path.join(process.cwd(), 'publisher.config.ts');
-const CWD = process.cwd();
+import { resetProject, writeProject } from '../__test__/project';
 
 beforeEach(() => {
-  process.env.MOCK_FS = 'T';
-  mock({
-    ...mockedNodeModules,
-    [path.join(CWD, 'src/')]: mock.load(path.join(CWD, 'src/')),
-    'package.json': '{}',
-  });
-});
-
-afterEach(() => {
-  delete process.env.MOCK_FS;
-  mock.restore();
+  resetProject();
 });
 
 describe('Config load', () => {
   it('should load a valid config file', async () => {
-    fs.writeFileSync(
-      CONFIG_PATH,
-      dedent`import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
-    
+    writeProject({
+      'publisher.config.ts': dedent`import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
       export default defineConfig({
         packLocations: {
           dotcom: 'pages/',
@@ -42,8 +26,8 @@ describe('Config load', () => {
             },
           },
         },
-      });`
-    );
+      });`,
+    });
 
     const config = await loadUserConfig();
     expect(config.packLocations.dotcom).toBe('pages/'); // User defined
@@ -51,23 +35,21 @@ describe('Config load', () => {
   });
 
   it('should error on an invalid config file', async () => {
-    fs.writeFileSync(
-      CONFIG_PATH,
-      dedent`import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
-    
+    writeProject({
+      'publisher.config.ts': dedent`import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
       export default defineConfig({
         packLocations: {
           dotcom: 2,
         },
-      });`
-    );
+      });`,
+    });
 
     await expect(() => loadUserConfig()).rejects.toThrowError('Invalid type');
 
-    fs.writeFileSync(
-      CONFIG_PATH,
-      dedent`import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
-    
+    writeProject({
+      'publisher.config.ts': dedent`import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
       export default defineConfig({
         packLocations: {
           dotcom: 'pages/',
@@ -79,8 +61,8 @@ describe('Config load', () => {
             },
           },
         },
-      });`
-    );
+      });`,
+    });
 
     await expect(() => loadUserConfig()).rejects.toThrowError(
       'metadataPointers.pack.byline.path Pointer should be a path like'
@@ -88,27 +70,25 @@ describe('Config load', () => {
   });
 
   it('should error on malformed config file', async () => {
-    fs.writeFileSync(
-      CONFIG_PATH,
-      dedent`export default {
+    writeProject({
+      'publisher.config.ts': dedent`export default {
         packLocations: {
           dotcom: 'dist/',
         },
-      };`
-    );
+      };`,
+    });
 
     await expect(() => loadUserConfig()).rejects.toThrowError('Invalid');
 
-    fs.writeFileSync(
-      CONFIG_PATH,
-      dedent`import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
-    
+    writeProject({
+      'publisher.config.ts': dedent`import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
+
       export const config = defineConfig({
         packLocations: {
           dotcom: 'dist/',
         },
-      });`
-    );
+      });`,
+    });
 
     await expect(() => loadUserConfig()).rejects.toThrowError('Invalid');
   });

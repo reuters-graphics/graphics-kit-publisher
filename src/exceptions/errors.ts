@@ -61,8 +61,6 @@ export class ServerError extends PublisherError {}
 
 export class ConfigError extends PublisherError {}
 
-export class LocationError extends PublisherError {}
-
 export class BuildError extends PublisherError {}
 
 export class FileNotFoundError extends PublisherError {}
