@@ -123,13 +123,24 @@ and `src/pack/archive/index.ts:37` are used only as caching short-circuits — n
 pointer-sourced value (e.g. a non-`@thomsonreuters.com` email from `profile.json`) reaches the server.
 Phase 3(d) validates and throws with a clear message.
 
-**D8 — Open: does the public archive keep its copy of `embeds/**`?** Today the public archive contains
-the entire build, embed pages included, because it packs from `dirname('dist/index.html')`
-(`src/pack/edition/types/interactive.ts:124-125`; asserted at
-`src/pack/edition/types/interactive.test.ts:51-54`). Once embeds are self-contained that's pure
-duplication. Excluding `embeds/**` from the public archive is tempting but is a **behaviour change for
-any consumer relying on those paths being served under the public URL**. Decide in M4; default to
-keeping today's behaviour unless we can show nothing depends on it.
+**D8 — Archive contents keep today's asymmetry.** Decided:
+
+- **Public archive** — unchanged: the whole build, `embeds/**` included, because it packs from
+  `dirname('dist/index.html')` (`src/pack/edition/types/interactive.ts:124-125`; asserted at
+  `src/pack/edition/types/interactive.test.ts:51-54`). Once embeds are self-contained those copies are
+  redundant, but dropping them would change which paths are served under the public URL, and nothing
+  requires us to take that risk here.
+- **Media archives** — their own hoisted page plus a copy of `cdn/`. Nothing else: no other embeds'
+  pages, no dotcom page. This matches the issue's wording and keeps archives as small as
+  self-containment allows.
+
+Consequence to accept: an embed's client-side router has no other pages inside its archive, so a
+route navigation *within* an embed can only resolve if it's a route the embed itself renders. Whole-`cdn`
+already prevents missing-*chunk* 404s (issue Risk #2); missing-*page* navigation is out of scope, and
+embeds don't do it today.
+
+Consequence for the code: assembly stays two paths (public = whole build, media = page + `cdn/`), so
+`Interactive.packUp` keeps its `archive.type` branch rather than becoming uniform.
 
 ---
 
@@ -210,7 +221,7 @@ The heart of the user-facing change; no rewriting yet.
 - Revisit `zipDir`: it buffers whole archives in memory with no compression level
   (`src/utils/zipDir.ts:7-31`). Per-archive `cdn/` copies multiply archive size, so set a compression
   level and consider streaming to disk.
-- Decide D8 (public archive's `embeds/**`).
+- Per D8, the public archive's contents don't change and the `archive.type` branch in `packUp` stays.
 - Update the tests that currently *assert* hub-and-spoke:
   `src/pack/edition/types/interactive.test.ts:110-116` asserts a media archive has **no**
   `interactive/cdn/scripts/app.js` — that assertion inverts.
