@@ -22,8 +22,9 @@ Baseline: `main` @ 60da504 (after #163; #164 adds the temp-project test harness 
    of a serial upload loop, minutes in — `src/pack/archive/index.ts:48-50` inside the loop at
    `src/pack/index.ts:111-113`.
 
-Corollary goal: **fail before the first byte.** Everything that can be validated — credentials, token,
-metadata, selection — is validated in the interactive phase, before any server mutation or upload.
+Corollary goal: **fail before the first byte.** Everything that can be validated — credentials, metadata,
+selection — is validated before any server mutation or upload. Token acquisition is the accepted
+exception (D6).
 
 ---
 
@@ -37,12 +38,12 @@ metadata, selection — is validated in the interactive phase, before any server
 | 1 | Build | no | no | **One** production build against the placeholder base |
 | 2 | Discover | no | no | `Finder` over the placeholder output → archives + editions; `logFound()` |
 | 3 | **Decide & collect** | **yes** | no | (a) archive selection → (b) pack metadata → (c) per-archive metadata for *selected* archives → (d) validate everything → (e) summary + one confirm |
-| 4 | Reserve | no¹ | write | **Warm the token first**; create/update the pack; dummy-zip upload per selected archive lacking a URL; persist URLs |
+| 4 | Reserve | no¹ | write | Create/update the pack; dummy-zip upload per selected archive lacking a URL; persist URLs |
 | 5 | Assemble | no | no | Per selected archive: copy page (hoist) + copy `cdn/` → rewrite → self-verify → SRI → preview image/manifest → zip |
 | 6 | Upload & report | no | write | Serial upload of selected archives; separate assets; report uploaded / skipped / URLs |
 
-¹ Not guaranteed: for users whose credentials lack `GFX_` rights, the token paste prompt
-(`src/server/token.ts:101`) can still fire in Phases 4 and 6. See D6 — it's mitigated, not eliminated.
+¹ "Not interactive" means *we* don't prompt. The token paste prompt (`src/server/token.ts:101`) can
+still appear at any server call, in any phase, and that's fine — see D6.
 
 ² `ensurePackId()` is a no-op whenever `reuters.graphic.pack` is already cached, i.e. on every upload
 after a project's first. Only the first-ever upload prompts for pack metadata and creates the pack here;
@@ -110,9 +111,8 @@ This generalises: any server-derived value an app bakes at build time must exist
 placeholder + rewrite covers every such value that varies per archive; the pack ID is the only one that
 doesn't vary, and it's stable, so a one-time `ensurePackId()` is the whole fix.
 
-Cost to accept: on a first upload the pre-build `createGraphic` call acquires a token, so a user whose
-credentials lack `GFX_` rights may be prompted to paste one before the build *and* again at Phase 4 if
-the build and prompting together outlast the 15-minute cache (D6).
+Note the first-upload path makes `createGraphic` the run's first server call, so any token prompt lands
+there rather than at Phase 4. That's fine either way (D6).
 
 **D5 — SRI moves to the staged copy, after rewrite.** Today `addSRI` mutates files **in `dist/`** before
 copying (`src/pack/edition/types/interactive.ts:129-139`), which cannot be per-archive-correct once each
@@ -121,28 +121,24 @@ rewrite and before `zipDir`. Its "resource under canonical path" branch (`src/ut
 resolves cleanly post-hoist, so this gets *simpler*. Also: stop swallowing its errors silently, or at
 least never route the zero-residual assertion through that swallow.
 
-**D6 — Warm the token at the start of Phase 4, not Phase 0 — and keep Phase 0 non-interactive.**
-The paste prompt (`src/server/token.ts:92-120`) is a *fallback*, not the normal path: `getToken()` POSTs
-credentials (`:24-48`) and only prompts on a 401 or when the JWT lacks `GFX_` rights (`:152-168`). Our
-15-minute cache covers **only the pasted token** (`:50-66`, written at `:117`) — a credentials-derived
-token isn't cached at all. So the clock is only relevant to the lacks-`GFX_`-rights cohort, and it
-starts when they paste.
+**D6 — Token handling is out of scope. Leave it exactly as it is.**
 
-That makes Phase 0 the wrong place to warm: the interactive phase could burn several minutes of a
-15-minute window before the first upload starts. Warm at the top of Phase 4 instead, so the window
-covers the uploads.
+No warm-up step, no pre-flight token call, no change to caching. If a server call needs a token and no
+valid one exists, prompting for one *at that point* is acceptable — whether that lands before, during or
+after the interactive phase.
 
-Phase 0 still does the *non-interactive* half: `getServerCredentials()`
+Context so a reader doesn't mistake this for an oversight: the paste prompt
+(`src/server/token.ts:92-120`) is a *fallback*, not the normal path. `getToken()` POSTs credentials
+(`:24-48`) and only prompts on a 401 or when the JWT lacks `GFX_` rights (`:152-168`), so users with
+adequate credentials never see it. Our 15-minute cache covers **only** the pasted token (`:50-66`,
+written at `:117`), and `server-client` calls `_getToken()` per request
+(`node_modules/@reuters-graphics/server-client/dist/index.js:1270` et al), so for the
+lacks-`GFX_`-rights cohort a long upload can prompt more than once. Accepted.
+
+What Phase 0 does keep is the *non-interactive* credentials check: `getServerCredentials()`
 (`src/server/credentials.ts:37-61`) throws `UserConfigError`/`ServerCredentialsError` on missing or
-malformed credentials without touching the network, so that class of failure surfaces before the build.
-
-**Residual, worth its own issue rather than blocking this one:** `server-client` calls `_getToken()` on
-**every request** (`node_modules/@reuters-graphics/server-client/dist/index.js:1270`, `:1297`, `:1335`,
-`:1348`, `:1384`, `:1423`), each re-POSTing credentials. For the pasted-token cohort that means every
-request 401s and falls back to the cache, so an upload longer than 15 minutes — nine archives at 2–5
-minutes each, exactly the case #162 exists to fix — re-prompts mid-run regardless of where we warm.
-The durable fixes are to hold one validated token for the run, or read `exp` from the JWT and refresh
-deliberately. Out of scope here; note it and move on.
+malformed credentials without touching the network, so that class of failure still surfaces before the
+build.
 
 **D7 — Validate metadata, don't just short-circuit on it.** `isValid(...)` at `src/pack/index.ts:46`
 and `src/pack/archive/index.ts:37` are used only as caching short-circuits — nothing throws, so a bad
@@ -227,8 +223,8 @@ The heart of the user-facing change; no rewriting yet.
 - Reorder `Pack.upload()` to the seven phases. Pack **update** moves to Phase 4; pack **creation** stays
   before the build behind `ensurePackId()`, which no-ops for any project that has been uploaded before
   (D4). `separateAssets.setUrl()` keeps its current position, right after that.
-- Add Phase 0 preflight (credentials shape-check + `ensurePackId`) and Phase 4 token warm-up (D6), plus
-  Phase 3(d) validation (D7).
+- Add Phase 0 preflight (credentials shape-check + `ensurePackId`) and Phase 3(d) validation (D7). Token
+  handling is untouched (D6).
 - Add the Phase 3(e) summary + single confirm: archives to upload, editions per archive, which are new
   vs. updates, what's being skipped.
 - Fix `edition.*` pointer resolution while we're here: `index.html?title` currently resolves against
