@@ -4,6 +4,15 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
+    /**
+     * Each test file runs in its own real temp project directory, which the
+     * setup file enters with `process.chdir` — that throws in worker threads,
+     * so tests need a process per file. This is Vitest's default; it's pinned
+     * to document the dependency.
+     *
+     * @see src/__test__/project.ts
+     */
+    pool: 'forks',
     coverage: {
       include: ['src/**'],
       reporter: ['text', 'json', 'html'],

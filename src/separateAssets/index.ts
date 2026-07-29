@@ -12,10 +12,9 @@ import picocolors from 'picocolors';
 
 export class SeparateAssets {
   private dir?: string;
-  private tempArchivePath = path.join(
-    context.cwd,
-    '.graphics-kit/archive/assets.zip'
-  );
+  private get tempArchivePath() {
+    return path.join(context.cwd, '.graphics-kit/archive/assets.zip');
+  }
   constructor() {
     if (context.config.archiveEditions.separateAssets) {
       const absPath = utils.path.absolute(

@@ -1,58 +1,30 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import mockFs from 'mock-fs';
-import { mockedNodeModules } from '../__test__/utils';
-import path from 'path';
-import fs from 'fs';
-import dedent from 'dedent';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { resetProject, writeProject } from '../__test__/project';
 import { Pack } from '../pack';
 import { Finder } from '.';
 
-const CWD = process.cwd();
-
 beforeEach(() => {
-  process.env.MOCK_FS = 'T';
-  mockFs({
-    ...mockedNodeModules,
-    [path.join(CWD, 'src/')]: mockFs.load(path.join(CWD, 'src/')),
-  });
+  resetProject();
 });
-
-afterEach(() => {
-  delete process.env.MOCK_FS;
-  mockFs.restore();
-});
-
-const writeFileSync = (filePath: string, data: string) => {
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  fs.writeFileSync(filePath, data);
-};
 
 describe('finder', async () => {
   describe('finderEditions', async () => {
     it('should find multiple editions', async () => {
-      writeFileSync(
-        './publisher.config.ts',
-        dedent`import { defineConfig } from '@reuters-graphics/graphics-kit-publisher';
-      
-        export default defineConfig({
-          packLocations: {
-            dotcom: 'dist/',
-            embeds: 'dist/embeds/{locale}/{slug}/',
-            statics: 'media-assets/{locale}/{slug}/',
-          },
-        });`
-      );
-      writeFileSync('./dist/index.html', '<html></html>');
-      writeFileSync('./dist/embeds/en/map/index.html', '<html></html>');
-      writeFileSync('./dist/embeds/en/chart/index.html', '<html></html>');
-      writeFileSync('./dist/embeds/en/referral/index.html', '<html></html>');
-      writeFileSync('./dist/embeds/de/map/index.html', '<html></html>');
-      writeFileSync('./media-assets/en/map/graphic.JPG', '');
-      writeFileSync('./media-assets/en/map/graphic.pdf', '');
-      writeFileSync('./media-assets/de/map/graphic.png', '');
-      writeFileSync('./media-assets/de/map/graphic.eps', '');
-      writeFileSync('./media-assets/it/map/graphic.eps', '');
+      // The finder reads `context.config`, which is the default config here —
+      // its packLocations are `dist/`, `dist/embeds/{locale}/{slug}/` and
+      // `media-assets/{locale}/{slug}/`, i.e. the paths written below.
+      writeProject({
+        'dist/index.html': '<html></html>',
+        'dist/embeds/en/map/index.html': '<html></html>',
+        'dist/embeds/en/chart/index.html': '<html></html>',
+        'dist/embeds/en/referral/index.html': '<html></html>',
+        'dist/embeds/de/map/index.html': '<html></html>',
+        'media-assets/en/map/graphic.JPG': '',
+        'media-assets/en/map/graphic.pdf': '',
+        'media-assets/de/map/graphic.png': '',
+        'media-assets/de/map/graphic.eps': '',
+        'media-assets/it/map/graphic.eps': '',
+      });
 
       const pack = new Pack();
       const finder = new Finder(pack);

@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import mockFs from 'mock-fs';
 import fs from 'fs-extra';
 import path from 'path';
 
+import { resetProject, writeProject } from '../__test__/project';
 import { cleanOutDir, deleteZeroLengthFiles } from './clean';
 
 vi.mock('@clack/prompts', () => ({
@@ -15,15 +15,13 @@ import { log } from '@clack/prompts';
 
 describe('cleanOutDir', () => {
   beforeEach(() => {
-    mockFs({
-      'existing-outDir': {
-        'file1.txt': 'Some content',
-      },
+    resetProject();
+    writeProject({
+      'existing-outDir/file1.txt': 'Some content',
     });
   });
 
   afterEach(() => {
-    mockFs.restore();
     vi.clearAllMocks();
   });
 
@@ -58,22 +56,17 @@ describe('deleteZeroLengthFiles', () => {
   const outDirPath = 'dist';
 
   beforeEach(() => {
-    // Setup a mock file system
-    mockFs({
-      [outDirPath]: {
-        'empty-file1.txt': '', // zero-length
-        'empty-file2.js': '', // zero-length
-        'non-empty.md': 'Hello world', // not zero-length
-        'sub-folder': {
-          'inner-empty.txt': '', // zero-length
-          'inner-non-empty.txt': 'test',
-        },
-      },
+    resetProject();
+    writeProject({
+      [`${outDirPath}/empty-file1.txt`]: '', // zero-length
+      [`${outDirPath}/empty-file2.js`]: '', // zero-length
+      [`${outDirPath}/non-empty.md`]: 'Hello world', // not zero-length
+      [`${outDirPath}/sub-folder/inner-empty.txt`]: '', // zero-length
+      [`${outDirPath}/sub-folder/inner-non-empty.txt`]: 'test',
     });
   });
 
   afterEach(() => {
-    mockFs.restore();
     vi.clearAllMocks();
   });
 
@@ -101,7 +94,7 @@ describe('deleteZeroLengthFiles', () => {
   });
 
   it('does not log a warning if no zero-length files exist', () => {
-    // First, remove all empty files from the mock FS so none remain
+    // First, remove all empty files so none remain
     fs.removeSync(path.join(outDirPath, 'empty-file1.txt'));
     fs.removeSync(path.join(outDirPath, 'empty-file2.js'));
     fs.removeSync(path.join(outDirPath, 'sub-folder/inner-empty.txt'));
