@@ -1,5 +1,49 @@
 # @reuters-graphics/graphics-kit-publisher
 
+## 3.5.0
+
+### Minor Changes
+
+- 9b48dad: Upload the archives you choose, not all of them
+
+  Uploading used to be all-or-nothing: every archive in your pack went to the graphics server, one after another, whether or not it had changed — and the server takes a few minutes to process each one. `upload` now asks which archives you want, with everything preselected, so pressing enter does what it always did.
+
+  That matters most on packs with lots of embeds. A graphics blog that has grown to nine embeds over a fortnight used to re-upload and re-process all nine to fix a typo in one. Now you upload the one you changed and the rest are left untouched, still live and still serving.
+
+  Skipping is safe because each archive now carries its own complete copy of the app's assets and points at them at its own URL. Nothing in a pack depends on anything else in it. Previously every embed referenced the `public` archive's assets, so re-uploading `public` could break every embed pointing at its old asset hashes — which is why you couldn't safely skip anything.
+
+  For scripts and CI: `upload --archives public,media-en-jobs-map` skips the prompt, and in CI with no flag every archive uploads, as before.
+
+  Also in this release:
+
+  - **All prompting happens up front.** Add a new embed and you're asked for its title before anything uploads, rather than a few minutes into a run you'd stopped watching. Credentials and metadata are checked before the build too, so the failures that used to arrive after a long build now arrive before it.
+  - **One build instead of two.** The publisher no longer builds your project a second time to bake in URLs, so uploads start sooner.
+  - **`edition.*` metadata pointers now resolve where they're documented to** — against each archive's own page. They resolved against the project root, so the default `index.html?title` read a file that usually doesn't exist and every embed asked for its title instead of reading it.
+  - **Integrity hashes are correct for the files they guard.** SRI ran before per-archive rewriting, so `integrity` attributes could describe content that no longer matched.
+
+  Nothing to change in your project: same commands, same config, same conventions. The one new option, `build.assetsDir`, only matters if your project has renamed the directory its assets are built to — and if it has, uploading now fails rather than shipping an archive missing its own assets. One thing worth stating plainly — **an embed is a single page**. Only that embed's own page travels with it into its archive, so don't link from an embed to other pages in your project.
+
+### Patch Changes
+
+- 60da504: Support Node 24, and stop doing filesystem work when the publisher is imported
+
+  Importing the publisher used to check the filesystem: the `context` singleton was created at module scope, and its constructor looked for a `package.json` in the current working directory and walked the tree to detect the package manager. So merely importing the library — a Vite config importing `getBasePath`, say — could throw `LocationError: Must run publisher from project root` before any error handling was in place to render it.
+
+  `context.cwd` and `context.pkgMgr` are now resolved when they're first read instead. Commands are unaffected: every one of them already gets the project-root check from `loadUserConfig`, which throws the same `NOT_PROJECT_ROOT` error from inside the CLI's error handling, where it renders properly with its hint.
+
+  Node 24 is now covered in CI (`[20, 22, 24]`). It had been held back by test failures that turned out to be a filesystem-mocking bug rather than a publisher bug: Node 23 moved `fs.rmSync` into a single native binding call, which mock-fs doesn't implement, so deletes under an active mock silently escaped to the real filesystem. The tests that need a project on disk now build a real one in a temp directory instead of mocking, so there's nothing left to fall out of sync with Node's internals.
+
+  Also removes the unused `LocationError` class.
+
+- 9d4f8b7: Test-only: retire mock-fs in favour of real temp projects
+
+  Every remaining suite that mocked the filesystem now writes real fixtures into the throwaway project directory each test file already runs in, and `mock-fs` is gone from devDependencies. No change to shipped code.
+
+  Two tests turned out to have been passing for the wrong reason under the mock, and both are now honest:
+
+  - `src/prompts/select.test.ts` read the developer's real `~/.reuters-graphics/profile.json`. Its assertions only held on a machine whose profile happened to say `desk: "london"` — and on CI, with no profile at all, several would have failed. The harness now points `$HOME` at a temp directory, so no test can read or clobber a real profile. `src/server/credentials.test.ts` no longer needs to stub `os.homedir` for the same reason.
+  - `src/pack/edition/types/base.test.ts` asserted that `graphic.jpg` was "not found on file system" while the fixture on disk was `graphic.JPG`. That only holds on a case-sensitive filesystem — it would have passed on CI and failed on any developer's Mac. It now uses a path that is genuinely absent.
+
 ## 3.4.7
 
 ### Patch Changes
