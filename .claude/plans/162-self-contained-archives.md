@@ -33,7 +33,7 @@ metadata, selection — is validated in the interactive phase, before any server
 
 | Phase | Name | Interactive | Server | What happens |
 |---|---|---|---|---|
-| 0 | Preflight | no | none | `precheck()`; resolve and shape-check credentials (no server call — see D6) |
+| 0 | Preflight | first upload only² | first upload only² | `precheck()`; shape-check credentials (no server call — D6); `ensurePackId()` then `separateAssets.setUrl()` (D4) |
 | 1 | Build | no | no | **One** production build against the placeholder base |
 | 2 | Discover | no | no | `Finder` over the placeholder output → archives + editions; `logFound()` |
 | 3 | **Decide & collect** | **yes** | no | (a) archive selection → (b) pack metadata → (c) per-archive metadata for *selected* archives → (d) validate everything → (e) summary + one confirm |
@@ -43,6 +43,10 @@ metadata, selection — is validated in the interactive phase, before any server
 
 ¹ Not guaranteed: for users whose credentials lack `GFX_` rights, the token paste prompt
 (`src/server/token.ts:101`) can still fire in Phases 4 and 6. See D6 — it's mitigated, not eliminated.
+
+² `ensurePackId()` is a no-op whenever `reuters.graphic.pack` is already cached, i.e. on every upload
+after a project's first. Only the first-ever upload prompts for pack metadata and creates the pack here;
+see D4 for why that can't wait until Phase 4.
 
 Ordering notes that fall out of the current code:
 
@@ -80,13 +84,35 @@ root-relative form `/graphics/__GKP_BASE__/` is equally distinctive.
 archive root, `{placeholder}/cdn` → `{archive-url}/cdn`, residual root-relative base → archive root.
 Add a third target: **the separate-assets URL** (D4).
 
-**D4 — Rewrite the separate-assets URL too, so pack creation can move after the build.**
-`separateAssets.setUrl()` writes a URL derived from `PKG.pack.id` *before* build 1 today
-(`src/pack/index.ts:105`, `src/separateAssets/index.ts:79-83`) precisely so the app can bake it in — and
-the downstream kit types it for app use (`bluprint_graphics-kit/src/global.d.ts:34`), so some projects
-do consume it at build time. If we don't rewrite it, pack creation (and therefore pack-metadata
-prompting) must stay before the build, and we lose the single-interactive-phase goal. Baking a
-placeholder and rewriting it is cheap and keeps Phase 3 whole.
+**D4 — Don't rewrite the separate-assets URL. Ensure a pack ID exists before the build instead.**
+
+`separateAssets` exists to give clients a permanent copy of **source** files too big to commit — files
+that are gitignored and therefore absent from the `app.zip` shipped with embeds. There is exactly one
+such bundle **per project**, keyed by pack ID (`src/separateAssets/index.ts:72-77`), and it contains no
+built output. Per-archive variation would be meaningless, so it stays out of the rewrite.
+
+That leaves the ordering constraint it creates: `setUrl()` needs `PKG.pack.id` and runs *before* the
+build today (`src/pack/index.ts:105`) so the app can bake the link in — and the downstream kit types it
+for app use (`bluprint_graphics-kit/src/global.d.ts:34`), so some projects do read it at build time.
+
+The resolution is that the pack ID is **only unknown on a project's first-ever upload**; after that it's
+cached in `package.json` (`reuters.graphic.pack`, written at `src/pack/index.ts:95`). So Phase 0 gets an
+`ensurePackId()` step:
+
+- **Pack ID already cached** (every returning project — the case #162 exists to improve): no server call,
+  no prompts. `setUrl()` runs, the build follows, and Phase 3 remains the single interactive phase.
+- **No pack ID yet** (first upload only): prompt pack metadata and create the pack, then build. The user
+  sees two interactive moments on the run where they're setting the project up from scratch anyway.
+
+Pack *update* (as opposed to creation) stays in Phase 4 with the rest of the server writes.
+
+This generalises: any server-derived value an app bakes at build time must exist before the build. The
+placeholder + rewrite covers every such value that varies per archive; the pack ID is the only one that
+doesn't vary, and it's stable, so a one-time `ensurePackId()` is the whole fix.
+
+Cost to accept: on a first upload the pre-build `createGraphic` call acquires a token, so a user whose
+credentials lack `GFX_` rights may be prompted to paste one before the build *and* again at Phase 4 if
+the build and prompting together outlast the 15-minute cache (D6).
 
 **D5 — SRI moves to the staged copy, after rewrite.** Today `addSRI` mutates files **in `dist/`** before
 copying (`src/pack/edition/types/interactive.ts:129-139`), which cannot be per-archive-correct once each
@@ -198,9 +224,11 @@ The heart of the user-facing change; no rewriting yet.
 - Move URL reservation out of metadata: `Interactive.getUrl()`
   (`src/pack/edition/types/interactive.ts:36-121`) becomes a Phase 4 step over selected archives,
   keeping its existing "already has a URL" short-circuit (`:37-38`) so URLs stay stable across uploads.
-- Reorder `Pack.upload()` to the seven phases. Pack create/update moves to Phase 4 (enabled by D4).
-- Add Phase 0 preflight (credentials shape-check only) and Phase 4 token warm-up (D6), plus Phase 3(d)
-  validation (D7).
+- Reorder `Pack.upload()` to the seven phases. Pack **update** moves to Phase 4; pack **creation** stays
+  before the build behind `ensurePackId()`, which no-ops for any project that has been uploaded before
+  (D4). `separateAssets.setUrl()` keeps its current position, right after that.
+- Add Phase 0 preflight (credentials shape-check + `ensurePackId`) and Phase 4 token warm-up (D6), plus
+  Phase 3(d) validation (D7).
 - Add the Phase 3(e) summary + single confirm: archives to upload, editions per archive, which are new
   vs. updates, what's being skipped.
 - Fix `edition.*` pointer resolution while we're here: `index.html?title` currently resolves against
