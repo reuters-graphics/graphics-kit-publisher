@@ -8,7 +8,14 @@ import fs from 'fs';
 import { utils } from '@reuters-graphics/graphics-bin';
 import { context } from '../../context';
 import { zipDir } from '../../utils/zipDir';
-import { PackageMetadataError } from '../../exceptions/errors';
+import { BuildError, PackageMetadataError } from '../../exceptions/errors';
+import {
+  assertNoResidualTokens,
+  deriveMappings,
+  rewriteDir,
+} from '../../rewrite';
+import { PLACEHOLDER_BASE } from '../../constants/rewrite';
+import { addSRI } from '../../utils/sri';
 import { serverSpinner } from '../../server/spinner';
 import picocolors from 'picocolors';
 import { PKG } from '../../pkg';
@@ -17,6 +24,8 @@ type ArchiveType = 'public' | 'media';
 
 export class Archive {
   public editions: Edition[] = [];
+  /** Path to this archive's zip, set when it's packed. */
+  private zipPath?: string;
   public metadata: Partial<ArchiveEditionsMetadata> = {};
   public type: ArchiveType;
   constructor(
@@ -96,7 +105,7 @@ export class Archive {
   }
 
   /**
-   * Pack up all editions and zip the archive directory
+   * Pack up all editions, rewrite them to this archive's own URL, and zip.
    * @returns The path to the zipped archive
    */
   async packUp() {
@@ -109,7 +118,88 @@ export class Archive {
     for (const edition of this.editions) {
       await edition.packUp(archiveDir);
     }
-    return zipDir(archiveDir);
+    this.rewriteToOwnUrl(archiveDir);
+    this.zipPath = await zipDir(archiveDir);
+    return this.zipPath;
+  }
+
+  /**
+   * Point this archive's staged copy of the build at its own URL.
+   *
+   * The project is built once against a placeholder base, so this is where an
+   * archive stops sharing the public archive's assets and starts serving its
+   * own — which is what makes it safe to re-upload one archive without
+   * re-uploading the rest.
+   *
+   * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+   */
+  private rewriteToOwnUrl(archiveDir: string) {
+    const edition = this.interactiveEdition;
+    // Statics-only archives have no page and no URL, so nothing to rewrite.
+    if (!edition) return;
+
+    const archiveUrl = PKG.archive(this.id).url;
+    if (!archiveUrl)
+      throw new PackageMetadataError(
+        `No URL yet for archive "${this.id}", needed before it can be packed.`,
+        {
+          code: 'MISSING_EDITION_URL',
+          hint: 'Archives get a URL reserved from the graphics server before packing — run the upload command rather than packing directly.',
+          context: { archive: this.id },
+        }
+      );
+
+    /**
+     * Where this archive's page sat in the build, so references to it can collapse
+     * to the archive root it's been hoisted to. Empty for the public archive,
+     * whose page is already the build root.
+     */
+    const buildRoot = path.join(context.cwd, context.config.build.outDir);
+    const hoistedPath = path.relative(
+      buildRoot,
+      path.dirname(utils.path.absolute(edition.path))
+    );
+
+    const report = rewriteDir(
+      archiveDir,
+      deriveMappings({
+        placeholderBase: PLACEHOLDER_BASE,
+        archiveUrl,
+        hoistedPath: hoistedPath || undefined,
+      })
+    );
+
+    /**
+     * Nothing replaced means the build never saw the placeholder — the app
+     * resolved a real base URL instead, most likely because the copy of this
+     * library it built against predates the placeholder. Every archive would
+     * quietly ship pointing at the public archive, which is the coupling this
+     * work exists to remove, so fail rather than upload that.
+     */
+    if (report.total === 0)
+      throw new BuildError(
+        `Found no base URL to rewrite in the "${this.id}" archive.`,
+        {
+          code: 'NO_PLACEHOLDER_IN_BUILD',
+          hint: "The build didn't use the publisher's placeholder base URL. Check that the project's page builder gets its base path from this package's `getBasePath`, and that the publisher and the app resolve the same version of it.",
+          context: { archive: this.id, archiveUrl },
+        }
+      );
+
+    assertNoResidualTokens(archiveDir);
+
+    /**
+     * SRI last: it hashes the asset files, so it has to run after their contents
+     * are final. It also has to run on this staged copy rather than on the build
+     * output, since every archive's copy differs.
+     */
+    if (this.type === 'media') {
+      try {
+        addSRI(path.join(archiveDir, edition.type, 'index.html'));
+      } catch {
+        // If SRI generation fails, continue without it
+      }
+    }
   }
 
   async createOrUpdate() {
@@ -127,7 +217,13 @@ export class Archive {
       archiveEdition.Metadata,
       this.metadata
     ) as ArchiveEditionsMetadata;
-    const zipPath = await this.packUp();
+    /**
+     * Uses the zip the packing phase produced rather than packing again. This
+     * used to re-pack every archive from scratch — `zipDir` deletes its staging
+     * directory, so the second pass redid every copy, every rewrite, every
+     * `sharp` preview render and every SRI hash.
+     */
+    const zipPath = this.zipPath ?? (await this.packUp());
     const zipBuffer = fs.readFileSync(zipPath);
 
     const hasBeenUploaded = PKG.archive(this.id).uploaded;

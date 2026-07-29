@@ -2,7 +2,6 @@ import { describe, it, expect, afterEach, vi, type Mock } from 'vitest';
 import { setProject } from '../../../__test__/project';
 import path from 'path';
 import fs from 'fs';
-import crypto from 'crypto';
 import { Interactive } from './interactive';
 import { Pack } from '../..';
 import dedent from 'dedent';
@@ -108,11 +107,29 @@ describe('Interactive edition', async () => {
     expect(
       fs.existsSync('graphics-pack/media-en-page/interactive/index.html')
     ).toBe(true);
+    /**
+     * The archive carries its own copy of the app's assets — the whole point of
+     * self-containment. This assertion was `false` when every embed referenced
+     * the public archive's copy instead, which meant re-uploading the public
+     * archive broke every embed pointing at its old asset hashes.
+     *
+     * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+     */
     expect(
       fs.existsSync(
         'graphics-pack/media-en-page/interactive/cdn/scripts/app.js'
       )
-    ).toBe(false);
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        'graphics-pack/media-en-page/interactive/cdn/styles/main.css'
+      )
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        'graphics-pack/media-en-page/interactive/cdn/images/my-image.jpg'
+      )
+    ).toBe(true);
     expect(
       fs.existsSync('graphics-pack/media-en-page/interactive/_gfxpreview.png')
     ).toBe(true);
@@ -156,45 +173,11 @@ describe('Interactive edition', async () => {
       }
     `);
 
-    // Verify SRI attributes were added to index.html
-    const indexHtml = fs.readFileSync(
-      'graphics-pack/media-en-page/interactive/index.html',
-      'utf8'
-    );
-
-    // Should have integrity attributes on all three resources
-    const integrityMatches = indexHtml.match(/integrity="sha384-/g);
-    expect(integrityMatches).toHaveLength(3);
-
-    // Verify each resource has the correct hash
-    // Calculate expected hashes
-    const appJsContent = "console.log('app');";
-    const appJsHash = `sha384-${crypto
-      .createHash('sha384')
-      .update(appJsContent)
-      .digest('base64')}`;
-
-    const chunkJsContent = 'export const chunk = true;';
-    const chunkJsHash = `sha384-${crypto
-      .createHash('sha384')
-      .update(chunkJsContent)
-      .digest('base64')}`;
-
-    const cssContent = 'body { margin: 0; }';
-    const cssHash = `sha384-${crypto
-      .createHash('sha384')
-      .update(cssContent)
-      .digest('base64')}`;
-
-    // Check that the hashes are present in the HTML
-    expect(indexHtml).toContain(`integrity="${appJsHash}"`);
-    expect(indexHtml).toContain(`integrity="${chunkJsHash}"`);
-    expect(indexHtml).toContain(`integrity="${cssHash}"`);
-
-    // Verify crossorigin attributes were added
-    expect(indexHtml).toContain('crossorigin="anonymous"');
-    const crossoriginMatches = indexHtml.match(/crossorigin="anonymous"/g);
-    expect(crossoriginMatches).toHaveLength(3);
+    /**
+     * SRI is applied when the *archive* is packed, not here: it hashes asset
+     * contents, and each archive's assets get rewritten to its own URL first.
+     * See src/pack/archive/packUp.test.ts.
+     */
   });
 
   it('getURL', async () => {
