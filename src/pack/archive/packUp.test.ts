@@ -11,6 +11,7 @@ import { Pack } from '..';
 import { Interactive } from '../edition/types/interactive';
 import { PLACEHOLDER_BASE } from '../../constants/rewrite';
 import { context } from '../../context';
+import { deleteZeroLengthFiles } from '../../build/clean';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** A real image, because the preview-image step runs it through sharp. */
@@ -259,5 +260,29 @@ describe('Archive.packUp', () => {
     } finally {
       context.config.build.assetsDir = original;
     }
+  });
+
+  it('packs when the build deleted an empty file the page still references', async () => {
+    // The build strips empty files because the graphics server rejects them,
+    // which can leave a page referencing one. That's a harmless 404 that
+    // predates packing, and it must not fail the upload.
+    setProject({
+      'dist/embeds/en/map/index.html': dedent`<html><head>
+        <link rel="canonical" href="${BASE}/embeds/en/map/" />
+        <link rel="stylesheet" href="${BASE}/cdn/empty.css">
+        <script src="${BASE}/cdn/scripts/app.js"></script>
+        <meta property="og:image" content="${BASE}/cdn/images/my-image.jpg" />
+        </head></html>`,
+      'dist/cdn/scripts/app.js': `fetch("${BASE}/cdn/data.json")`,
+      'dist/cdn/empty.css': '',
+      'dist/cdn/images/my-image.jpg': IMAGE,
+      'package.json': pkg({ 'media-en-map': { url: MAP_URL } }),
+    });
+    deleteZeroLengthFiles('dist');
+
+    const entries = await listZip(await mapArchive().packUp());
+
+    expect(entries).toContain('media-en-map/interactive/cdn/scripts/app.js');
+    expect(entries).not.toContain('media-en-map/interactive/cdn/empty.css');
   });
 });

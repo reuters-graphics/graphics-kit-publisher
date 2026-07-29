@@ -194,7 +194,11 @@ export class Archive {
      * can't tell: pointing a reference at this archive's URL succeeds whether or
      * not the file was copied in.
      */
-    assertReferencedFilesExist(path.join(archiveDir, edition.type), archiveUrl);
+    assertReferencedFilesExist(
+      path.join(archiveDir, edition.type),
+      archiveUrl,
+      buildRoot
+    );
 
     /**
      * SRI last: it hashes the asset files, so it has to run after their contents

@@ -231,6 +231,7 @@ describe('assertNoResidualTokens', () => {
 
 describe('assertReferencedFilesExist', () => {
   const editionDir = () => path.join(projectDir, 'archive');
+  const buildRoot = () => path.join(projectDir, 'dist');
 
   it('passes when the archive contains what its page asks for', () => {
     setProject({
@@ -239,7 +240,7 @@ describe('assertReferencedFilesExist', () => {
     });
 
     expect(() =>
-      assertReferencedFilesExist(editionDir(), ARCHIVE_URL)
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL, buildRoot())
     ).not.toThrow();
   });
 
@@ -252,11 +253,14 @@ describe('assertReferencedFilesExist', () => {
         <script src="${ARCHIVE_URL}/static-assets/app.js"></script>
         <link rel="stylesheet" href="${ARCHIVE_URL}/static-assets/main.css">
         </head></html>`,
+      // The build has them; the archive doesn't. That's the bug.
+      'dist/static-assets/app.js': 'console.log(1)',
+      'dist/static-assets/main.css': 'body{}',
     });
 
     let thrown: Error | undefined;
     try {
-      assertReferencedFilesExist(editionDir(), ARCHIVE_URL);
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL, buildRoot());
     } catch (error) {
       thrown = error as Error;
     }
@@ -278,7 +282,7 @@ describe('assertReferencedFilesExist', () => {
     });
 
     expect(() =>
-      assertReferencedFilesExist(editionDir(), ARCHIVE_URL)
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL, buildRoot())
     ).not.toThrow();
   });
 
@@ -289,7 +293,7 @@ describe('assertReferencedFilesExist', () => {
     });
 
     expect(() =>
-      assertReferencedFilesExist(editionDir(), ARCHIVE_URL)
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL, buildRoot())
     ).not.toThrow();
   });
 
@@ -302,7 +306,42 @@ describe('assertReferencedFilesExist', () => {
     });
 
     expect(() =>
-      assertReferencedFilesExist(editionDir(), ARCHIVE_URL)
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL, buildRoot())
+    ).not.toThrow();
+  });
+
+  it('tolerates a reference the build never produced', () => {
+    // Vite occasionally emits empty files, which the graphics server rejects, so
+    // the build deletes them — leaving a page that still references one. That's
+    // a harmless 404 and predates packing, so it must not fail an upload.
+    setProject({
+      'archive/index.html': `<html><head>
+        <link rel="stylesheet" href="${ARCHIVE_URL}/cdn/empty.css">
+        <script src="${ARCHIVE_URL}/cdn/app.js"></script>
+        </head></html>`,
+      'archive/cdn/app.js': 'console.log(1)',
+      'dist/cdn/app.js': 'console.log(1)',
+      // No dist/cdn/empty.css: deleted for being empty before packing.
+    });
+
+    expect(() =>
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL, buildRoot())
+    ).not.toThrow();
+  });
+
+  it('ignores same-host references outside this archive', () => {
+    // "Another CDN" isn't always another host: an asset served from elsewhere on
+    // reuters.com shares the origin but not the archive's path.
+    setProject({
+      'archive/index.html': `<html><head>
+        <script src="https://www.reuters.com/graphics/other-project/cdn/app.js"></script>
+        <script src="//cdn.example.com/protocol-relative.js"></script>
+        <img src="https://www.reuters.com/pf/resources/logo.png" />
+        </head></html>`,
+    });
+
+    expect(() =>
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL, buildRoot())
     ).not.toThrow();
   });
 });

@@ -181,12 +181,20 @@ export const rewriteDir = (
  * than a file, or a URL built at runtime from fragments that can't be resolved
  * here.
  *
+ * A reference also has to exist in the build output to count as missing from the
+ * archive. Anything absent from both was already dangling before packing began —
+ * most often a file the build deleted for being empty, which the graphics server
+ * rejects, leaving a harmless 404 in a page that still references it. Failing an
+ * upload over that would be worse than the 404.
+ *
  * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
  */
 export const assertReferencedFilesExist = (
   /** The edition directory the archive URL serves, i.e. where its pages sit. */
   editionDir: string,
-  archiveUrl: string
+  archiveUrl: string,
+  /** The build output, to tell "we failed to copy it" from "it never existed". */
+  buildRoot: string
 ) => {
   const base = archiveUrl.replace(/\/$/, '');
   const pattern = new RegExp(
@@ -204,6 +212,8 @@ export const assertReferencedFilesExist = (
       // Archive URLs are absolute, so they resolve from the edition root
       // regardless of which page holds the reference.
       if (fs.existsSync(path.join(editionDir, relative))) continue;
+      // Never built, or deliberately removed from the build: not ours to fix.
+      if (!fs.existsSync(path.join(buildRoot, relative))) continue;
       missing.set(relative, path.relative(editionDir, file));
     }
   }
