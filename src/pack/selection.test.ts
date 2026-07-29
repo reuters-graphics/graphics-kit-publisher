@@ -16,6 +16,29 @@ vi.mock('../prompts/groupMultiselect', () => ({
 }));
 import { groupMultiselect } from '../prompts/groupMultiselect';
 
+/**
+ * Control the CI check rather than the environment it reads. Unsetting `CI`
+ * isn't enough — GitHub Actions sets several variables that mark a CI
+ * environment, so these tests took the CI path there and never reached the
+ * prompt.
+ */
+vi.mock('@reuters-graphics/graphics-bin', async () => {
+  const actual = await vi.importActual<
+    typeof import('@reuters-graphics/graphics-bin')
+  >('@reuters-graphics/graphics-bin');
+  return {
+    ...actual,
+    utils: {
+      ...actual.utils,
+      environment: {
+        ...actual.utils.environment,
+        isCiEnvironment: vi.fn(() => false),
+      },
+    },
+  };
+});
+import { utils } from '@reuters-graphics/graphics-bin';
+
 const build = {
   'dist/index.html': '<html></html>',
   'dist/embeds/en/map/index.html': '<html></html>',
@@ -34,7 +57,7 @@ const discovered = () => {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  delete process.env.CI;
+  vi.mocked(utils.environment.isCiEnvironment).mockReturnValue(false);
   setProject({ ...build, 'package.json': '{}' });
 });
 
@@ -115,7 +138,7 @@ describe('selectArchives', () => {
   });
 
   it('uploads everything in CI, as it always has', async () => {
-    process.env.CI = 'true';
+    vi.mocked(utils.environment.isCiEnvironment).mockReturnValue(true);
     const pack = discovered();
 
     const selected = await selectArchives({ archives: pack.archives });

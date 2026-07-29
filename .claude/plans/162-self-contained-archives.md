@@ -18,7 +18,7 @@ Baseline: `main` @ 60da504 (after #163; #164 adds the temp-project test harness 
 3. **User-selected uploads.** `upload --archives …` or an interactive multiselect; skipping is safe
    because of (2).
 4. **All prompting front-loaded** (new in this plan, not in the issue). One interactive phase; after
-   it, the run is unattended. Today a brand-new embed's title/description prompt fires *in the middle*
+   it, the run is unattended. Today a brand-new embed's title/description prompt fires _in the middle_
    of a serial upload loop, minutes in — `src/pack/archive/index.ts:48-50` inside the loop at
    `src/pack/index.ts:111-113`.
 
@@ -32,17 +32,17 @@ exception (D6).
 
 `upload` becomes seven phases. Only Phase 3 is interactive.
 
-| Phase | Name | Interactive | Server | What happens |
-|---|---|---|---|---|
-| 0 | Preflight | first upload only² | first upload only² | `precheck()`; shape-check credentials (no server call — D6); `ensurePackId()` then `separateAssets.setUrl()` (D4) |
-| 1 | Build | no | no | **One** production build against the placeholder base |
-| 2 | Discover | no | no | `Finder` over the placeholder output → archives + editions; `logFound()` |
-| 3 | **Decide & collect** | **yes** | no | (a) archive selection → (b) pack metadata → (c) per-archive metadata for *selected* archives → (d) validate everything → (e) summary (the selection prompt in (a) is the decision point; no separate confirm) |
-| 4 | Reserve | no¹ | write | Create/update the pack; dummy-zip upload per selected archive lacking a URL; persist URLs |
-| 5 | Assemble | no | no | Per selected archive: copy page (hoist) + copy `cdn/` → rewrite → self-verify → SRI → preview image/manifest → zip |
-| 6 | Upload & report | no | write | Serial upload of selected archives; separate assets; report uploaded / skipped / URLs |
+| Phase | Name                 | Interactive        | Server             | What happens                                                                                                                                                                                                  |
+| ----- | -------------------- | ------------------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0     | Preflight            | first upload only² | first upload only² | `precheck()`; shape-check credentials (no server call — D6); `ensurePackId()` then `separateAssets.setUrl()` (D4)                                                                                             |
+| 1     | Build                | no                 | no                 | **One** production build against the placeholder base                                                                                                                                                         |
+| 2     | Discover             | no                 | no                 | `Finder` over the placeholder output → archives + editions; `logFound()`                                                                                                                                      |
+| 3     | **Decide & collect** | **yes**            | no                 | (a) archive selection → (b) pack metadata → (c) per-archive metadata for _selected_ archives → (d) validate everything → (e) summary (the selection prompt in (a) is the decision point; no separate confirm) |
+| 4     | Reserve              | no¹                | write              | Create/update the pack; dummy-zip upload per selected archive lacking a URL; persist URLs                                                                                                                     |
+| 5     | Assemble             | no                 | no                 | Per selected archive: copy page (hoist) + copy `cdn/` → rewrite → self-verify → SRI → preview image/manifest → zip                                                                                            |
+| 6     | Upload & report      | no                 | write              | Serial upload of selected archives; separate assets; report uploaded / skipped / URLs                                                                                                                         |
 
-¹ "Not interactive" means *we* don't prompt. The token paste prompt (`src/server/token.ts:101`) can
+¹ "Not interactive" means _we_ don't prompt. The token paste prompt (`src/server/token.ts:101`) can
 still appear at any server call, in any phase, and that's fine — see D6.
 
 ² `ensurePackId()` is a no-op whenever `reuters.graphic.pack` is already cached, i.e. on every upload
@@ -53,7 +53,7 @@ Ordering notes that fall out of the current code:
 
 - **Build before prompting fixes a latent bug.** `pack.title`'s default pointer is
   `dist/index.html?title` (`src/config/index.ts:43-60`), but today it's read at
-  `src/pack/index.ts:102` — *before* the build, and every build rimrafs `dist/`
+  `src/pack/index.ts:102` — _before_ the build, and every build rimrafs `dist/`
   (`src/build/clean.ts:7-10`). So it resolves against the previous run's output, or prompts. After the
   reorder it resolves against the fresh build, as intended.
 - **Selection precedes metadata collection.** Skipped archives need neither metadata nor a reserved
@@ -91,9 +91,9 @@ the var and bakes real URLs silently (found while verifying M2). Hence M4's "ass
 something". Always-placeholder has the mirror-image bug: an older CLI wouldn't rewrite and would ship
 placeholders. Neither approach avoids needing that assertion.
 
-**D2 — The placeholder must be distinctive in its *path*, not just its host.** Downstream uses
+**D2 — The placeholder must be distinctive in its _path_, not just its host.** Downstream uses
 `rootRelative: true` for `paths.base` (`bluprint_graphics-kit/svelte.config.js:43-48`), and
-`getRootRelativePath` strips `protocol//host` (`src/basePaths.ts:7-11`). So the origin is *gone* from
+`getRootRelativePath` strips `protocol//host` (`src/basePaths.ts:7-11`). So the origin is _gone_ from
 much of the output and the sentinel must survive in the path. It must also be a valid URL and satisfy
 `src/validators/archive.ts:3-14`, which requires hostname `www.reuters.com`. Proposed:
 `https://www.reuters.com/graphics/__GKP_BASE__/` — valid, right host, contiguous, unique, and its
@@ -101,14 +101,14 @@ root-relative form `/graphics/__GKP_BASE__/` is equally distinctive.
 
 **D3 — Four mappings, applied longest-match-first.** Validated by the M0 spike:
 
-| # | From | To |
-|---|---|---|
-| 1 | `{placeholder-abs}/embeds/{locale}/{slug}` | `{archive-url}` — the page path collapses to the archive root |
-| 2 | `{placeholder-abs}` | `{archive-url}` |
-| 3 | `{placeholder-rel}/embeds/{locale}/{slug}` | `{archive-path}` |
-| 4 | `{placeholder-rel}` | `{archive-path}` |
+| #   | From                                       | To                                                            |
+| --- | ------------------------------------------ | ------------------------------------------------------------- |
+| 1   | `{placeholder-abs}/embeds/{locale}/{slug}` | `{archive-url}` — the page path collapses to the archive root |
+| 2   | `{placeholder-abs}`                        | `{archive-url}`                                               |
+| 3   | `{placeholder-rel}/embeds/{locale}/{slug}` | `{archive-path}`                                              |
+| 4   | `{placeholder-rel}`                        | `{archive-path}`                                              |
 
-**Longest-match-first is load-bearing, not tidiness:** the absolute form *contains* the root-relative
+**Longest-match-first is load-bearing, not tidiness:** the absolute form _contains_ the root-relative
 form, so replacing the short one first corrupts the long one.
 
 The issue lists a separate `{placeholder}/cdn` → `{archive-url}/cdn` mapping; the spike showed it's
@@ -124,7 +124,7 @@ that are gitignored and therefore absent from the `app.zip` shipped with embeds.
 such bundle **per project**, keyed by pack ID (`src/separateAssets/index.ts:72-77`), and it contains no
 built output. Per-archive variation would be meaningless, so it stays out of the rewrite.
 
-That leaves the ordering constraint it creates: `setUrl()` needs `PKG.pack.id` and runs *before* the
+That leaves the ordering constraint it creates: `setUrl()` needs `PKG.pack.id` and runs _before_ the
 build today (`src/pack/index.ts:105`) so the app can bake the link in — and the downstream kit types it
 for app use (`bluprint_graphics-kit/src/global.d.ts:34`), so some projects do read it at build time.
 
@@ -137,7 +137,7 @@ cached in `package.json` (`reuters.graphic.pack`, written at `src/pack/index.ts:
 - **No pack ID yet** (first upload only): prompt pack metadata and create the pack, then build. The user
   sees two interactive moments on the run where they're setting the project up from scratch anyway.
 
-Pack *update* (as opposed to creation) stays in Phase 4 with the rest of the server writes.
+Pack _update_ (as opposed to creation) stays in Phase 4 with the rest of the server writes.
 
 This generalises: any server-derived value an app bakes at build time must exist before the build. The
 placeholder + rewrite covers every such value that varies per archive; the pack ID is the only one that
@@ -150,24 +150,24 @@ there rather than at Phase 4. That's fine either way (D6).
 copying (`src/pack/edition/types/interactive.ts:129-139`), which cannot be per-archive-correct once each
 archive's copy has different bytes. It must run on `<staging>/<archive-id>/interactive/**` after the
 rewrite and before `zipDir`. Its "resource under canonical path" branch (`src/utils/sri.ts:162-169`)
-resolves cleanly post-hoist, so this gets *simpler*. Also: stop swallowing its errors silently, or at
+resolves cleanly post-hoist, so this gets _simpler_. Also: stop swallowing its errors silently, or at
 least never route the zero-residual assertion through that swallow.
 
 **D6 — Token handling is out of scope. Leave it exactly as it is.**
 
 No warm-up step, no pre-flight token call, no change to caching. If a server call needs a token and no
-valid one exists, prompting for one *at that point* is acceptable — whether that lands before, during or
+valid one exists, prompting for one _at that point_ is acceptable — whether that lands before, during or
 after the interactive phase.
 
 Context so a reader doesn't mistake this for an oversight: the paste prompt
-(`src/server/token.ts:92-120`) is a *fallback*, not the normal path. `getToken()` POSTs credentials
+(`src/server/token.ts:92-120`) is a _fallback_, not the normal path. `getToken()` POSTs credentials
 (`:24-48`) and only prompts on a 401 or when the JWT lacks `GFX_` rights (`:152-168`), so users with
 adequate credentials never see it. Our 15-minute cache covers **only** the pasted token (`:50-66`,
 written at `:117`), and `server-client` calls `_getToken()` per request
 (`node_modules/@reuters-graphics/server-client/dist/index.js:1270` et al), so for the
 lacks-`GFX_`-rights cohort a long upload can prompt more than once. Accepted.
 
-What Phase 0 does keep is the *non-interactive* credentials check: `getServerCredentials()`
+What Phase 0 does keep is the _non-interactive_ credentials check: `getServerCredentials()`
 (`src/server/credentials.ts:37-61`) throws `UserConfigError`/`ServerCredentialsError` on missing or
 malformed credentials without touching the network, so that class of failure still surfaces before the
 build.
@@ -189,7 +189,7 @@ Phase 3(d) validates and throws with a clear message.
   self-containment allows.
 
 Consequence, narrowed by the M0 spike: because we copy the whole `cdn/`, a media archive contains the
-full client route manifest *and every route node chunk* — the spike found `"/embeds/en/page"` in
+full client route manifest _and every route node chunk_ — the spike found `"/embeds/en/page"` in
 `entry/app.*.js` and all six `nodes/*.js` present inside a `media-en-map` archive. So a **client-side**
 navigation to a sibling route renders fine; SvelteKit doesn't need the sibling's HTML for an SPA
 transition. Only a **hard load** of `{archive-url}/embeds/en/page` 404s.
@@ -220,13 +220,13 @@ URL, then served it over HTTP and audited every reference. Script kept at
 
 What it established:
 
-| Question | Answer |
-|---|---|
-| Is the sentinel ever split or encoded in real output? | No — 94 full-token matches, 94 bare `GKP`, zero percent-encoded or escaped variants |
-| Which forms occur? | Absolute (85) and root-relative (94 incl. the absolutes), i.e. **9 root-relative-only** — rewriting only the absolute form would miss them |
-| Does one ordered pass replace everything? | Yes — 27 occurrences in this archive, **zero residuals**, no `sveltekit-prerender` host |
-| Do all references resolve inside the archive? | Yes — 17/17. The only non-200 was `{archive}/cdn` with no path, which appears solely as SvelteKit's `assets:` base constant and is never fetched |
-| Are sibling route chunks present? | Yes, all of them — see D8 |
+| Question                                              | Answer                                                                                                                                           |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Is the sentinel ever split or encoded in real output? | No — 94 full-token matches, 94 bare `GKP`, zero percent-encoded or escaped variants                                                              |
+| Which forms occur?                                    | Absolute (85) and root-relative (94 incl. the absolutes), i.e. **9 root-relative-only** — rewriting only the absolute form would miss them       |
+| Does one ordered pass replace everything?             | Yes — 27 occurrences in this archive, **zero residuals**, no `sveltekit-prerender` host                                                          |
+| Do all references resolve inside the archive?         | Yes — 17/17. The only non-200 was `{archive}/cdn` with no path, which appears solely as SvelteKit's `assets:` base constant and is never fetched |
+| Are sibling route chunks present?                     | Yes, all of them — see D8                                                                                                                        |
 
 Two plan corrections came out of it: the `{placeholder}/cdn` mapping is **redundant** (rewriting the bare
 base already yields `{archive}/cdn/…` because `cdn/` sits at the archive root), and D8's cost is narrower
@@ -270,15 +270,15 @@ Pure, dependency-light, heavily tested. No flow changes; nothing calls it yet.
   in `test-url-rewrite-scratch` via a `pkg.pr.new` build, not against Sphinx.
 
   **This can only be verified with the new library installed in the app.** `getBasePath` is called from
-  the app's own `svelte.config.js`/`vite.config.ts`, so the placeholder only appears if *that* copy of the
+  the app's own `svelte.config.js`/`vite.config.ts`, so the placeholder only appears if _that_ copy of the
   publisher implements it. Confirmed the hard way: building the scratch project with the env var set but
   the published 3.4.7 installed baked the real `homepage` in all 94 places and no placeholder at all.
 
-- **Trap this exposes, to handle in M4: an *absent* placeholder is as broken as a residual one, and
+- **Trap this exposes, to handle in M4: an _absent_ placeholder is as broken as a residual one, and
   quieter.** If the build didn't pick up the sentinel — version skew between the CLI and the installed
   library, or an app computing its own base — the output contains real URLs, `assertNoResidualTokens`
   finds nothing to complain about, and every archive silently ships pointing at the public URL, i.e.
-  today's hub-and-spoke with none of the safety. So M4 must also assert the rewrite *did* something:
+  today's hub-and-spoke with none of the safety. So M4 must also assert the rewrite _did_ something:
   `rewriteDir` returns per-mapping counts, so fail when `report.total === 0` for an archive whose page
   should reference the base.
 
@@ -298,12 +298,12 @@ The heart of the user-facing change; no rewriting yet.
 - Add Phase 0 preflight (credentials shape-check + `ensurePackId`) and Phase 3(d) validation (D7). Token
   handling is untouched (D6).
 - Add the Phase 3(e) summary: archives, and which are new vs. updates. **No confirm prompt in M3** —
-  M5's selection multiselect *is* the decision point, so adding a confirm here would be friction we'd
+  M5's selection multiselect _is_ the decision point, so adding a confirm here would be friction we'd
   immediately take back out. Today's `upload` has no gate either, so this changes nothing for anyone.
 - Fix `edition.*` pointer resolution while we're here: `index.html?title` currently resolves against
   `process.cwd()`, not the edition root (`src/pack/archive/metadata.ts:22`, `:38` → `utils.fs.get`),
   contradicting `llms/pack-metadata.md:240`. Front-loading makes the wrong behaviour more visible.
-- **Exit:** a returning user with a new embed sees *all* prompts before any upload starts; CI path
+- **Exit:** a returning user with a new embed sees _all_ prompts before any upload starts; CI path
   unchanged; `git status` clean after tests.
 
 ### M4 — Self-contained assembly
@@ -320,7 +320,7 @@ The heart of the user-facing change; no rewriting yet.
   (`src/utils/zipDir.ts:7-31`). Per-archive `cdn/` copies multiply archive size, so set a compression
   level and consider streaming to disk.
 - Per D8, the public archive's contents don't change and the `archive.type` branch in `packUp` stays.
-- Update the tests that currently *assert* hub-and-spoke:
+- Update the tests that currently _assert_ hub-and-spoke:
   `src/pack/edition/types/interactive.test.ts:110-116` asserts a media archive has **no**
   `interactive/cdn/scripts/app.js` — that assertion inverts.
 - **Exit:** the assembled archive is byte-inspectable and contains its own `cdn/`; zero residual
@@ -390,7 +390,7 @@ change reverses — update or retire it.
 
 **New doc requirement: state that an embed is a single page.** No internal routing, no links to other
 pages in the project. Only the embed's own HTML is hoisted into its archive, so a link to a sibling page
-has no HTML to land on. It will *appear* to work in testing because the whole `cdn/` ships with every
+has no HTML to land on. It will _appear_ to work in testing because the whole `cdn/` ships with every
 archive and SvelteKit routes client-side — but a hard load, refresh or shared link 404s. Say this
 positively (an embed is one page) rather than as a list of caveats, and put it where authors are building
 embeds: `docs/content/docs/page-builders.mdx` and `docs/content/docs/sphinx.mdx`, plus
@@ -401,7 +401,7 @@ mergeable until then.
 
 ### M7 — End-to-end confirmation against the real graphics server
 
-The acceptance gate. Deliberately the *only* time this work touches Sphinx: no scratch packs are created
+The acceptance gate. Deliberately the _only_ time this work touches Sphinx: no scratch packs are created
 during development, on purpose.
 
 - Install the `pkg.pr.new` preview build of the finished branch into a real graphics-kit project.
@@ -419,7 +419,7 @@ during development, on purpose.
 - **Unit** — the #164 harness gives every test file a real temp project, which suits this work: rewrite
   fixtures, staged-archive assembly and zip contents are all real-filesystem assertions. Run on
   20/22/24 (`/usr/local/n/versions/node/{20.20.2,22.22.3,24.16.0}`).
-- **Downstream** — `pkg.pr.new.yaml` triggers on bare `on: push`, so *any* branch push publishes an
+- **Downstream** — `pkg.pr.new.yaml` triggers on bare `on: push`, so _any_ branch push publishes an
   installable preview. Test each milestone in a real graphics-kit project before opening the PR.
 - **Server** — none during development. No scratch packs; the real server is touched once, at M7.
 - **Local stand-in for serving** — the M0 audit: serve the assembled archive over plain HTTP at a path
@@ -469,6 +469,6 @@ dummy upload writes at `src/pack/edition/types/interactive.ts:115-117`. Build 1 
 parts before URLs exist; build 2 to bake them in. On a re-upload, `getUrl()` short-circuits, nothing
 changes between the builds, and **build 2 is pure waste**.
 
-Hub-and-spoke, precisely: every page's base path is the *public* archive's URL, so embed HTML references
+Hub-and-spoke, precisely: every page's base path is the _public_ archive's URL, so embed HTML references
 `{homepage}/cdn/...`, and a media archive's `packUp` copies only its own page directory
 (`cdn/` is outside it). Asserted at `src/pack/edition/types/interactive.test.ts:110-116`.
