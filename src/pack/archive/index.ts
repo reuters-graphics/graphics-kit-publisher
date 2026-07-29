@@ -11,6 +11,7 @@ import { zipDir } from '../../utils/zipDir';
 import { BuildError, PackageMetadataError } from '../../exceptions/errors';
 import {
   assertNoResidualTokens,
+  assertReferencedFilesExist,
   deriveMappings,
   rewriteDir,
 } from '../../rewrite';
@@ -187,6 +188,13 @@ export class Archive {
       );
 
     assertNoResidualTokens(archiveDir);
+
+    /**
+     * And that the archive actually contains what its pages ask for. The rewrite
+     * can't tell: pointing a reference at this archive's URL succeeds whether or
+     * not the file was copied in.
+     */
+    assertReferencedFilesExist(path.join(archiveDir, edition.type), archiveUrl);
 
     /**
      * SRI last: it hashes the asset files, so it has to run after their contents

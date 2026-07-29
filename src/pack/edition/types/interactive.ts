@@ -14,7 +14,6 @@ import { serverSpinner } from '../../../server/spinner';
 import picocolors from 'picocolors';
 import urljoin from 'url-join';
 import { PKG } from '../../../pkg';
-import { ASSETS_DIR } from '../../../constants/build';
 
 export class Interactive extends Edition {
   public static type = 'interactive' as const;
@@ -149,15 +148,18 @@ export class Interactive extends Edition {
     if (this.archive.type === 'media') await this.makeManifest(archiveDir);
   }
 
-  /** Copy the whole assets directory into this archive. */
+  /**
+   * Copy the whole assets directory into this archive.
+   *
+   * Silently does nothing when the directory isn't there, because a project
+   * needn't have one. `Archive.packUp` is what notices the case that matters —
+   * a page referencing assets that didn't make it into the archive.
+   */
   private copyAssets(archiveDir: string) {
-    const assetsDir = path.join(
-      context.cwd,
-      context.config.build.outDir,
-      ASSETS_DIR
-    );
-    if (!fs.existsSync(assetsDir)) return;
-    fs.cpSync(assetsDir, path.join(archiveDir, this.type, ASSETS_DIR), {
+    const { assetsDir } = context.config.build;
+    const from = path.join(context.cwd, context.config.build.outDir, assetsDir);
+    if (!fs.existsSync(from)) return;
+    fs.cpSync(from, path.join(archiveDir, this.type, assetsDir), {
       recursive: true,
     });
   }

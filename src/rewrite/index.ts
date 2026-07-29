@@ -165,6 +165,66 @@ export const rewriteDir = (
 };
 
 /**
+ * Throw if a page in `dir` references a file at this archive's own URL that
+ * isn't in the archive.
+ *
+ * The point of a self-contained archive is that it serves itself, and the
+ * rewrite alone can't tell you whether it does: rewriting
+ * `{placeholder}/cdn/app.js` to `{archive}/cdn/app.js` succeeds whether or not
+ * that file was ever copied in. So a project whose assets directory isn't where
+ * the publisher looked for it would pack cleanly, pass every other check, and
+ * 404 its own JavaScript in production.
+ *
+ * Only HTML is scanned, and only references that look like files — a path whose
+ * last segment has an extension. Everything else is either not a request (the
+ * assets base is baked in as a bare `{archive}/cdn`), a link to a page rather
+ * than a file, or a URL built at runtime from fragments that can't be resolved
+ * here.
+ *
+ * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+ */
+export const assertReferencedFilesExist = (
+  /** The edition directory the archive URL serves, i.e. where its pages sit. */
+  editionDir: string,
+  archiveUrl: string
+) => {
+  const base = archiveUrl.replace(/\/$/, '');
+  const pattern = new RegExp(
+    `(?:src|href|content)="(${base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/[^"]+)"`,
+    'g'
+  );
+  const missing = new Map<string, string>();
+
+  for (const file of walkFiles(editionDir)) {
+    if (!['.html', '.htm'].includes(path.extname(file).toLowerCase())) continue;
+    for (const [, url] of fs.readFileSync(file, 'utf8').matchAll(pattern)) {
+      const relative = url.slice(base.length + 1).split(/[?#]/)[0];
+      // Not a file request: a directory, a link to a page, or the assets base.
+      if (!path.extname(relative)) continue;
+      // Archive URLs are absolute, so they resolve from the edition root
+      // regardless of which page holds the reference.
+      if (fs.existsSync(path.join(editionDir, relative))) continue;
+      missing.set(relative, path.relative(editionDir, file));
+    }
+  }
+
+  if (missing.size === 0) return;
+
+  const list = [...missing]
+    .map(([relative, page]) => `  ${relative} (referenced by ${page})`)
+    .join('\n');
+
+  throw new BuildError(
+    `A packed archive references ${missing.size} file${missing.size === 1 ? '' : 's'} it doesn't contain:\n${list}`,
+    {
+      code: 'ARCHIVE_NOT_SELF_CONTAINED',
+      hint: "Each archive carries its own copy of the app's assets. If the project writes them somewhere other than `dist/cdn`, set `build.assetsDir` in publisher.config.ts to match.",
+      context: { editionDir, archiveUrl, missing: [...missing.keys()] },
+    }
+  );
+};
+
+/**
  * Throw if any un-rewritten URL token survives in `dir`.
  *
  * The rewrite is a string substitution over generated code, so this is the

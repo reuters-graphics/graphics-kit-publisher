@@ -4,7 +4,12 @@ import path from 'path';
 import dedent from 'dedent';
 
 import { projectDir, setProject } from '../__test__/project';
-import { assertNoResidualTokens, deriveMappings, rewriteDir } from '.';
+import {
+  assertNoResidualTokens,
+  assertReferencedFilesExist,
+  deriveMappings,
+  rewriteDir,
+} from '.';
 import { PLACEHOLDER_BASE, PLACEHOLDER_TOKEN } from '../constants/rewrite';
 
 const ARCHIVE_URL =
@@ -221,5 +226,83 @@ describe('assertNoResidualTokens', () => {
     });
 
     expect(() => assertNoResidualTokens(archiveDir())).not.toThrow();
+  });
+});
+
+describe('assertReferencedFilesExist', () => {
+  const editionDir = () => path.join(projectDir, 'archive');
+
+  it('passes when the archive contains what its page asks for', () => {
+    setProject({
+      'archive/index.html': `<script src="${ARCHIVE_URL}/cdn/app.js"></script>`,
+      'archive/cdn/app.js': 'console.log(1)',
+    });
+
+    expect(() =>
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL)
+    ).not.toThrow();
+  });
+
+  it("names files the archive references but doesn't contain", () => {
+    // The failure this exists for: a project whose assets aren't where the
+    // publisher looked, so nothing was copied. Rewriting succeeded, no
+    // placeholder survived, and the embed would 404 its own JavaScript.
+    setProject({
+      'archive/index.html': `<html><head>
+        <script src="${ARCHIVE_URL}/static-assets/app.js"></script>
+        <link rel="stylesheet" href="${ARCHIVE_URL}/static-assets/main.css">
+        </head></html>`,
+    });
+
+    let thrown: Error | undefined;
+    try {
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL);
+    } catch (error) {
+      thrown = error as Error;
+    }
+
+    expect(thrown?.message).toContain('static-assets/app.js');
+    expect(thrown?.message).toContain('static-assets/main.css');
+    expect(JSON.stringify(thrown)).toContain('ARCHIVE_NOT_SELF_CONTAINED');
+  });
+
+  it('ignores references that are not file requests', () => {
+    // SvelteKit bakes the assets base in as a bare directory URL, and pages
+    // link to other pages. Neither is a file, so neither is checked.
+    setProject({
+      'archive/index.html': `<html><head>
+        <link rel="canonical" href="${ARCHIVE_URL}/" />
+        <script>{ assets: "${ARCHIVE_URL}/cdn" }</script>
+        <a href="${ARCHIVE_URL}/embeds/en/map/">map</a>
+        </head></html>`,
+    });
+
+    expect(() =>
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL)
+    ).not.toThrow();
+  });
+
+  it('ignores files hosted somewhere else', () => {
+    setProject({
+      'archive/index.html':
+        '<script src="https://cdn.example.com/third-party.js"></script>',
+    });
+
+    expect(() =>
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL)
+    ).not.toThrow();
+  });
+
+  it('resolves from the edition root, not the page directory', () => {
+    // Archive URLs are absolute, so a nested page's reference to
+    // `{archive}/cdn/app.js` is the same file as the root page's.
+    setProject({
+      'archive/embeds/en/map/index.html': `<script src="${ARCHIVE_URL}/cdn/app.js"></script>`,
+      'archive/cdn/app.js': 'console.log(1)',
+    });
+
+    expect(() =>
+      assertReferencedFilesExist(editionDir(), ARCHIVE_URL)
+    ).not.toThrow();
   });
 });

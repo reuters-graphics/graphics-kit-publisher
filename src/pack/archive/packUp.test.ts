@@ -10,6 +10,7 @@ import { setProject } from '../../__test__/project';
 import { Pack } from '..';
 import { Interactive } from '../edition/types/interactive';
 import { PLACEHOLDER_BASE } from '../../constants/rewrite';
+import { context } from '../../context';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 /** A real image, because the preview-image step runs it through sharp. */
@@ -213,5 +214,50 @@ describe('Archive.packUp', () => {
 
     expect(html).toContain(`href="${PUBLIC_URL}/"`);
     expect(html).not.toContain('__GKP_BASE__');
+  });
+
+  it('refuses to pack an archive missing the assets its page references', async () => {
+    // A project whose assets aren't where the publisher looks for them. Every
+    // other check passes — the rewrite succeeds, no placeholder survives — so
+    // without this the archive would ship and 404 its own JavaScript.
+    setProject({
+      'dist/embeds/en/map/index.html': dedent`<html><head>
+        <link rel="canonical" href="${BASE}/embeds/en/map/" />
+        <script src="${BASE}/static-assets/app.js"></script>
+        <meta property="og:image" content="${BASE}/static-assets/my-image.jpg" />
+        </head></html>`,
+      'dist/static-assets/app.js': 'console.log(1)',
+      'dist/static-assets/my-image.jpg': IMAGE,
+      'package.json': pkg({ 'media-en-map': { url: MAP_URL } }),
+    });
+
+    await expect(mapArchive().packUp()).rejects.toThrowError(
+      'static-assets/app.js'
+    );
+  });
+
+  it('packs a renamed assets directory when the config says where it is', async () => {
+    const original = context.config.build.assetsDir;
+    context.config.build.assetsDir = 'static-assets';
+    try {
+      setProject({
+        'dist/embeds/en/map/index.html': dedent`<html><head>
+          <link rel="canonical" href="${BASE}/embeds/en/map/" />
+          <script src="${BASE}/static-assets/app.js"></script>
+          <meta property="og:image" content="${BASE}/static-assets/my-image.jpg" />
+          </head></html>`,
+        'dist/static-assets/app.js': `fetch("${BASE}/static-assets/data.json")`,
+        'dist/static-assets/my-image.jpg': IMAGE,
+        'package.json': pkg({ 'media-en-map': { url: MAP_URL } }),
+      });
+
+      const entries = await listZip(await mapArchive().packUp());
+
+      expect(entries).toContain(
+        'media-en-map/interactive/static-assets/app.js'
+      );
+    } finally {
+      context.config.build.assetsDir = original;
+    }
   });
 });

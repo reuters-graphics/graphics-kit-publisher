@@ -63,3 +63,32 @@ export default defineConfig({
   ```
 
 The directory your build system is configured to build your app to.
+
+## build.assetsDir
+
+- **Type:**
+  ```typescript
+  string;
+  ```
+- **Default:**
+  ```typescript
+  'cdn';
+  ```
+
+The directory inside [`outDir`](#buildoutdir) that your build system writes the app's assets to.
+
+Every [archive](/graphics-kit-publisher/sphinx/#archives) gets its own copy of this directory so it can serve itself, which is what lets you [upload one archive without touching the others](/graphics-kit-publisher/commands/#upload).
+
+You only need to set this if your project has renamed that directory. In the graphics kit it's `cdn`, set in `svelte.config.js` — as `adapter-static`'s `assets` option and in the path passed to `getBasePath`:
+
+```javascript
+// svelte.config.js
+kit: {
+  paths: {
+    assets: getBasePath(mode, 'cdn', { trailingSlash: false, rootRelative: false }),
+  },
+  adapter: adapter({ pages: 'dist', assets: 'dist/cdn' }),
+}
+```
+
+If those disagree with this setting, uploading fails rather than shipping an archive that's missing its own assets — the publisher checks that each archive contains every file its pages reference.
