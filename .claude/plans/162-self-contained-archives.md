@@ -73,6 +73,24 @@ downstream config changes" promise, `getBasePath('prod')` returns the placeholde
 sets a sentinel env var on the build it spawns. `src/build/index.ts:43-46` currently passes **no `env`**
 to `spawn` — that's the hook to add.
 
+**Why gated, rather than `prod` always meaning "placeholder":**
+
+1. **Other people run the build.** `app.zip` ships the project's source in every media-interactive
+   edition precisely so clients can customise and build it themselves, and `srcArchive` zips committed
+   files, so the `package.json` in that zip carries a real `homepage`. A client's `npm run build` must
+   keep producing real URLs — always-placeholder would hand them `__GKP_BASE__` with nothing to rewrite
+   it. Same for a developer inspecting production output, or CI that builds without uploading.
+2. **`getBasePath` is public API with a documented contract** (`src/basePaths.ts:48-96`): prod resolves to
+   the URL the publisher saved to `package.json`. Always-placeholder would quietly make `homepage` dead
+   for build purposes.
+3. **It puts the fact where it's known.** Only the publisher knows a build is about to be rewritten
+   per-archive; the app can't infer it and shouldn't have to.
+
+The cost is version skew — the app's own copy of the library answers the call, so an older one ignores
+the var and bakes real URLs silently (found while verifying M2). Hence M4's "assert the rewrite replaced
+something". Always-placeholder has the mirror-image bug: an older CLI wouldn't rewrite and would ship
+placeholders. Neither approach avoids needing that assertion.
+
 **D2 — The placeholder must be distinctive in its *path*, not just its host.** Downstream uses
 `rootRelative: true` for `paths.base` (`bluprint_graphics-kit/svelte.config.js:43-48`), and
 `getRootRelativePath` strips `protocol//host` (`src/basePaths.ts:7-11`). So the origin is *gone* from
