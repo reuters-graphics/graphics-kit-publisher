@@ -81,9 +81,23 @@ much of the output and the sentinel must survive in the path. It must also be a 
 `https://www.reuters.com/graphics/__GKP_BASE__/` — valid, right host, contiguous, unique, and its
 root-relative form `/graphics/__GKP_BASE__/` is equally distinctive.
 
-**D3 — Rewrite mappings are longest-match-first, and there are three.** Per the issue: page path →
-archive root, `{placeholder}/cdn` → `{archive-url}/cdn`, residual root-relative base → archive root.
-Add a third target: **the separate-assets URL** (D4).
+**D3 — Four mappings, applied longest-match-first.** Validated by the M0 spike:
+
+| # | From | To |
+|---|---|---|
+| 1 | `{placeholder-abs}/embeds/{locale}/{slug}` | `{archive-url}` — the page path collapses to the archive root |
+| 2 | `{placeholder-abs}` | `{archive-url}` |
+| 3 | `{placeholder-rel}/embeds/{locale}/{slug}` | `{archive-path}` |
+| 4 | `{placeholder-rel}` | `{archive-path}` |
+
+**Longest-match-first is load-bearing, not tidiness:** the absolute form *contains* the root-relative
+form, so replacing the short one first corrupts the long one.
+
+The issue lists a separate `{placeholder}/cdn` → `{archive-url}/cdn` mapping; the spike showed it's
+**redundant** — rule 2 already yields `{archive-url}/cdn/…` because `cdn/` sits at the archive root.
+Harmless to state explicitly, but it isn't a distinct case.
+
+The separate-assets URL is **not** rewritten — see D4.
 
 **D4 — Don't rewrite the separate-assets URL. Ensure a pack ID exists before the build instead.**
 
@@ -156,10 +170,12 @@ Phase 3(d) validates and throws with a clear message.
   pages, no dotcom page. This matches the issue's wording and keeps archives as small as
   self-containment allows.
 
-Consequence to accept: an embed's client-side router has no other pages inside its archive, so a
-route navigation *within* an embed can only resolve if it's a route the embed itself renders. Whole-`cdn`
-already prevents missing-*chunk* 404s (issue Risk #2); missing-*page* navigation is out of scope, and
-embeds don't do it today.
+Consequence to accept, narrowed by the M0 spike: because we copy the whole `cdn/`, a media archive
+contains the full client route manifest *and every route node chunk* — the spike found
+`"/embeds/en/page"` in `entry/app.*.js` and all six `nodes/*.js` present inside a `media-en-map`
+archive. So a **client-side** navigation to a sibling route renders fine; SvelteKit doesn't need the
+sibling's HTML for an SPA transition. Only a **hard load** of `{archive-url}/embeds/en/page` 404s, and
+nothing in an embed links there.
 
 Consequence for the code: assembly stays two paths (public = whole build, media = page + `cdn/`), so
 `Interactive.packUp` keeps its `archive.type` branch rather than becoming uniform.
@@ -168,19 +184,33 @@ Consequence for the code: assembly stays two paths (public = whole build, media 
 
 ## Milestones
 
-Each is a PR. M0 is disposable. M1–M5 are sequential; M6 rides along with whichever milestone changes
-the surface it documents.
+Each is a PR. M1–M5 are sequential; M6 rides along with whichever milestone changes the surface it
+documents. M7 is the acceptance gate for the whole issue.
 
-### M0 — Spike: prove a self-contained archive serves (throwaway, no library changes)
+### M0 — Spike: assemble and rewrite one archive locally ✅ done
 
-The issue's Risk #1 and the only genuinely unvalidated assumption. The appendix validated *rewriting*;
-it did not validate *serving* a rewritten, self-contained archive from the graphics server.
+Ran against a real graphics-kit build (`test-url-rewrite-scratch`, built with
+`homepage: "https://www.reuters.com/graphics/__GKP_BASE__/"`). Hand-assembled the `media-en-map`
+archive — map page hoisted to the archive root, whole `cdn/` copied — rewrote it to a stand-in archive
+URL, then served it over HTTP and audited every reference. Script kept at
+`/private/tmp/gkp-m0-spike/spike.mjs` as the seed for M1's implementation and fixtures.
 
-- Take a real graphics-kit build. Hand-assemble one embed archive: hoist the page, copy `dist/cdn/`,
-  rewrite the base to a URL you've reserved, zip.
-- Upload to a **scratch pack**, load the embed, confirm: assets 200, canonical correct, no console
-  404s, client-side navigation inside the embed doesn't request absent chunks.
-- **Exit:** it serves — or the design changes before any refactor. Delete the scratch pack after.
+What it established:
+
+| Question | Answer |
+|---|---|
+| Is the sentinel ever split or encoded in real output? | No — 94 full-token matches, 94 bare `GKP`, zero percent-encoded or escaped variants |
+| Which forms occur? | Absolute (85) and root-relative (94 incl. the absolutes), i.e. **9 root-relative-only** — rewriting only the absolute form would miss them |
+| Does one ordered pass replace everything? | Yes — 27 occurrences in this archive, **zero residuals**, no `sveltekit-prerender` host |
+| Do all references resolve inside the archive? | Yes — 17/17. The only non-200 was `{archive}/cdn` with no path, which appears solely as SvelteKit's `assets:` base constant and is never fetched |
+| Are sibling route chunks present? | Yes, all of them — see D8 |
+
+Two plan corrections came out of it: the `{placeholder}/cdn` mapping is **redundant** (rewriting the bare
+base already yields `{archive}/cdn/…` because `cdn/` sits at the archive root), and D8's cost is narrower
+than first written.
+
+**Deliberately not proven here:** that Sphinx serves the structure. No scratch packs were created. That
+question moves to M7 — a considered leap of faith, backed by the local validation above.
 
 ### M1 — The rewrite module (`src/rewrite/`)
 
@@ -191,9 +221,13 @@ Pure, dependency-light, heavily tested. No flow changes; nothing calls it yet.
   Binary files untouched.
 - `assertNoResidualPlaceholder(dir)` — fails loudly with file:line list. Also assert no
   `sveltekit-prerender` host (issue's belt-and-suspenders).
-- Handle percent-encoded forms of the placeholder (issue Risk #3).
+- Percent-encoded forms: the spike found **none** in real output, so don't build for them speculatively —
+  let `assertNoResidualPlaceholder` catch them if they ever appear (issue Risk #3).
 - **Tests** use the temp-project harness from #164 (`src/__test__/project.ts`): real files, real dirs.
-- **Exit:** `pnpm test` green on 20/22/24; module unused in production paths.
+  Seed fixtures from the shapes the spike observed — absolute in `href`/`src`, root-relative in
+  `base: "…"`, the `assets:` base constant, and sourcemaps.
+- **Exit:** `pnpm test` green on 20/22/24; module unused in production paths. Re-running the spike's
+  audit against `rewriteDir` output reproduces its result: zero residuals, every reference resolving.
 
 ### M2 — Placeholder base + single build
 
@@ -249,8 +283,9 @@ The heart of the user-facing change; no rewriting yet.
 - Update the tests that currently *assert* hub-and-spoke:
   `src/pack/edition/types/interactive.test.ts:110-116` asserts a media archive has **no**
   `interactive/cdn/scripts/app.js` — that assertion inverts.
-- **Exit:** locally assembled archive is byte-inspectable and contains its own `cdn/`; zero residual
-  placeholders; scratch-pack upload serves (M0's finding, now automated end-to-end by hand once).
+- **Exit:** the assembled archive is byte-inspectable and contains its own `cdn/`; zero residual
+  placeholders; the M0 audit re-run against library-produced output gives the same result (all references
+  resolve inside the archive). Server-side confirmation waits for M7.
 
 ### M5 — Selection
 
@@ -275,6 +310,19 @@ into API docs). `HOME.md:143-164` states the invariant this change reverses — 
 Changeset: **minor**. Add it in the final commit so the open patch-release PR (#165) stays independently
 mergeable until then.
 
+### M7 — End-to-end confirmation against the real graphics server
+
+The acceptance gate. Deliberately the *only* time this work touches Sphinx: no scratch packs are created
+during development, on purpose.
+
+- Install the `pkg.pr.new` preview build of the finished branch into a real graphics-kit project.
+- `upload` (exercising selection), then `publish`.
+- Confirm on the live server: each embed serves from **its own** archive URL with assets resolving;
+  canonical and embed codes correct; re-uploading **one** archive leaves the others working — the
+  property the whole issue exists to deliver.
+- **Exit:** it serves. If it doesn't, the failure is in how Sphinx handles the structure, and the local
+  work stands — D8 (archive contents) and D3 (mappings) are the levers to adjust.
+
 ---
 
 ## Verification
@@ -284,7 +332,10 @@ mergeable until then.
   20/22/24 (`/usr/local/n/versions/node/{20.20.2,22.22.3,24.16.0}`).
 - **Downstream** — `pkg.pr.new.yaml` triggers on bare `on: push`, so *any* branch push publishes an
   installable preview. Test each milestone in a real graphics-kit project before opening the PR.
-- **Server** — a scratch pack for M0, M4 and M5; delete it afterwards (`graphics-publisher delete`).
+- **Server** — none during development. No scratch packs; the real server is touched once, at M7.
+- **Local stand-in for serving** — the M0 audit: serve the assembled archive over plain HTTP at a path
+  mirroring an archive URL, then check every reference in it resolves. Repeatable against
+  library-produced output at M4.
 - **Invariants to assert in CI** — zero residual placeholder tokens; each media archive contains
   `interactive/cdn/`; `git status` clean after the suite.
 
@@ -292,7 +343,9 @@ mergeable until then.
 
 ## Risks
 
-1. **Serving from own URL is still unproven** (M0). Everything else depends on it.
+1. **Serving from its own URL is unproven until M7.** A deliberate leap, narrowed by M0: we know the
+   rewrite is complete and that every reference resolves within the archive on a plain static server.
+   What's untested is Sphinx's own handling — its post-processing, index resolution and path serving.
 2. **The placeholder must survive the whole toolchain** — `paths.assets` absolute, `paths.base`
    root-relative, `__BASE_URL__` fully-qualified, sourcemaps. D2 addresses the root-relative case; the
    self-verify assertion is the backstop.
