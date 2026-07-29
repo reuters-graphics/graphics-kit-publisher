@@ -37,7 +37,7 @@ exception (D6).
 | 0 | Preflight | first upload only² | first upload only² | `precheck()`; shape-check credentials (no server call — D6); `ensurePackId()` then `separateAssets.setUrl()` (D4) |
 | 1 | Build | no | no | **One** production build against the placeholder base |
 | 2 | Discover | no | no | `Finder` over the placeholder output → archives + editions; `logFound()` |
-| 3 | **Decide & collect** | **yes** | no | (a) archive selection → (b) pack metadata → (c) per-archive metadata for *selected* archives → (d) validate everything → (e) summary + one confirm |
+| 3 | **Decide & collect** | **yes** | no | (a) archive selection → (b) pack metadata → (c) per-archive metadata for *selected* archives → (d) validate everything → (e) summary (the selection prompt in (a) is the decision point; no separate confirm) |
 | 4 | Reserve | no¹ | write | Create/update the pack; dummy-zip upload per selected archive lacking a URL; persist URLs |
 | 5 | Assemble | no | no | Per selected archive: copy page (hoist) + copy `cdn/` → rewrite → self-verify → SRI → preview image/manifest → zip |
 | 6 | Upload & report | no | write | Serial upload of selected archives; separate assets; report uploaded / skipped / URLs |
@@ -297,8 +297,9 @@ The heart of the user-facing change; no rewriting yet.
   (D4). `separateAssets.setUrl()` keeps its current position, right after that.
 - Add Phase 0 preflight (credentials shape-check + `ensurePackId`) and Phase 3(d) validation (D7). Token
   handling is untouched (D6).
-- Add the Phase 3(e) summary + single confirm: archives to upload, editions per archive, which are new
-  vs. updates, what's being skipped.
+- Add the Phase 3(e) summary: archives, and which are new vs. updates. **No confirm prompt in M3** —
+  M5's selection multiselect *is* the decision point, so adding a confirm here would be friction we'd
+  immediately take back out. Today's `upload` has no gate either, so this changes nothing for anyone.
 - Fix `edition.*` pointer resolution while we're here: `index.html?title` currently resolves against
   `process.cwd()`, not the edition root (`src/pack/archive/metadata.ts:22`, `:38` → `utils.fs.get`),
   contradicting `llms/pack-metadata.md:240`. Front-loading makes the wrong behaviour more visible.

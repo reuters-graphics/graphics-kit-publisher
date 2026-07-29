@@ -2,7 +2,7 @@ import type { RNGS } from '@reuters-graphics/server-client';
 import type { Edition, Interactive } from '../edition';
 import type { Pack } from '..';
 import { description, title, type ArchiveEditionsMetadata } from './metadata';
-import { isValid, archiveEdition } from '../../validators';
+import { isValid, archiveEdition, validateOrThrow } from '../../validators';
 import path from 'path';
 import fs from 'fs';
 import { utils } from '@reuters-graphics/graphics-bin';
@@ -33,7 +33,36 @@ export class Archive {
     return `${this.type}-${this.locale}-${this.mediaSlug}`;
   }
 
-  public async getMetadata() {
+  /**
+   * The directory this archive's page lives in, which `edition.*` metadata
+   * pointers resolve against. The interactive edition is the archive's page;
+   * statics-only archives fall back to wherever their first edition sits.
+   */
+  public get editionRoot() {
+    const edition = this.interactiveEdition ?? this.editions[0];
+    return edition ?
+        path.dirname(utils.path.absolute(edition.path))
+      : context.cwd;
+  }
+
+  public get interactiveEdition() {
+    return this.editions.find((e) => e.type === 'interactive') as
+      | Interactive
+      | undefined;
+  }
+
+  /**
+   * Everything about this archive we can ask the user or read from the project —
+   * and nothing that needs a server round-trip.
+   *
+   * Split from the URL-dependent half ({@link setEmbedMetadata}) so all prompting
+   * happens in one phase, before any upload starts. It used to reserve the
+   * archive's URL inline, which meant a new embed's title prompt appeared in the
+   * middle of a long serial upload.
+   *
+   * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+   */
+  public async collectMetadata() {
     if (isValid(archiveEdition.Metadata, this.metadata))
       return this.metadata as ArchiveEditionsMetadata;
 
@@ -50,24 +79,19 @@ export class Archive {
         (await description(this)) || this.pack.metadata.description;
     }
 
-    /**
-     * Get a URL if there's an interactive edition
-     */
-    const interactiveEdition = this.editions.find(
-      (e) => e.type === 'interactive'
-    ) as Interactive | undefined;
+    return this.metadata as ArchiveEditionsMetadata;
+  }
 
-    if (interactiveEdition) {
-      const url = await interactiveEdition.getUrl();
-      const embedContext = {
-        embedUrl: url,
-        embedSlug: this.id,
-      };
-      this.metadata.embed = {
-        declaration: context.config.embedTemplate.declaration(embedContext),
-        dependencies: context.config.embedTemplate.dependencies(embedContext),
-      };
-    }
+  /**
+   * Render this archive's embed code, which can only be done once the archive
+   * has a URL. No prompting, no filesystem work.
+   */
+  public setEmbedMetadata(embedUrl: string) {
+    const embedContext = { embedUrl, embedSlug: this.id };
+    this.metadata.embed = {
+      declaration: context.config.embedTemplate.declaration(embedContext),
+      dependencies: context.config.embedTemplate.dependencies(embedContext),
+    };
     return this.metadata as ArchiveEditionsMetadata;
   }
 
@@ -95,7 +119,14 @@ export class Archive {
         hint: 'Run the upload step (which creates the pack) before this operation.',
       });
     const { serverClient } = this.pack;
-    const metadata = await this.getMetadata();
+    /**
+     * Metadata is collected in one earlier phase and the embed code filled in
+     * once the URL exists, so by here there's nothing left to ask or fetch.
+     */
+    const metadata = validateOrThrow(
+      archiveEdition.Metadata,
+      this.metadata
+    ) as ArchiveEditionsMetadata;
     const zipPath = await this.packUp();
     const zipBuffer = fs.readFileSync(zipPath);
 
