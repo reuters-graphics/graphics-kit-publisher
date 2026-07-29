@@ -172,6 +172,14 @@ What Phase 0 does keep is the _non-interactive_ credentials check: `getServerCre
 malformed credentials without touching the network, so that class of failure still surfaces before the
 build.
 
+**Amended after a CI audit: the prompt fails fast in CI.** Everything above holds for a person at a
+terminal. In CI there's nobody to paste a token, and the prompt doesn't degrade — verified with stdin
+closed, it renders and never resolves, so a job with rejected credentials runs to its timeout with a
+paste prompt as the last line in the log. `_promptForToken` now throws
+`API_TOKEN_UNAVAILABLE_IN_CI` when `isCiEnvironment()`, naming the credential env vars and the `GFX_`
+rights requirement. This is narrower than the original decision, not a reversal of it: no warming, no
+caching change, no TTL handling — only that an impossible prompt becomes a legible error.
+
 **D7 — Validate metadata, don't just short-circuit on it.** `isValid(...)` at `src/pack/index.ts:46`
 and `src/pack/archive/index.ts:37` are used only as caching short-circuits — nothing throws, so a bad
 pointer-sourced value (e.g. a non-`@thomsonreuters.com` email from `profile.json`) reaches the server.
