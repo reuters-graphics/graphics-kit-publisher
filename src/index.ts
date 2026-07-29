@@ -26,14 +26,18 @@ export class GraphicsKitPublisher {
 
   /**
    * Build and upload your project to the graphics server
+   *
+   * @param archives Archive IDs to upload, e.g. `['public', 'media-en-map']`.
+   * The shortened form the prompt displays (`en-map`) works too. Omit to be
+   * asked, or to upload everything in CI.
    */
   @loadConfig
   @withIntroOutro
-  async upload() {
+  async upload(archives?: string[]) {
     log.info(`Running: ${picocolors.green('upload')}`);
     await precheck();
     const pack = new Pack();
-    await pack.upload();
+    await pack.upload(false, archives);
   }
 
   /**

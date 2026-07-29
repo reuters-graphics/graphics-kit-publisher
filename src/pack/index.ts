@@ -30,6 +30,7 @@ import { getConnectOptions, getLynxOptions } from './publishOptions';
 import { multiselect } from '../prompts/multiselect';
 import picocolors from 'picocolors';
 import { SeparateAssets } from '../separateAssets';
+import { selectArchives } from './selection';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -42,6 +43,8 @@ export class Pack {
    * the server and the later update would be a wasted round-trip.
    */
   private createdThisRun = false;
+  /** Set once the user (or `--archives`) has chosen. */
+  private selectedArchives?: Archive[];
 
   private suffix(value: string, suffix = ':') {
     const val = value.trim();
@@ -134,7 +137,7 @@ export class Pack {
    * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
    * @param publicOnly Only upload the public archive
    */
-  public async upload(publicOnly = false) {
+  public async upload(publicOnly = false, requestedArchives?: string[]) {
     // Phase 0 — preflight: fail on anything knowable before doing work.
     getServerCredentials();
     await this.ensurePackId();
@@ -153,8 +156,8 @@ export class Pack {
     finder.findEditions(publicOnly);
     finder.logFound();
 
-    // Phase 3 — the only interactive phase.
-    await this.collectMetadata();
+    // Phase 3 — the only interactive phase: what to upload, then its metadata.
+    await this.collectMetadata(requestedArchives);
 
     // Phase 4 — reserve a URL per archive, and render embed codes from them.
     await this.reserveArchiveUrls();
@@ -163,7 +166,7 @@ export class Pack {
     await this.packUp();
 
     // Phase 6 — upload.
-    for (const archive of this.archives) {
+    for (const archive of this.selected) {
       await archive.createOrUpdate();
     }
     if (!publicOnly) await this.separateAssets.packAndUpload();
@@ -178,23 +181,47 @@ export class Pack {
    * contact email read from a profile, say) reached the server rather than failing
    * here.
    */
-  private async collectMetadata() {
+  private async collectMetadata(requestedArchives?: string[]) {
+    /**
+     * Selection comes first so nothing is asked about an archive that isn't
+     * being uploaded — and so a mistyped `--archives` value fails before a
+     * single prompt.
+     */
+    this.selectedArchives = await selectArchives({
+      archives: this.archives,
+      requested: requestedArchives,
+    });
+
     const packMetadata = await this.getMetadata();
     validateOrThrow(pack.Metadata, packMetadata);
 
-    for (const archive of this.archives) {
+    for (const archive of this.selected) {
       validateOrThrow(archiveEdition.Metadata, await archive.collectMetadata());
     }
 
     this.logPlan();
   }
 
+  /** The archives this run will upload. Everything, until a selection is made. */
+  private get selected() {
+    return this.selectedArchives ?? this.archives;
+  }
+
   /** Summarise what the unattended part of the run is about to do. */
   private logPlan() {
-    const rows = this.archives.map((archive) => {
+    const rows = this.selected.map((archive) => {
       const status = PKG.archive(archive.id).uploaded ? 'update' : 'new';
       return `${picocolors.cyan(archive.id)} ${picocolors.dim(status)}`;
     });
+    const skipped = this.archives.filter(
+      (archive) => !this.selected.includes(archive)
+    );
+    if (skipped.length)
+      rows.push(
+        picocolors.dim(
+          `\nSkipping ${skipped.map((a) => a.id).join(', ')} — still served from their own archives.`
+        )
+      );
     note(rows.join('\n'), 'Uploading');
   }
 
@@ -211,7 +238,7 @@ export class Pack {
     // metadata, so pushing it again would be a wasted round-trip.
     if (!this.createdThisRun) await this.createOrUpdate();
 
-    for (const archive of this.archives) {
+    for (const archive of this.selected) {
       const edition = archive.interactiveEdition;
       if (!edition) continue;
       archive.setEmbedMetadata(await edition.getUrl());
@@ -223,7 +250,7 @@ export class Pack {
     s.start('Packing up graphic pack');
     try {
       utils.fs.ensureDir(this.packRoot);
-      for (const archive of this.archives) {
+      for (const archive of this.selected) {
         await archive.packUp();
       }
       await s.stop('📦 All packed.');

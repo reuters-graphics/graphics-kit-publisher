@@ -366,9 +366,14 @@ so anything a user reads off the prompt works when scripted. Validate against di
 unknown value, error listing the canonical ids.
 
 **Defaults.** CI (`utils.environment.isCiEnvironment()`) with no flag → upload all, i.e. today's
-behaviour. `upload:quick` becomes sugar for `--archives public`; it currently diverges via
-`finder.findEditions(publicOnly)` (`src/finder/index.ts:36-44`) and by skipping separate assets, so decide
-whether selection replaces the `publicOnly` flag outright.
+behaviour. Also no prompt when there's only one archive to choose from — nothing to decide.
+
+**`upload:quick` keeps its own flag rather than becoming `--archives public`.** Selection alone doesn't
+reproduce it: `publicOnly` also short-circuits discovery (`finder.findEditions(publicOnly)`,
+`src/finder/index.ts:36-44`) and skips the separate-assets upload, and both are part of what makes the
+command quick. Expressing it as sugar would have meant either losing those or inventing a second flag to
+keep them. It composes anyway — with only the public archive discovered, the selection prompt doesn't
+appear.
 
 - **Exit:** selecting one of several archives uploads exactly one; skipped archives are untouched on the
   server; a slug typo fails fast with a useful list.
