@@ -337,33 +337,36 @@ consequence of each option is legible, and so all embeds can be taken or dropped
 ```
 ◆  Which archives do you want to upload?
 │  ◻ reuters.com
-│  │  ◻ public                        updates existing
+│  │  ◻ public                        update
 │  ◻ embeds
-│  │  ◻ en-map                        updates existing
-│  │  ◻ en-page                       new
-│  │  ◻ en-israel-leban…-strikes-map  new
+│  │  ◻ media-en-map                  update
+│  │  ◻ media-en-page                 new
+│  │  ◻ media-en-israel…-strikes-map  new
 ```
 
 - **Groups** — `reuters.com` holds the `public` archive; `embeds` holds the media archives.
-- **Labels are display-only.** `public` stays as-is; media archives drop the `media-` prefix
-  (`media-en-map` → `en-map`), since it's on every one of them and carries no information.
-- **Truncate long labels in the middle, not the end.** Cap at 30 characters with a `…`. Tail truncation
-  is precisely the wrong cut here: sibling embeds routinely share a long prefix and differ in the final
-  token (`…-strikes-map` vs `…-strikes-chart`), so cutting the end can render two options identical.
-  Middle truncation keeps both the locale and the distinguishing tail.
-- **Hint carries status, not the full slug** — `new` or `updates existing`, from
-  `PKG.archive(id).uploaded`. `finder.logFound()` (`src/finder/index.ts:22-31`) has just printed every
-  full archive id immediately above the prompt, so repeating it there wastes the line; status is the
-  thing the user can't otherwise see.
+- **One name for an archive, everywhere.** The prompt shows the archive ID —
+  `media-{locale}-{slug}` — which is also what `--archives` takes, what the logs print, and what
+  `package.json` and the server call it. An earlier draft dropped the `media-` prefix as display-only
+  shorthand; that invented a second convention for the same thing, and users reading a name off the
+  prompt to paste into `--archives` had to know to translate. Not worth six characters.
+- **Truncate long labels in the middle, not the end.** Cap at 36 characters with a `…` — the extra room
+  over an earlier 30 accommodates the prefix, keeping the informative part of the name intact. Tail
+  truncation is precisely the wrong cut here: sibling embeds routinely share a long prefix and differ in
+  the final token (`…-strikes-map` vs `…-strikes-chart`), so cutting the end can render two options
+  identical. Middle truncation keeps both the locale and the distinguishing tail. Truncation is visual
+  only; the value passed on is always the full ID.
+- **Hint carries status** — `new` or `update`, from `PKG.archive(id).uploaded`. Kept terse to leave room
+  for the full ID. `finder.logFound()` (`src/finder/index.ts:22-31`) has just printed every archive
+  above the prompt, so status is the thing the user can't otherwise see.
 - **`initialValues`: everything.** Pressing enter reproduces today's upload-all behaviour.
 - Wrapper at `src/prompts/groupMultiselect.ts`, mirroring `src/prompts/multiselect.ts` — thin, and
   handling `isCancel` → `cancel('Cancelled')` → `process.exit(0)`.
 
 **The flag.** `--archives <slugs>` on `upload` (`src/cli.ts:84-88`, threaded through `src/index.ts:32-37`
-→ `Pack.upload()`) takes **canonical** archive ids — `public`, `media-en-map` — because those are what
-the server, `package.json` and the docs use. Also accept the shortened display form and canonicalise it,
-so anything a user reads off the prompt works when scripted. Validate against discovered archives; on an
-unknown value, error listing the canonical ids.
+→ `Pack.upload()`) takes archive ids — `public`, `media-en-map` — and nothing else. No alias for the
+prefix-less form: one name per archive is the point. Validate against discovered archives; on an unknown
+value, error listing the real ids.
 
 **Defaults.** CI (`utils.environment.isCiEnvironment()`) with no flag → upload all, i.e. today's
 behaviour. Also no prompt when there's only one archive to choose from — nothing to decide.

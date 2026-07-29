@@ -27,10 +27,10 @@ Now you choose.
 ```
 ◆  Which archives do you want to upload? (space to toggle)
 │  ◻ reuters.com
-│  │  ◻ public                    updates existing
+│  │  ◻ public                        update
 │  ◻ embeds
-│  │  ◻ en-inflation-chart        updates existing
-│  │  ◻ en-jobs-map               new
+│  │  ◻ media-en-inflation-chart      update
+│  │  ◻ media-en-jobs-map             new
 ```
 
 Everything starts selected, so if you just want to publish the lot, press enter and nothing has changed for you.
@@ -47,7 +47,7 @@ The archives you skip keep working because each one now carries its own complete
 Scripting it? Pass the archives you want and skip the prompt:
 
 ```console
-pnpm graphics-publisher upload --archives public,en-jobs-map
+pnpm graphics-publisher upload --archives public,media-en-jobs-map
 ```
 
 In CI, with no `--archives`, everything uploads — same as it always has.

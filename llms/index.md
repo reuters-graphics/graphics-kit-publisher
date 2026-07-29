@@ -41,7 +41,7 @@ Config groups: `build` (build scripts + outDir), `packLocations` (where built fi
 The publisher is driven by a CLI (`graphics-publisher`) with three main commands, normally run in order:
 
 1. `graphics-publisher preview` — Build and upload a preview to the testfiles S3 bucket (no graphics server pack created).
-2. `graphics-publisher upload` — Create/update the graphic pack in the graphics server and upload archives. Choose which archives to send with `--archives public,media-en-map`; omit the flag to be prompted (CI uploads everything). Archives you skip are left untouched on the server and keep serving, because [each is self-contained](./page-building.md#an-embed-is-a-single-page). `upload:quick` uploads only the `public` archive (the reuters.com page); run a full `upload` afterward to sync embeds and Connect editions.
+2. `graphics-publisher upload` — Create/update the graphic pack in the graphics server and upload archives. Choose which archives to send with `--archives public,media-en-map` (archive IDs, as shown in the prompt and logs); omit the flag to be prompted (CI uploads everything). Archives you skip are left untouched on the server and keep serving, because [each is self-contained](./page-building.md#an-embed-is-a-single-page). `upload:quick` uploads only the `public` archive (the reuters.com page); run a full `upload` afterward to sync embeds and Connect editions.
 3. `graphics-publisher publish` — Publish the pack in the graphics server.
 
 `upload` front-loads its prompting: archive selection and all metadata are asked for in one phase, before the first byte is uploaded, so the rest of the run is unattended. Pre-fill [pack metadata](./pack-metadata.md) to skip those prompts entirely.

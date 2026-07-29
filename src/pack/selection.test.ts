@@ -63,29 +63,30 @@ beforeEach(() => {
 
 describe('truncateMiddle', () => {
   it('leaves short labels alone', () => {
-    expect(truncateMiddle('en-map')).toBe('en-map');
+    expect(truncateMiddle('media-en-map')).toBe('media-en-map');
   });
 
   it('cuts the middle, keeping the locale and the distinguishing tail', () => {
     // Sibling embeds share long prefixes and differ at the end, so cutting the
     // tail would render these two identical.
-    const map = truncateMiddle('en-israel-lebanon-border-strikes-map');
-    const chart = truncateMiddle('en-israel-lebanon-border-strikes-chart');
+    const map = truncateMiddle('media-en-israel-lebanon-border-strikes-map');
+    const chart = truncateMiddle(
+      'media-en-israel-lebanon-border-strikes-chart'
+    );
 
     expect(map).not.toBe(chart);
-    expect(map.startsWith('en-israel')).toBe(true);
+    expect(map.startsWith('media-en-israel')).toBe(true);
     expect(map.endsWith('-map')).toBe(true);
     expect(chart.endsWith('-chart')).toBe(true);
-    expect(map.length).toBeLessThanOrEqual(30);
+    expect(map.length).toBeLessThanOrEqual(36);
   });
 });
 
 describe('archiveLabel', () => {
-  it('drops the media prefix, which is on every embed', () => {
-    expect(archiveLabel('media-en-map')).toBe('en-map');
-  });
-
-  it('leaves the public archive as it is', () => {
+  it('shows the archive ID, the same name used everywhere else', () => {
+    // One convention: what the prompt displays is what `--archives` takes and
+    // what the logs and package.json call it.
+    expect(archiveLabel('media-en-map')).toBe('media-en-map');
     expect(archiveLabel('public')).toBe('public');
   });
 });
@@ -97,29 +98,32 @@ describe('resolveArchiveIds', () => {
     ).toEqual(['public', 'media-en-map']);
   });
 
-  it('accepts the shortened form the prompt displays', () => {
-    // Whatever a user reads off the prompt should work when they script it.
-    expect(resolveArchiveIds(['en-map'], discovered().archives)).toEqual([
-      'media-en-map',
-    ]);
+  it('rejects a name without the media prefix', () => {
+    // There's one name for an archive, and this isn't it. Accepting an alias
+    // would mean two ways to refer to the same thing.
+    expect(() =>
+      resolveArchiveIds(['en-map'], discovered().archives)
+    ).toThrowError('"en-map" doesn\'t match an archive');
   });
 
   it('ignores duplicates and blanks', () => {
     expect(
-      resolveArchiveIds(['en-map', 'media-en-map', ''], discovered().archives)
+      resolveArchiveIds(
+        ['media-en-map', 'media-en-map', ''],
+        discovered().archives
+      )
     ).toEqual(['media-en-map']);
   });
 
   it('fails on an unknown archive, listing the real ones', () => {
     let thrown: Error | undefined;
     try {
-      resolveArchiveIds(['en-mpa'], discovered().archives);
+      resolveArchiveIds(['media-en-mpa'], discovered().archives);
     } catch (error) {
       thrown = error as Error;
     }
 
-    expect(thrown?.message).toContain('"en-mpa"');
-    // The hint carries the available IDs, in canonical form.
+    expect(thrown?.message).toContain('"media-en-mpa"');
     expect(JSON.stringify(thrown)).toContain('media-en-map');
   });
 });
@@ -130,7 +134,7 @@ describe('selectArchives', () => {
 
     const selected = await selectArchives({
       archives: pack.archives,
-      requested: ['en-map'],
+      requested: ['media-en-map'],
     });
 
     expect(selected.map((a) => a.id)).toEqual(['media-en-map']);
@@ -167,8 +171,8 @@ describe('selectArchives', () => {
     expect(Object.keys(options)).toEqual(['reuters.com', 'embeds']);
     expect(options['reuters.com'].map((o) => o.label)).toEqual(['public']);
     expect(options['embeds'].map((o) => o.label)).toEqual([
-      'en-map',
-      'en-chart',
+      'media-en-map',
+      'media-en-chart',
     ]);
     expect(selected.map((a) => a.id)).toEqual(['media-en-map']);
   });
@@ -208,8 +212,8 @@ describe('selectArchives', () => {
     const hints = Object.fromEntries(
       options['embeds'].map((o) => [o.label, o.hint])
     );
-    expect(hints['en-map']).toBe('updates existing');
-    expect(hints['en-chart']).toBe('new');
+    expect(hints['media-en-map']).toBe('update');
+    expect(hints['media-en-chart']).toBe('new');
   });
 
   it('can select a statics-only archive', async () => {

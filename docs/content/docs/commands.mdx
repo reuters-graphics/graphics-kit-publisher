@@ -45,10 +45,10 @@ You'll be asked which [archives](/graphics-kit-publisher/sphinx/#archives) to up
 ```
 ◆  Which archives do you want to upload? (space to toggle)
 │  ◻ reuters.com
-│  │  ◻ public                    updates existing
+│  │  ◻ public                        update
 │  ◻ embeds
-│  │  ◻ en-inflation-chart        updates existing
-│  │  ◻ en-jobs-map               new
+│  │  ◻ media-en-inflation-chart      update
+│  │  ◻ media-en-jobs-map             new
 ```
 
 Everything starts selected, so press enter to upload the whole pack.
@@ -57,17 +57,17 @@ Uploading a subset is worth it on packs with lots of embeds: the graphics server
 
 Bear in mind a skipped archive keeps the version of your project it was last uploaded with. If a change should reach an embed, include it.
 
-To skip the prompt -- in a script, or when you already know -- pass the archives you want:
+To skip the prompt -- in a script, or when you already know -- pass the archives you want, named exactly as the prompt shows them:
 
 <Tabs>
   <TabItem label="CLI" icon="setting">
     ```console
-    pnpm graphics-publisher upload --archives public,en-jobs-map
+    pnpm graphics-publisher upload --archives public,media-en-jobs-map
     ```
   </TabItem>
   <TabItem label="Graphics kit" icon="laptop">
     ```console
-    pnpm upload --archives public,en-jobs-map
+    pnpm upload --archives public,media-en-jobs-map
     ```
   </TabItem>
 </Tabs>

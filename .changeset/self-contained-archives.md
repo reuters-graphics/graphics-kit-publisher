@@ -10,7 +10,7 @@ That matters most on packs with lots of embeds. A graphics blog that has grown t
 
 Skipping is safe because each archive now carries its own complete copy of the app's assets and points at them at its own URL. Nothing in a pack depends on anything else in it. Previously every embed referenced the `public` archive's assets, so re-uploading `public` could break every embed pointing at its old asset hashes — which is why you couldn't safely skip anything.
 
-For scripts and CI: `upload --archives public,en-jobs-map` skips the prompt, and in CI with no flag every archive uploads, as before.
+For scripts and CI: `upload --archives public,media-en-jobs-map` skips the prompt, and in CI with no flag every archive uploads, as before.
 
 Also in this release:
 

@@ -27,9 +27,9 @@ export class GraphicsKitPublisher {
   /**
    * Build and upload your project to the graphics server
    *
-   * @param archives Archive IDs to upload, e.g. `['public', 'media-en-map']`.
-   * The shortened form the prompt displays (`en-map`) works too. Omit to be
-   * asked, or to upload everything in CI.
+   * @param archives Archive IDs to upload, e.g. `['public', 'media-en-map']` —
+   * the same names the prompt shows. Omit to be asked, or to upload everything
+   * in CI.
    */
   @loadConfig
   @withIntroOutro
