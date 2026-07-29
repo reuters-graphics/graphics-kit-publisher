@@ -241,8 +241,10 @@ Pure, dependency-light, heavily tested. No flow changes; nothing calls it yet.
   (`src/pack/edition/types/media-interactive.ts:43-59`) → source it from `PKG.archive(id).url` instead.
   `getPreviewImagePath` (`src/pack/edition/utils/getPreviewImgPath.ts:47-67`) is fine — it only needs
   canonical and `og:image` to share a base, which they do.
-- **Exit:** `upload` still works end-to-end against a scratch pack with hub-and-spoke archives (i.e.
-  rewrite not yet wired in) — one build, no behaviour change visible to the server.
+- **Exit:** one build instead of two; with the sentinel env var set, the built output contains the
+  placeholder in both its absolute and root-relative forms and nothing else changes — `Finder` discovers
+  the same archives and editions as before, and `preview` output is byte-identical to `main`'s. Verified
+  in `test-url-rewrite-scratch` via a `pkg.pr.new` build, not against Sphinx.
 
 ### M3 — Phase restructuring + front-loaded prompting
 
