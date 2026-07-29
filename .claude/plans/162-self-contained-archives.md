@@ -410,10 +410,11 @@ embeds: `docs/content/docs/page-builders.mdx` and `docs/content/docs/sphinx.mdx`
 Changeset: **minor**. Add it in the final commit so the open patch-release PR (#165) stays independently
 mergeable until then.
 
-### M7 — End-to-end confirmation against the real graphics server
+### M7 — End-to-end confirmation against the real graphics server ✅ done
 
-The acceptance gate. Deliberately the _only_ time this work touches Sphinx: no scratch packs are created
-during development, on purpose.
+The acceptance gate, and the only time this work touched Sphinx — no scratch packs were created during
+development, on purpose. Run from the PR's `pkg.pr.new` build in a real project: **upload and publish
+both behaved as intended.** The design holds against the server.
 
 - Install the `pkg.pr.new` preview build of the finished branch into a real graphics-kit project.
 - `upload` (exercising selection), then `publish`.
@@ -443,9 +444,9 @@ during development, on purpose.
 
 ## Risks
 
-1. **Serving from its own URL is unproven until M7.** A deliberate leap, narrowed by M0: we know the
-   rewrite is complete and that every reference resolves within the archive on a plain static server.
-   What's untested is Sphinx's own handling — its post-processing, index resolution and path serving.
+1. ~~**Serving from its own URL is unproven until M7.**~~ **Resolved.** M7 confirmed Sphinx serves the
+   rewritten, self-contained structure. This was the only risk the local work couldn't reach, and the
+   reason the plan front-loaded a spike and deferred the server to a single end-to-end run.
 2. **The placeholder must survive the whole toolchain** — `paths.assets` absolute, `paths.base`
    root-relative, `__BASE_URL__` fully-qualified, sourcemaps. D2 addresses the root-relative case; the
    self-verify assertion is the backstop.
