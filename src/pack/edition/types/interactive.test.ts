@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi, type Mock } from 'vitest';
-import mockFs from 'mock-fs';
+import { setProject } from '../../../__test__/project';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
@@ -19,12 +19,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 afterEach(() => {
   vi.clearAllMocks();
-  mockFs.restore();
 });
 
 describe('Interactive edition', async () => {
   it('should pack up public interactive', async () => {
-    mockFs({
+    setProject({
       'dist/index.html': dedent`
         <html>
         <head>
@@ -36,7 +35,7 @@ describe('Interactive edition', async () => {
         </html>`,
       'dist/cdn/scripts/app.js': 'console.log("public app");',
       'dist/cdn/styles/main.css': 'body { padding: 0; }',
-      'dist/cdn/images/my-image.jpg': mockFs.load(
+      'dist/cdn/images/my-image.jpg': fs.readFileSync(
         path.join(__dirname, 'test.jpg')
       ),
     });
@@ -65,7 +64,7 @@ describe('Interactive edition', async () => {
   });
 
   it('should pack up media interactive', async () => {
-    mockFs({
+    setProject({
       'dist/embeds/en/page/index.html': dedent`
         <html>
         <head>
@@ -79,7 +78,7 @@ describe('Interactive edition', async () => {
       'dist/cdn/scripts/app.js': "console.log('app');",
       'dist/cdn/scripts/chunk.js': 'export const chunk = true;',
       'dist/cdn/styles/main.css': 'body { margin: 0; }',
-      'dist/cdn/images/my-image.jpg': mockFs.load(
+      'dist/cdn/images/my-image.jpg': fs.readFileSync(
         path.join(__dirname, 'test.jpg')
       ),
       'package.json': JSON.stringify({
@@ -208,7 +207,7 @@ describe('Interactive edition', async () => {
         },
       }),
     });
-    mockFs({
+    setProject({
       'dist/embeds/en/page/index.html': dedent`<html>
       <head>
       <link rel="canonical" href="https://www.reuters.com/graphics/my-project/embeds/en/page/" />

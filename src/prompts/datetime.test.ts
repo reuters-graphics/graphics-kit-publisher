@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { type Mock } from 'vitest';
-import mockFs from 'mock-fs';
+import { setProject } from '../__test__/project';
 import { isCancel, cancel } from '@clack/prompts';
 import { datetime, getOrPromptDatetime, getOrSetPkgDatetime } from './datetime';
 import { utils } from '@reuters-graphics/graphics-bin';
@@ -28,7 +28,7 @@ const testDate2 = new Date('2024-09-27');
 const testDate3 = new Date('2024-03-13');
 
 beforeEach(() => {
-  mockFs({
+  setProject({
     'locales/en/metadata.json': JSON.stringify({
       published: testDate1.toISOString(),
     }),
@@ -37,7 +37,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  mockFs.restore();
   vi.resetAllMocks();
 });
 
@@ -182,7 +181,7 @@ describe('datetime prompts', () => {
 
   describe('getOrSetPkgText', () => {
     it('should return value if already in package.json', async () => {
-      mockFs({
+      setProject({
         'locales/en/metadata.json': JSON.stringify({
           published: testDate1.toISOString(),
         }),
@@ -206,7 +205,7 @@ describe('datetime prompts', () => {
     });
 
     it('should get from pointer file if not in package.json, then save to package.json', async () => {
-      mockFs({
+      setProject({
         'locales/en/metadata.json': JSON.stringify({
           published: testDate1.toISOString(),
         }),
@@ -226,7 +225,7 @@ describe('datetime prompts', () => {
     });
 
     it('should validate user input before saving and error if invalid', async () => {
-      mockFs({
+      setProject({
         'locales/en/metadata.json': JSON.stringify({}),
         'package.json': JSON.stringify({}),
       });

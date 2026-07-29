@@ -1,15 +1,11 @@
-import { describe, it, expect, afterEach } from 'vitest';
-import mockFs from 'mock-fs';
+import { describe, it, expect } from 'vitest';
+import { setProject } from '../../../__test__/project';
 import { getPreviewImagePath } from './getPreviewImgPath';
 import dedent from 'dedent';
 
-afterEach(() => {
-  mockFs.restore();
-});
-
 describe('getPreviewImgPath', async () => {
   it('should pack up', async () => {
-    mockFs({
+    setProject({
       'dist/index.html': dedent`<html>
       <head>
       <link rel="canonical" href="https://www.reuters.com/graphics/my-project/" />
@@ -25,7 +21,7 @@ describe('getPreviewImgPath', async () => {
   });
 
   it('should error if file does not exist', async () => {
-    mockFs({
+    setProject({
       'dist/index.html': dedent`<html>
       <head>
       <link rel="canonical" href="https://www.reuters.com/graphics/my-project/" />
@@ -40,7 +36,7 @@ describe('getPreviewImgPath', async () => {
   });
 
   it('should error if invalid image type', async () => {
-    mockFs({
+    setProject({
       'dist/index.html': dedent`<html>
       <head>
       <link rel="canonical" href="https://www.reuters.com/graphics/my-project/" />
@@ -55,7 +51,7 @@ describe('getPreviewImgPath', async () => {
   });
 
   it('should error if no og:image', async () => {
-    mockFs({
+    setProject({
       'dist/index.html': dedent`<html>
       <head>
       <link rel="canonical" href="https://www.reuters.com/graphics/my-project/" />
@@ -69,7 +65,7 @@ describe('getPreviewImgPath', async () => {
   });
 
   it('should error if no canonical URL', async () => {
-    mockFs({
+    setProject({
       'dist/index.html': dedent`<html>
       <head>
       <meta property="og:image" content="https://www.reuters.com/graphics/my-project/cdn/images/my-image.jpg" />
@@ -83,7 +79,7 @@ describe('getPreviewImgPath', async () => {
   });
 
   it('should return prefab preview JPG', async () => {
-    mockFs({
+    setProject({
       'dist/index.html': dedent`<html>
       <head>
       <meta property="og:image" content="https://www.reuters.com/graphics/my-project/cdn/images/my-image.jpg" />
@@ -98,7 +94,7 @@ describe('getPreviewImgPath', async () => {
   });
 
   it('should return prefab preview PNG', async () => {
-    mockFs({
+    setProject({
       'dist/index.html': dedent`<html>
       <head>
       <meta property="og:image" content="https://www.reuters.com/graphics/my-project/cdn/images/my-image.jpg" />
