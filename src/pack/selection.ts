@@ -53,21 +53,21 @@ const archiveStatus = (archiveId: string) =>
   PKG.archive(archiveId).uploaded ? 'update' : 'new';
 
 /**
- * Resolve requested archive IDs, e.g. from `--archives`.
+ * Check requested archives exist, e.g. from `--archives`.
  *
- * IDs only — the same `media-{locale}-{slug}` an archive is called in the
- * prompt, the logs and `package.json`. There's deliberately no shorter alias:
- * one name for a thing is easier to remember than two.
+ * An exact match against archive IDs, and nothing more: an archive has one name
+ * — the `media-{locale}-{slug}` used in the prompt, the logs, `package.json` and
+ * on the server — so there's nothing to resolve or normalise here. Whitespace
+ * around comma-separated values is dealt with where the flag is parsed.
  */
-export const resolveArchiveIds = (requested: string[], archives: Archive[]) => {
+export const assertKnownArchives = (
+  requested: string[],
+  archives: Archive[]
+) => {
   const ids = archives.map((archive) => archive.id);
-  const resolved: string[] = [];
 
-  for (const request of requested) {
-    const slug = request.trim();
-    if (!slug) continue;
-    const match = ids.find((id) => id === slug);
-    if (!match)
+  for (const slug of requested)
+    if (!ids.includes(slug))
       throw new PackageConfigError(
         `"${slug}" doesn't match an archive in this project.`,
         {
@@ -76,10 +76,6 @@ export const resolveArchiveIds = (requested: string[], archives: Archive[]) => {
           context: { requested: slug, available: ids },
         }
       );
-    if (!resolved.includes(match)) resolved.push(match);
-  }
-
-  return resolved;
 };
 
 /**
@@ -122,8 +118,8 @@ export const selectArchives = async ({
   archives,
 }: SelectOptions): Promise<Archive[]> => {
   if (requested?.length) {
-    const ids = resolveArchiveIds(requested, archives);
-    return archives.filter((archive) => ids.includes(archive.id));
+    assertKnownArchives(requested, archives);
+    return archives.filter((archive) => requested.includes(archive.id));
   }
 
   if (utils.environment.isCiEnvironment() || archives.length < 2)

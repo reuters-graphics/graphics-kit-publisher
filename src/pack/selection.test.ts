@@ -6,7 +6,7 @@ import { Interactive } from './edition/types/interactive';
 import { JPG } from './edition/types/jpg';
 import {
   archiveLabel,
-  resolveArchiveIds,
+  assertKnownArchives,
   selectArchives,
   truncateMiddle,
 } from './selection';
@@ -91,34 +91,33 @@ describe('archiveLabel', () => {
   });
 });
 
-describe('resolveArchiveIds', () => {
-  it('accepts canonical archive IDs', () => {
-    expect(
-      resolveArchiveIds(['public', 'media-en-map'], discovered().archives)
-    ).toEqual(['public', 'media-en-map']);
+describe('assertKnownArchives', () => {
+  it('accepts archive IDs', () => {
+    expect(() =>
+      assertKnownArchives(['public', 'media-en-map'], discovered().archives)
+    ).not.toThrow();
   });
 
   it('rejects a name without the media prefix', () => {
     // There's one name for an archive, and this isn't it. Accepting an alias
     // would mean two ways to refer to the same thing.
     expect(() =>
-      resolveArchiveIds(['en-map'], discovered().archives)
+      assertKnownArchives(['en-map'], discovered().archives)
     ).toThrowError('"en-map" doesn\'t match an archive');
   });
 
-  it('ignores duplicates and blanks', () => {
-    expect(
-      resolveArchiveIds(
-        ['media-en-map', 'media-en-map', ''],
-        discovered().archives
-      )
-    ).toEqual(['media-en-map']);
+  it('rejects a truncated name', () => {
+    // The prompt elides very long labels to fit the line, but the value it
+    // passes on is always the full ID — nothing downstream accepts an ellipsis.
+    expect(() =>
+      assertKnownArchives(['media-en…map'], discovered().archives)
+    ).toThrowError("doesn't match an archive");
   });
 
   it('fails on an unknown archive, listing the real ones', () => {
     let thrown: Error | undefined;
     try {
-      resolveArchiveIds(['media-en-mpa'], discovered().archives);
+      assertKnownArchives(['media-en-mpa'], discovered().archives);
     } catch (error) {
       thrown = error as Error;
     }
