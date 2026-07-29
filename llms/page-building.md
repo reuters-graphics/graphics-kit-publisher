@@ -1,6 +1,6 @@
 ---
 name: Page building & routing rules
-description: The filesystem, routing and build rules the publisher enforces — directory pages, canonical links, base paths, the two-pass build, preview images, and packLocations config.
+description: The filesystem, routing and build rules the publisher enforces — directory pages, canonical links, base paths, the single build and per-archive URL rewrite, single-page embeds, preview images, and packLocations config.
 ---
 
 # Page building & routing rules
@@ -56,18 +56,34 @@ const assetsPath = getBasePath(mode, 'cdn', {
 `mode` is one of `dev`, `test`, `preview`, `prod`. It reads URLs the publisher has saved to `package.json`:
 
 - **preview**: before the preview build, the publisher generates a unique URL and saves it to `reuters.graphic.preview`, so `getBasePath('preview')` resolves during that build.
-- **prod**: production base URLs come from the graphics server after upload (see the two-pass build below).
+- **prod**: the URL saved to `homepage` in `package.json`, which the graphics server issues on the first upload. **Exception:** during the build the publisher runs itself as part of `upload`, `getBasePath('prod')` returns a placeholder base instead, which the publisher rewrites per archive (see below). Any other build — a human's `npm run build`, CI, a client building the source shipped in `app.zip` — gets the real URL.
 
-## Two-pass production build
+## One production build, rewritten per archive
 
-The publisher needs to _see_ built files to know which archives to upload, but production pages need server-issued URLs baked in as base paths — a chicken-and-egg problem it solves by building twice:
+The publisher needs to _see_ built files to know which archives to upload, but production pages need server-issued URLs baked in as base paths. It resolves that by building **once** against a placeholder base URL — `https://www.reuters.com/graphics/__GKP_BASE__/` — and rewriting each archive's copy of the output to that archive's own URL as it packs it:
 
-1. Create the graphic pack in the graphics server.
-2. Build **without** base-path URLs.
+1. Check credentials, and make sure the graphic pack exists in the graphics server — only a project's first-ever upload creates one (and prompts for pack metadata) here.
+2. Build **once**. `getBasePath('prod')` hands out the placeholder base, because the publisher sets `PUBLISHER_PLACEHOLDER_BASE` on the build it spawns.
 3. Scan the built files to determine which archives/editions exist.
-4. Upload **dummy** files for each archive to obtain its URL from the server; save URLs to `package.json`.
-5. Build the **production** version, which can now use the saved URLs for base paths and canonical links.
-6. Replace the dummy archives with the real built files.
+4. Ask everything it needs to ask — which archives to upload, then their metadata. All prompting happens here, before anything is uploaded.
+5. Update the pack, and upload **dummy** files for each selected archive to obtain its URL from the server; save URLs to `package.json`.
+6. Stage each archive, rewrite every placeholder reference in it to that archive's URL, and zip.
+7. Upload the real archives, replacing the dummies.
+
+The rewrite covers the absolute (`https://www.reuters.com/graphics/__GKP_BASE__/…`) and root-relative (`/graphics/__GKP_BASE__/…`) forms, in HTML, JS, CSS, JSON and sourcemaps. Packing fails loudly if an archive contains no placeholder to rewrite (the build never saw it — usually a version mismatch between the CLI and the copy of the publisher the project builds against) or if any placeholder survives the rewrite.
+
+Two consequences worth knowing:
+
+- **Nothing to configure.** The placeholder is internal to the publisher, and only appears in builds it spawns.
+- **`dist/` holds the placeholder build after an `upload`.** Finding `__GKP_BASE__` in the project's own build output is expected; the rewritten copies live in the packed archives, not in `dist/`.
+
+## An embed is a single page
+
+Each embeddable page is packed into its own archive: that page's HTML hoisted to the archive root, plus the archive's own copy of the app's assets (`cdn/`), rewritten to the archive's own URL. So each archive is **self-contained** — it references only its own copy of everything — and re-uploading one archive can't break another. That's what makes it safe to upload a subset of archives (`upload --archives …`) and leave the rest serving.
+
+It also means an embed is exactly one page: **no internal routing, and no links to other pages in the project.** A link to a sibling page may _appear_ to work while testing, because the whole assets directory ships in every archive and client-side routing can render a sibling route without its HTML — but that page's HTML isn't in the archive, so a hard load, a refresh or a shared link 404s. Keep everything an embed needs on the embed's own page.
+
+(The `public` archive is different: it contains the whole build, so the reuters.com pages can route between each other as normal.)
 
 ## Build logs & diagnosing failures
 
@@ -110,7 +126,7 @@ export default defineConfig({
 ```
 
 - **dotcom** — directory holding the reuters.com page(s); must contain a root `index.html`. Becomes the `public` archive.
-- **embeds** — a pattern capturing every embeddable page directory; each must contain a root `index.html`. The pattern **must** include `{locale}` and `{slug}` capture groups, which name the resulting `media-{locale}-{slug}` archives/editions.
+- **embeds** — a pattern capturing every embeddable page directory; each must contain a root `index.html` and each is [a single page](#an-embed-is-a-single-page). The pattern **must** include `{locale}` and `{slug}` capture groups, which name the resulting `media-{locale}-{slug}` archives/editions.
 - **statics** — a pattern capturing directories of static/editable graphics; each must contain at least one static file (`.eps`, `.jpg`, `.png`, `.pdf`) at its root. Also requires `{locale}` and `{slug}` capture groups.
 
 Example — `embeds: 'dist/embeds/{locale}/{slug}/'` captures:

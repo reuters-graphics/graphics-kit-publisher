@@ -1,0 +1,68 @@
+---
+title: Upload what you choose (3.5.0)
+sidebar:
+  badge: New
+  order: 103
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Uploading used to be all-or-nothing. Every archive in your pack went to the graphics server, one after another, whether or not it had changed — and each one takes the server a few minutes to process.
+
+Now you choose.
+
+<Tabs>
+  <TabItem label="Graphics kit" icon="laptop">
+    ```console
+    pnpm upload
+    ```
+  </TabItem>
+  <TabItem label="CLI" icon="setting">
+    ```console
+    pnpm graphics-publisher upload
+    ```
+  </TabItem>
+</Tabs>
+
+```
+◆  Which archives do you want to upload? (space to toggle)
+│  ◻ reuters.com
+│  │  ◻ public                    updates existing
+│  ◻ embeds
+│  │  ◻ en-inflation-chart        updates existing
+│  │  ◻ en-jobs-map               new
+```
+
+Everything starts selected, so if you just want to publish the lot, press enter and nothing has changed for you.
+
+## Why it matters for embed-heavy packs 📈
+
+If you're building a graphics blog, this is the change worth knowing about.
+
+A blog that has grown to nine embeds over a fortnight used to re-upload and re-process **all nine** every time you fixed a typo in one of them. Now you upload the one you changed, and the rest are left exactly as they are — still live, still serving, untouched.
+
+The archives you skip keep working because each one now carries its own complete copy of everything it needs. Nothing in your pack depends on anything else in your pack.
+
+<Aside type="tip">
+Scripting it? Pass the archives you want and skip the prompt:
+
+```console
+pnpm graphics-publisher upload --archives public,en-jobs-map
+```
+
+In CI, with no `--archives`, everything uploads — same as it always has.
+</Aside>
+
+## Fewer interruptions ⏸️
+
+Every question the publisher needs to ask now comes at the start, before anything is uploaded. Add a new embed and you'll be asked for its title up front, rather than a few minutes into a long upload you'd stopped watching.
+
+## One build, not two 🏃
+
+The publisher used to build your project twice on the way to the graphics server. Now it builds once, so uploads start sooner.
+
+## Anything to change in your project? 🙅
+
+No. Same commands, same config, same conventions.
+
+One thing worth stating plainly, because it was never quite true and is now worth being explicit about: **an embed is a single page.** Don't link from an embed to other pages in your project — only that embed's own page travels with it, so a link to a sibling page has nothing to land on.

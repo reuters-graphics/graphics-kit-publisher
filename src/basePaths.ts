@@ -106,6 +106,17 @@ interface Options {
  * #### `prod`
  * Returns the URL saved to `"homepage"` in package.json.
  *
+ * ### Builds the publisher runs itself
+ *
+ * When the publisher builds your project on the way to the graphics server, it
+ * hands out a placeholder base URL instead, and swaps it for each archive's own
+ * URL as that archive is packed. That's what lets one build serve every archive.
+ *
+ * Nothing to do on your side — keep calling this function as above. A build you
+ * run yourself is unaffected and still gets the URLs from package.json.
+ *
+ * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+ *
  * @param mode Mode, `dev`, `test`, `preview` or `prod`
  * @param optionsOrAddPath Options or a URL path part to add to the base path
  * @param options Options if path part to add supplied

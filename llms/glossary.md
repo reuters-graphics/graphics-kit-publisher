@@ -59,13 +59,17 @@ description: Key terms for the graphics kit publisher and the Sphinx graphics se
 
 **PKG** — The exported module of typed getters for pack metadata (`PKG.homepage`, `PKG.pack.rootSlug`, `PKG.archive(id).url`, …).
 
-**getBasePath** — Exported utility returning the base/asset path for a build `mode` (`dev`/`test`/`preview`/`prod`) from URLs saved in `package.json`.
+**getBasePath** — Exported utility returning the base/asset path for a build `mode` (`dev`/`test`/`preview`/`prod`) from URLs saved in `package.json`. Returns the **placeholder base URL** (below) instead during the build the publisher spawns itself on upload.
 
 **Separate assets** — A directory (e.g. precursor Illustrator/Photoshop files) uploaded as a single ZIP to S3 rather than the graphics server, with its link saved to `reuters.separateAssets`. Configured via `archiveEditions.separateAssets`.
 
 **Preview image** — An image representing an edition in the graphics server, Lynx and Connect: an `og:image` tag or a `_gfxpreview.png`/`.jpg` at the edition root.
 
-**Two-pass build** — The publisher builds a project twice on upload: first without base-path URLs (to detect archives), then a production build using the server-issued URLs it obtained in between.
+**Placeholder base URL** — `https://www.reuters.com/graphics/__GKP_BASE__/`, the base a project is built against on upload so each archive's copy of the output can be rewritten to that archive's own URL. Internal to the publisher: it's delivered by `getBasePath` only when the publisher sets the `PUBLISHER_PLACEHOLDER_BASE` env var on the build it spawns, so builds run by anyone else still get real URLs. Nothing to configure. See [page-building.md](./page-building.md#one-production-build-rewritten-per-archive).
+
+**Self-contained archive** — Every archive carries its own copy of the page(s) and assets it serves, pointing at its own URL. Re-uploading one archive therefore can't break another, which is what makes it safe to upload only some of them.
+
+**Archive selection** — Which archives an `upload` sends: `graphics-publisher upload --archives public,media-en-map` (archive IDs, or the shortened `en-map` form the prompt shows), or an interactive prompt when the flag is omitted. CI with no flag uploads everything. Unselected archives are left untouched on the server and keep serving.
 
 **Preview** — A build uploaded to the testfiles S3 bucket for review, before creating a real graphics-server pack (`graphics-publisher preview`).
 
