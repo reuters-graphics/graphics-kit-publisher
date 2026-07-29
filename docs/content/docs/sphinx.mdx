@@ -76,15 +76,12 @@ When determining what is the edition's root file, `.html` files take precedence.
 ### Interactive editions
 
 <FileTree>
-- public <small>Archive</small>
+- media-en-map <small>Archive</small>
   - interactive <small>Edition</small>
     - **index.html** <small>Root file</small>
-    - more-pages
-      - index.html 
-      - ... 
-    - assets
+    - cdn <small>This archive's own copy of the app's assets</small>
       - styles.css
-      - scripts.js 
+      - scripts.js
     - _gfxpreview.png <small>Preview image</small>
 </FileTree>
 
@@ -95,6 +92,12 @@ The root file is `index.html`.
 In most cases, additional HTML files should be at least one directory deeper than the root edition file. CSS, JS and images _can_ be at the same level as `index.html`.
 
 A `_gfxpreview.png` or `_gfxpreview.jpg` image must also be at the root of the edition folder, which will be used to preview the edition in the graphics server, Lynx and Reuters Connect.
+
+<Aside title="Each archive carries its own assets">
+Every archive includes its own copy of the app's assets and points at them at its own URL, so no archive depends on any other. That's what lets you [upload one archive without touching the rest](/graphics-kit-publisher/commands/#upload).
+
+It also means only the embed's own page is in the archive — so an embed shouldn't link to other pages in your project.
+</Aside>
 
 ### Media-interactive editions
 

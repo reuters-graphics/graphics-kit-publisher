@@ -13,7 +13,12 @@ const createZip = (localDir: string): Promise<Buffer> => {
     next();
   };
 
-  const archive = archiver('zip');
+  /**
+   * Compressed, matching the source archive (`app.zip`). Archives now carry
+   * their own copy of the app's assets, so they're bigger than they were, and
+   * upload time is the thing that hurts on a slow connection.
+   */
+  const archive = archiver('zip', { zlib: { level: 9 } });
 
   return new Promise((resolve, reject) => {
     archive.on('error', (e: Error) => reject(e));

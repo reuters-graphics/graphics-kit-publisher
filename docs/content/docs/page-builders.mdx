@@ -108,25 +108,33 @@ You'll get base URLs from the graphics server for production pages.
 
 The publisher saves these URLs with other [pack metadata](/graphics-kit-publisher/package/) in your project's `package.json` after uploading [archives](/graphics-kit-publisher/sphinx/#archives) to the graphics server.
 
-But the publisher also needs _to see_ your built files _to know_ which archives to upload.
+But the publisher also needs _to see_ your built files _to know_ which archives to upload — and each archive gets a different URL.
 
-To get around this issue, the publisher may build your project _twice_. The first build will be without fully specifed base path URLs. That lets the publisher detect what archives need to be created by scanning your built files.
+So the publisher builds your project **once**, against a placeholder base URL, and then swaps that placeholder for the real URL in each archive's own copy of your built files. Every archive ends up pointing at itself.
 
 In short, the uploading process looks like this:
 
 <Steps>
-1. The publisher creates a [graphic pack](/graphics-kit-publisher/sphinx/#graphic-packs) in the graphics server.
+1. The publisher builds your project once, using a placeholder base URL.
 
-2. Builds a version of the project without base path URLs.
+2. Scans the built files to determine what [archives](/graphics-kit-publisher/sphinx/#archives) should be uploaded, and asks you anything it needs to know.
 
-3. Scans the built files to determine what [archives](/graphics-kit-publisher/sphinx/#archives) should be uploaded.
+3. Uploads dummy files for any archives found to get a URL from the graphics server and saves those URLs to `package.json`.
 
-4. Uploads dummy files for any archives found to get a URL from the graphics server and saves those URLs to `package.json`.
+4. Packs each archive, replacing the placeholder with that archive's own URL — in its pages, its assets and its canonical links.
 
-5. Builds the production version of the project, which can now use the saved URLs to configure the project's base path and create canonical links in the built pages.
-
-6. Updates the dummy archives in the graphics server with the real files.
+5. Updates the dummy archives in the graphics server with the real files.
 </Steps>
+
+<Aside>
+This is invisible from your project: keep calling `getBasePath` in your config exactly as above. The placeholder only appears in builds the publisher runs itself — if you run your build script directly, you get real URLs as before.
+</Aside>
+
+### One embed, one page
+
+Only an embed's own page travels with it into its archive, so **don't link from an embed to another page in your project**. A link to a sibling page has nothing to land on.
+
+It may look like it works while you're testing, because the whole of your app ships with every embed and your page builder can render other routes in the browser. But a refresh or a shared link goes straight to the server, where that page doesn't exist.
 
 ## Preview images
 

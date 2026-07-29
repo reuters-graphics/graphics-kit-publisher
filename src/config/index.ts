@@ -1,5 +1,6 @@
 import { toMerged } from 'es-toolkit';
 import type { Config, UserConfig } from './types';
+import { ASSETS_DIR } from '../constants/build';
 
 export type { Config } from './types';
 export { validateConfig } from './validate';
@@ -34,6 +35,7 @@ export const defaultConfig: Config = {
       production: 'build',
     },
     outDir: 'dist/',
+    assetsDir: ASSETS_DIR,
   },
   packLocations: {
     dotcom: 'dist/',

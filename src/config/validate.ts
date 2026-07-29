@@ -56,6 +56,7 @@ const ConfigSchema = v.required(
           })
         ),
         outDir: v.string(),
+        assetsDir: v.string(),
       })
     ),
     packLocations: v.required(

@@ -8,7 +8,7 @@ description: How the Sphinx graphics server represents projects — graphic pack
 The publisher uploads projects to Reuters' **Sphinx graphics server**. Everything the publisher does is in service of producing the structure Sphinx expects. That structure has three nested levels:
 
 - **Graphic pack** — the overall project. Contains one or more archives.
-- **Archive** — a ZIP uploaded to the server. Represents a single graphic or a set of HTML pages. Contains one or more editions. Must contain at least one edition.
+- **Archive** — a ZIP uploaded to the server. Represents a single graphic or a set of HTML pages. Contains one or more editions. Must contain at least one edition. Self-contained: it carries its own copy of everything it serves and references it at its own URL, so archives can be uploaded — or skipped — independently of each other.
 - **Edition** — a specific _format_ of a graphic (an interactive page, an embeddable app, a static image, an editable file).
 
 ```
@@ -50,7 +50,7 @@ Each edition is a folder containing a **root file** at its top level. The root f
 
 Notes:
 
-- **interactive**: additional HTML pages should be at least one directory below the root `index.html`; CSS/JS/images may sit alongside it. Requires a preview image at the edition root (`_gfxpreview.png`/`.jpg`) or an `og:image` in the page.
+- **interactive**: additional HTML pages should be at least one directory below the root `index.html`; CSS/JS/images may sit alongside it. Requires a preview image at the edition root (`_gfxpreview.png`/`.jpg`) or an `og:image` in the page. In the `public` archive this edition is the whole build; in a `media-*` archive it's the embed's own page plus that archive's own copy of the app's assets — [a single page](./page-building.md#an-embed-is-a-single-page), with no other page of the project in it.
 - **media-interactive**: also requires a preview image at the edition root.
 - **static**: the root file can be named anything but should match the edition's type (e.g. the `PNG` edition's root is a `.png`). An edition folder may hold companion files (e.g. an `EPS` edition containing both `my-map.eps` and a `map.jpg`).
 

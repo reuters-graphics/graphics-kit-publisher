@@ -17,11 +17,12 @@ import {
 } from './metadata';
 import { utils } from '@reuters-graphics/graphics-bin';
 import { getServerClient } from '../server/client';
-import { isValid, pack } from '../validators';
+import { getServerCredentials } from '../server/credentials';
+import { archiveEdition, isValid, pack, validateOrThrow } from '../validators';
 import { spinner } from '@reuters-graphics/clack';
 import { Finder } from '../finder';
 import { buildForProduction } from '../build';
-import { log } from '@clack/prompts';
+import { log, note } from '@clack/prompts';
 import { confirm, select } from '../prompts';
 import { serverSpinner } from '../server/spinner';
 import { PKG } from '../pkg';
@@ -29,6 +30,7 @@ import { getConnectOptions, getLynxOptions } from './publishOptions';
 import { multiselect } from '../prompts/multiselect';
 import picocolors from 'picocolors';
 import { SeparateAssets } from '../separateAssets';
+import { selectArchives } from './selection';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -36,6 +38,13 @@ export class Pack {
   public packRoot = '.graphics-kit/pack/' as const;
   public serverClient?: ReturnType<typeof getServerClient>;
   private separateAssets = new SeparateAssets();
+  /**
+   * Whether this run created the pack, in which case its metadata is already on
+   * the server and the later update would be a wasted round-trip.
+   */
+  private createdThisRun = false;
+  /** Set once the user (or `--archives`) has chosen. */
+  private selectedArchives?: Archive[];
 
   private suffix(value: string, suffix = ':') {
     const val = value.trim();
@@ -64,6 +73,27 @@ export class Pack {
     );
     if (existingArchive) return existingArchive;
     return new Archive(this, locale, mediaSlug);
+  }
+
+  /**
+   * Make sure the pack exists on the server, so its ID is available.
+   *
+   * A no-op for any project that has been uploaded before, which is why the
+   * single interactive phase survives: only a first-ever upload prompts for pack
+   * metadata here, ahead of the build. It can't wait, because the ID is baked
+   * into the build — the separate-assets download URL is derived from it, and
+   * unlike a base URL it's one value per project, so it isn't rewritten.
+   *
+   * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+   */
+  public async ensurePackId() {
+    if (PKG.pack.id) {
+      this.metadata.id = PKG.pack.id;
+      return PKG.pack.id;
+    }
+    await this.createOrUpdate();
+    this.createdThisRun = true;
+    return PKG.pack.id;
   }
 
   /**
@@ -96,27 +126,121 @@ export class Pack {
   }
 
   /**
+   * Upload the pack, in phases: everything the user has to answer happens in one
+   * place, before anything is uploaded.
+   *
+   * The old order interleaved them — it discovered archives, then prompted for
+   * each one's metadata while reserving its URL, so a newly added embed asked for
+   * a title minutes into a run, between server round-trips that take 2–5 minutes
+   * each. Now the run is unattended once the collect phase is done.
+   *
+   * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
    * @param publicOnly Only upload the public archive
    */
-  public async upload(publicOnly = false) {
-    await this.getMetadata();
-    await this.createOrUpdate();
-
+  public async upload(publicOnly = false, requestedArchives?: string[]) {
+    // Phase 0 — preflight: fail on anything knowable before doing work.
+    getServerCredentials();
+    await this.ensurePackId();
     this.separateAssets.setUrl();
 
+    /**
+     * Phase 1 — one build, against a placeholder base URL. There used to be a
+     * second one after URLs were reserved: the first discovered which archives
+     * existed, the second baked their URLs in. Each archive's copy of this output
+     * is rewritten to its own URL when it's packed instead.
+     */
     await buildForProduction();
+
+    // Phase 2 — discover what's in the build.
     const finder = new Finder(this);
     finder.findEditions(publicOnly);
     finder.logFound();
-    for (const archive of this.archives) {
-      await archive.getMetadata();
-    }
-    await buildForProduction();
+
+    // Phase 3 — the only interactive phase: what to upload, then its metadata.
+    await this.collectMetadata(requestedArchives);
+
+    // Phase 4 — reserve a URL per archive, and render embed codes from them.
+    await this.reserveArchiveUrls();
+
+    // Phase 5 — stage and zip.
     await this.packUp();
-    for (const archive of this.archives) {
+
+    // Phase 6 — upload.
+    for (const archive of this.selected) {
       await archive.createOrUpdate();
     }
     if (!publicOnly) await this.separateAssets.packAndUpload();
+  }
+
+  /**
+   * Phase 3 — collect and validate everything the user can answer, then show what
+   * the rest of the run will do.
+   *
+   * Validation is deliberate rather than incidental: the metadata schemas used to
+   * be consulted only as caching short-circuits, so a bad value (a non-Reuters
+   * contact email read from a profile, say) reached the server rather than failing
+   * here.
+   */
+  private async collectMetadata(requestedArchives?: string[]) {
+    /**
+     * Selection comes first so nothing is asked about an archive that isn't
+     * being uploaded — and so a mistyped `--archives` value fails before a
+     * single prompt.
+     */
+    this.selectedArchives = await selectArchives({
+      archives: this.archives,
+      requested: requestedArchives,
+    });
+
+    const packMetadata = await this.getMetadata();
+    validateOrThrow(pack.Metadata, packMetadata);
+
+    for (const archive of this.selected) {
+      validateOrThrow(archiveEdition.Metadata, await archive.collectMetadata());
+    }
+
+    this.logPlan();
+  }
+
+  /** The archives this run will upload. Everything, until a selection is made. */
+  private get selected() {
+    return this.selectedArchives ?? this.archives;
+  }
+
+  /**
+   * Summarise what the unattended part of the run is about to do.
+   *
+   * Only what's being uploaded. An earlier version also listed what was being
+   * skipped, saying those archives went on being served from their own copies —
+   * true of an archive that has been uploaded before, and false of one that
+   * hasn't, which is exactly when someone would be misled.
+   */
+  private logPlan() {
+    const rows = this.selected.map((archive) => {
+      const status = PKG.archive(archive.id).uploaded ? 'update' : 'new';
+      return `${picocolors.cyan(archive.id)} ${picocolors.dim(status)}`;
+    });
+    note(rows.join('\n'), 'Uploading');
+  }
+
+  /**
+   * Phase 4 — give every archive that needs one a URL from the graphics server,
+   * then render its embed code.
+   *
+   * Reserving a URL means uploading a placeholder zip, which is how the server
+   * hands one back. Archives that already have a URL keep it: it's the archive's
+   * address, stable for the life of the project.
+   */
+  private async reserveArchiveUrls() {
+    // Skipped on a first upload: Phase 0 just created the pack with this exact
+    // metadata, so pushing it again would be a wasted round-trip.
+    if (!this.createdThisRun) await this.createOrUpdate();
+
+    for (const archive of this.selected) {
+      const edition = archive.interactiveEdition;
+      if (!edition) continue;
+      archive.setEmbedMetadata(await edition.getUrl());
+    }
   }
 
   async packUp() {
@@ -124,7 +248,7 @@ export class Pack {
     s.start('Packing up graphic pack');
     try {
       utils.fs.ensureDir(this.packRoot);
-      for (const archive of this.archives) {
+      for (const archive of this.selected) {
         await archive.packUp();
       }
       await s.stop('📦 All packed.');

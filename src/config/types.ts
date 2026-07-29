@@ -6,6 +6,18 @@ type Build = {
     production: string;
   };
   outDir: string;
+  /**
+   * Directory inside `outDir` holding the app's assets, which each archive gets
+   * its own copy of so it can serve itself.
+   *
+   * This has to match where the project's page builder writes them — in the
+   * graphics kit, `adapter-static`'s `assets` option and the path passed to
+   * `getBasePath(mode, 'cdn')` in `svelte.config.js`. Only set it if the project
+   * has renamed that directory.
+   *
+   * Default is `cdn`.
+   */
+  assetsDir: string;
 };
 
 interface PackLocations {

@@ -3,6 +3,10 @@ import { EventEmitter } from 'events';
 import path from 'path';
 
 import { projectDir } from '../__test__/project';
+import {
+  PLACEHOLDER_BASE,
+  PLACEHOLDER_BASE_ENV_VAR,
+} from '../constants/rewrite';
 
 import { spawn, type ChildProcess } from 'child_process';
 import { utils } from '@reuters-graphics/graphics-bin';
@@ -166,6 +170,8 @@ describe('build (async spawn)', () => {
     expect(cleanOutDir).toHaveBeenCalledWith(path.join(projectDir, 'dist'));
 
     // Expect spawn was called with correct arguments
+    // No `env` at all: a preview build inherits the environment untouched, and
+    // must not be handed the placeholder base — its URL is already known.
     expect(spawn).toHaveBeenCalledWith('npm', ['run', 'build:preview'], {
       stdio: ['inherit', 'pipe', 'pipe'],
       cwd: projectDir,
@@ -208,6 +214,9 @@ describe('build (async spawn)', () => {
     expect(spawn).toHaveBeenCalledWith('npm', ['run', 'build'], {
       stdio: ['inherit', 'pipe', 'pipe'],
       cwd: projectDir,
+      env: expect.objectContaining({
+        [PLACEHOLDER_BASE_ENV_VAR]: PLACEHOLDER_BASE,
+      }),
     });
     // Expect zero-length files to be deleted
     expect(deleteZeroLengthFiles).toHaveBeenCalledWith(

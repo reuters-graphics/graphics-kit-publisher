@@ -1,6 +1,7 @@
 import url from 'url';
 import urljoin from 'url-join';
 import { PKG } from './pkg';
+import { PLACEHOLDER_BASE_ENV_VAR } from './constants/rewrite';
 
 const TESTING_BASE_PATH = 'https://www.reuters.com/graphics/testing/';
 
@@ -22,6 +23,22 @@ const ensureTrailingSlash = (urlPath: string) => {
 const getBasePathByMode = (
   mode: 'dev' | 'test' | 'preview' | 'prod' = 'dev'
 ) => {
+  /**
+   * When the publisher is driving the build itself, it hands out a placeholder
+   * base and rewrites each archive's copy of the output to that archive's own
+   * URL afterwards. That's what lets one build serve every archive — and it's
+   * why the publisher no longer needs a first build just to discover parts
+   * before their URLs exist.
+   *
+   * Deliberately checked ahead of `mode`: the publisher, not the app, knows
+   * whether this build is going to be rewritten. Set by `buildForProduction`
+   * (`src/build/index.ts`) and by nothing else — an app should never set it.
+   *
+   * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+   */
+  if (process.env[PLACEHOLDER_BASE_ENV_VAR])
+    return process.env[PLACEHOLDER_BASE_ENV_VAR];
+
   switch (mode) {
     case 'test':
       return TESTING_BASE_PATH;
@@ -88,6 +105,17 @@ interface Options {
  *
  * #### `prod`
  * Returns the URL saved to `"homepage"` in package.json.
+ *
+ * ### Builds the publisher runs itself
+ *
+ * When the publisher builds your project on the way to the graphics server, it
+ * hands out a placeholder base URL instead, and swaps it for each archive's own
+ * URL as that archive is packed. That's what lets one build serve every archive.
+ *
+ * Nothing to do on your side — keep calling this function as above. A build you
+ * run yourself is unaffected and still gets the URLs from package.json.
+ *
+ * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
  *
  * @param mode Mode, `dev`, `test`, `preview` or `prod`
  * @param optionsOrAddPath Options or a URL path part to add to the base path

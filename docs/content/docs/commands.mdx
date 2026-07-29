@@ -40,7 +40,39 @@ Upload your project to the graphics server.
   </TabItem>
 </Tabs>
 
+You'll be asked which [archives](/graphics-kit-publisher/sphinx/#archives) to upload:
 
+```
+◆  Which archives do you want to upload? (space to toggle)
+│  ◻ reuters.com
+│  │  ◻ public                        update
+│  ◻ embeds
+│  │  ◻ media-en-inflation-chart      update
+│  │  ◻ media-en-jobs-map             new
+```
+
+Everything starts selected, so press enter to upload the whole pack.
+
+Uploading a subset is worth it on packs with lots of embeds: the graphics server processes archives one at a time, taking a few minutes each, so re-uploading several embeds to fix one of them is several times the wait. The archives you skip are left untouched on the server, and any you've uploaded before go on serving — each archive carries [its own copy of everything it needs](/graphics-kit-publisher/sphinx/#interactive-editions).
+
+Bear in mind a skipped archive keeps the version of your project it was last uploaded with. If a change should reach an embed, include it.
+
+To skip the prompt -- in a script, or when you already know -- pass the archives you want, named exactly as the prompt shows them:
+
+<Tabs>
+  <TabItem label="CLI" icon="setting">
+    ```console
+    pnpm graphics-publisher upload --archives public,media-en-jobs-map
+    ```
+  </TabItem>
+  <TabItem label="Graphics kit" icon="laptop">
+    ```console
+    pnpm upload --archives public,media-en-jobs-map
+    ```
+  </TabItem>
+</Tabs>
+
+In CI, with no `--archives`, every archive is uploaded.
 
 <Aside type="tip">
 **In a hurry?** To more quickly upload _just_ the `public` archive -- i.e., the page published on reuters.com, excluding all other embeds or editable editions -- run:
@@ -58,7 +90,7 @@ Upload your project to the graphics server.
 </TabItem>
 </Tabs>
 
-**Note:** Be sure to run a normal update sometime after running a quick one to ensure all embeds and Connect editions are also updated with any changes. 
+**Note:** Your embeds and Connect editions keep serving the version they were last uploaded with, so run a normal upload sometime after a quick one to bring them up to date with your latest changes.
 </Aside>
 
 

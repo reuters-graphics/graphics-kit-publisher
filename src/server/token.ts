@@ -8,6 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 import { cancel } from '@clack/prompts';
 import { serverSpinner } from './spinner';
 import prompts from 'prompts';
+import { utils } from '@reuters-graphics/graphics-bin';
 
 interface ApiCredentials {
   username: string;
@@ -92,6 +93,22 @@ export class Token {
   private async _promptForToken() {
     const tempToken = this._readCachedTempToken() as string | undefined;
     if (tempToken) return tempToken;
+
+    /**
+     * There's nobody to ask in CI, and the prompt doesn't degrade — with stdin
+     * closed it renders and never resolves, so the job would run to its timeout
+     * with a paste prompt as the last thing in the log. Fail with the reason
+     * instead.
+     */
+    if (utils.environment.isCiEnvironment())
+      throw new ServerError(
+        'Graphics server credentials were rejected, or lack the rights to publish graphics.',
+        {
+          code: 'API_TOKEN_UNAVAILABLE_IN_CI',
+          hint: 'Check GRAPHICS_SERVER_USERNAME, GRAPHICS_SERVER_PASSWORD and GRAPHICS_SERVER_API_KEY in this environment, and that the account has GFX_ publishing rights. A temporary token pasted at a prompt is only an option when someone is there to paste it.',
+        }
+      );
+
     serverSpinner.pause();
 
     console.log(''); // Silly to make the logs look nicer...

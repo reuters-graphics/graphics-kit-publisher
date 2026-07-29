@@ -14,7 +14,6 @@ import { serverSpinner } from '../../../server/spinner';
 import picocolors from 'picocolors';
 import urljoin from 'url-join';
 import { PKG } from '../../../pkg';
-import { addSRI } from '../../../utils/sri';
 
 export class Interactive extends Edition {
   public static type = 'interactive' as const;
@@ -120,30 +119,49 @@ export class Interactive extends Edition {
     return standardisedURL;
   }
 
+  /**
+   * Stage this page into the archive, hoisted to the archive root.
+   *
+   * For a media archive that means its own copy of the app assets too, so the
+   * archive is self-contained: it references assets at its own URL and keeps
+   * serving even when other archives — or the shared `app.js` they used to point
+   * at — are re-uploaded. The public archive already contains the whole build, so
+   * it has them.
+   *
+   * SRI is deliberately *not* applied here any more. It hashes asset contents,
+   * and each archive's assets are rewritten to its own URL afterwards, so hashes
+   * have to be computed per archive on the staged copy — see `Archive.packUp`.
+   *
+   * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+   */
   async packUp(archiveDir: string) {
     const cwd = path.dirname(this.path);
     const files = globSync('**/*', { cwd, nodir: true });
     for (const file of files) {
       const absSrc = path.join(cwd, file);
-
-      // Add SRI attributes to media index.html files before copying
-      if (
-        this.archive.type === 'media' &&
-        path.basename(file) === 'index.html'
-      ) {
-        try {
-          addSRI(absSrc);
-        } catch {
-          // If SRI generation fails, continue without it
-        }
-      }
-
       const absDest = path.join(archiveDir, this.type, file);
       utils.fs.ensureDir(absDest);
       fs.copyFileSync(absSrc, absDest);
     }
+    if (this.archive.type === 'media') this.copyAssets(archiveDir);
     await this.makePreviewImage(archiveDir);
     if (this.archive.type === 'media') await this.makeManifest(archiveDir);
+  }
+
+  /**
+   * Copy the whole assets directory into this archive.
+   *
+   * Silently does nothing when the directory isn't there, because a project
+   * needn't have one. `Archive.packUp` is what notices the case that matters —
+   * a page referencing assets that didn't make it into the archive.
+   */
+  private copyAssets(archiveDir: string) {
+    const { assetsDir } = context.config.build;
+    const from = path.join(context.cwd, context.config.build.outDir, assetsDir);
+    if (!fs.existsSync(from)) return;
+    fs.cpSync(from, path.join(archiveDir, this.type, assetsDir), {
+      recursive: true,
+    });
   }
 
   private async makePreviewImage(archiveDir: string) {

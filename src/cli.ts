@@ -8,6 +8,19 @@ import { offerDiagnosisHandoff } from './diagnostics/handoff';
 
 const prog = sade('graphics-publisher');
 
+/**
+ * Split `--archives public,media-en-map` into IDs. A bare `--archives` with no
+ * value arrives as `true`, which we treat as "not specified" so the user still
+ * gets the prompt rather than a confusing error.
+ */
+const parseArchives = (value?: string | boolean) =>
+  typeof value === 'string' ?
+    value
+      .split(',')
+      .map((slug) => slug.trim())
+      .filter(Boolean)
+  : undefined;
+
 prog.version(version);
 
 /**
@@ -83,8 +96,14 @@ prog
 
 prog
   .command('upload')
-  .action(() =>
-    runCommand('upload', () => new GraphicsKitPublisher().upload())
+  .option(
+    '--archives',
+    'Comma-separated archives to upload, e.g. "public,media-en-map". Omit to choose from a prompt.'
+  )
+  .action((opts: { archives?: string | boolean }) =>
+    runCommand('upload', () =>
+      new GraphicsKitPublisher().upload(parseArchives(opts.archives))
+    )
   );
 
 prog

@@ -1,6 +1,10 @@
-import { describe, it, beforeEach, expect } from 'vitest';
+import { describe, it, beforeEach, afterEach, expect } from 'vitest';
 import { setProject } from './__test__/project';
 import { getBasePath } from './basePaths';
+import {
+  PLACEHOLDER_BASE,
+  PLACEHOLDER_BASE_ENV_VAR,
+} from './constants/rewrite';
 
 describe('getBasePath', () => {
   beforeEach(() => {
@@ -134,6 +138,55 @@ describe('getBasePath', () => {
 
       const assets = getBasePath('prod', 'cdn');
       expect(assets).toBe('cdn');
+    });
+  });
+
+  describe('placeholder base (publisher-driven builds)', () => {
+    afterEach(() => {
+      delete process.env[PLACEHOLDER_BASE_ENV_VAR];
+    });
+
+    it('hands out the placeholder instead of the real base', () => {
+      process.env[PLACEHOLDER_BASE_ENV_VAR] = PLACEHOLDER_BASE;
+
+      expect(
+        getBasePath('prod', { trailingSlash: true, rootRelative: false })
+      ).toBe(PLACEHOLDER_BASE);
+    });
+
+    it('applies the usual transforms to it', () => {
+      // The point of substituting the base rather than short-circuiting: apps
+      // ask for root-relative paths, extra path parts and trailing slashes, and
+      // all of that has to keep working so the built output looks normal.
+      process.env[PLACEHOLDER_BASE_ENV_VAR] = PLACEHOLDER_BASE;
+
+      expect(
+        getBasePath('prod', 'cdn', {
+          trailingSlash: false,
+          rootRelative: false,
+        })
+      ).toBe('https://www.reuters.com/graphics/__GKP_BASE__/cdn');
+      expect(
+        getBasePath('prod', { trailingSlash: false, rootRelative: true })
+      ).toBe('/graphics/__GKP_BASE__');
+    });
+
+    it('overrides every mode, since the publisher knows what it is building', () => {
+      // An app decides its own mode from its own env (NODE_ENV, PREVIEW,
+      // TESTING). If the publisher is driving a build it means to rewrite, that
+      // decision must not be able to smuggle a real URL into the output.
+      process.env[PLACEHOLDER_BASE_ENV_VAR] = PLACEHOLDER_BASE;
+
+      for (const mode of ['dev', 'test', 'preview', 'prod'] as const)
+        expect(
+          getBasePath(mode, { trailingSlash: true, rootRelative: false })
+        ).toBe(PLACEHOLDER_BASE);
+    });
+
+    it('is inert when unset', () => {
+      expect(
+        getBasePath('prod', { trailingSlash: true, rootRelative: false })
+      ).toBe('https://www.reuters.com/graphics/my-graphic/');
     });
   });
 });
