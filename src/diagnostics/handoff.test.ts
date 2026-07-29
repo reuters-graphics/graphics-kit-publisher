@@ -1,5 +1,8 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import mockFs from 'mock-fs';
+import fs from 'fs';
+import path from 'path';
+
+import { projectDir, setProject } from '../__test__/project';
 import {
   isAiEnabled,
   detectSurfaces,
@@ -105,54 +108,58 @@ describe('buildExtensionUrl', () => {
   });
 });
 
+/**
+ * A stand-in PATH directory and home directory inside the temp project, so
+ * these tests look at real executables without touching the real ones.
+ */
+const BIN = path.join(projectDir, 'bin');
+const HOME = path.join(projectDir, 'home');
+const EMPTY = path.join(projectDir, 'empty');
+
+/** Replace the project with a single executable file at `relPath`. */
+const setExecutable = (relPath: string) => {
+  setProject({ [relPath]: '', 'empty/': '' });
+  fs.chmodSync(path.join(projectDir, relPath), 0o755);
+};
+
 describe('isClaudeOnPath', () => {
   const origPath = process.env.PATH;
   afterEach(() => {
-    mockFs.restore();
     process.env.PATH = origPath;
   });
 
   it('is true when an executable claude is on PATH', () => {
-    process.env.PATH = '/fake/bin';
-    mockFs({ '/fake/bin/claude': mockFs.file({ mode: 0o755, content: '' }) });
+    process.env.PATH = BIN;
+    setExecutable('bin/claude');
     expect(isClaudeOnPath()).toBe(true);
   });
 
   it('is false when claude is not on PATH', () => {
-    process.env.PATH = '/fake/bin';
-    mockFs({ '/fake/bin/other': mockFs.file({ mode: 0o755, content: '' }) });
+    process.env.PATH = BIN;
+    setExecutable('bin/other');
     expect(isClaudeOnPath()).toBe(false);
   });
 });
 
 describe('resolveClaudeBin', () => {
-  afterEach(() => mockFs.restore());
-
   it('returns the bare name when claude is a real executable on PATH', () => {
-    mockFs({ '/fake/bin/claude': mockFs.file({ mode: 0o755, content: '' }) });
-    expect(resolveClaudeBin({ path: '/fake/bin', home: '/home/me' })).toBe(
-      'claude'
-    );
+    setExecutable('bin/claude');
+    expect(resolveClaudeBin({ path: BIN, home: HOME })).toBe('claude');
   });
 
   it('falls back to the native-installer path when only the alias target exists', () => {
     // The common native-install case: nothing on PATH, but the executable
     // lives at ~/.claude/local/claude (exposed to the shell only via an alias).
-    mockFs({
-      '/home/me/.claude/local/claude': mockFs.file({
-        mode: 0o755,
-        content: '',
-      }),
-    });
+    setExecutable('home/.claude/local/claude');
     expect(
-      resolveClaudeBin({ path: '/empty', home: '/home/me', platform: 'darwin' })
-    ).toBe('/home/me/.claude/local/claude');
+      resolveClaudeBin({ path: EMPTY, home: HOME, platform: 'darwin' })
+    ).toBe(path.join(HOME, '.claude/local/claude'));
   });
 
   it('returns null when claude is neither on PATH nor in the native location', () => {
-    mockFs({ '/home/me/.claude/local/other': mockFs.file({ mode: 0o755 }) });
+    setExecutable('home/.claude/local/other');
     expect(
-      resolveClaudeBin({ path: '/empty', home: '/home/me', platform: 'darwin' })
+      resolveClaudeBin({ path: EMPTY, home: HOME, platform: 'darwin' })
     ).toBeNull();
   });
 });

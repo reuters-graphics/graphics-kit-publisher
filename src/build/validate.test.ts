@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import mockFs from 'mock-fs';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { setProject } from '../__test__/project';
 import { note } from '@reuters-graphics/clack';
 import { validateOutDir } from './validate';
 import { InvalidFileTypeError } from '../exceptions/errors';
@@ -18,7 +18,8 @@ const mockSpinner = {
 // Mock the context, logs, and note
 vi.mock('../context', () => ({
   context: {
-    cwd: '/fake/project',
+    // The harness runs each test file from its own temp project directory.
+    cwd: process.cwd(),
     config: {
       build: {
         outDir: 'dist',
@@ -43,15 +44,10 @@ describe('validateOutDir', () => {
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    // Restore any file system modifications after each test
-    mockFs.restore();
-  });
-
   // it('throws FileSystemError if index.html is missing', () => {
   //   // Mock a file system with some files but no index.html
-  //   mockFs({
-  //     '/fake/project/dist': {
+  //   setProject({
+  //     dist: {
   //       'main.js': 'console.log("Hello World")',
   //     },
   //   });
@@ -69,8 +65,8 @@ describe('validateOutDir', () => {
 
   it('throws InvalidFileTypeError if invalid file extensions exist', () => {
     // Here, index.html is present but there's a .exe file
-    mockFs({
-      '/fake/project/dist': {
+    setProject({
+      dist: {
         'index.html': '<html>Some HTML</html>',
         'script.js': 'console.log("ok")',
         'unwanted.exe': 'binary data',
@@ -90,8 +86,8 @@ describe('validateOutDir', () => {
 
   it('does not throw if index.html is present and file types are valid', () => {
     // Suppose .html, .js, .css, etc. are in VALID_FILE_TYPES
-    mockFs({
-      '/fake/project/dist': {
+    setProject({
+      dist: {
         'index.html': '<html></html>',
         'app.js': 'console.log("valid")',
         'styles.css': 'body { color: red; }',

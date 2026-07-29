@@ -1,15 +1,8 @@
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-  vi,
-  type Mock,
-} from 'vitest';
+import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { EventEmitter } from 'events';
-import mockFs from 'mock-fs';
 import path from 'path';
+
+import { projectDir } from '../__test__/project';
 
 import { spawn, type ChildProcess } from 'child_process';
 import { utils } from '@reuters-graphics/graphics-bin';
@@ -40,7 +33,8 @@ vi.mock('../logging', () => ({
 
 vi.mock('../context', () => ({
   context: {
-    cwd: '/fake/project',
+    // The harness runs each test file from its own temp project directory.
+    cwd: process.cwd(),
     config: {
       build: {
         outDir: 'dist',
@@ -106,29 +100,6 @@ describe('build (async spawn)', () => {
   beforeEach(() => {
     // Clear mock call counts
     vi.clearAllMocks();
-
-    // Setup a basic mock file system
-    mockFs({
-      '/fake/project': {
-        'package.json': JSON.stringify({
-          scripts: {
-            // We'll modify these in tests as needed
-            'build:preview': 'echo "Building preview..."',
-            build: 'echo "Building production..."',
-          },
-        }),
-        dist: {
-          'index.html': '<html></html>',
-          cdn: {
-            'empty.js': '', // zero-length file to test deletion
-          },
-        },
-      },
-    });
-  });
-
-  afterEach(() => {
-    mockFs.restore();
   });
 
   it('throws PackageConfigError if the specified script does not exist in package.json', async () => {
@@ -192,19 +163,17 @@ describe('build (async spawn)', () => {
     await buildForPreview();
 
     // Expect the output directory was cleaned
-    expect(cleanOutDir).toHaveBeenCalledWith(
-      path.join('/fake/project', 'dist')
-    );
+    expect(cleanOutDir).toHaveBeenCalledWith(path.join(projectDir, 'dist'));
 
     // Expect spawn was called with correct arguments
     expect(spawn).toHaveBeenCalledWith('npm', ['run', 'build:preview'], {
       stdio: ['inherit', 'pipe', 'pipe'],
-      cwd: '/fake/project',
+      cwd: projectDir,
     });
 
     // Expect zero-length files to be deleted
     expect(deleteZeroLengthFiles).toHaveBeenCalledWith(
-      path.join('/fake/project', 'dist')
+      path.join(projectDir, 'dist')
     );
 
     // Expect validateOutDir to be called
@@ -234,17 +203,15 @@ describe('build (async spawn)', () => {
     await buildForProduction();
 
     // Expect the output directory was cleaned
-    expect(cleanOutDir).toHaveBeenCalledWith(
-      path.join('/fake/project', 'dist')
-    );
+    expect(cleanOutDir).toHaveBeenCalledWith(path.join(projectDir, 'dist'));
     // Expect spawn was called with correct arguments
     expect(spawn).toHaveBeenCalledWith('npm', ['run', 'build'], {
       stdio: ['inherit', 'pipe', 'pipe'],
-      cwd: '/fake/project',
+      cwd: projectDir,
     });
     // Expect zero-length files to be deleted
     expect(deleteZeroLengthFiles).toHaveBeenCalledWith(
-      path.join('/fake/project', 'dist')
+      path.join(projectDir, 'dist')
     );
     // Expect validateOutDir to be called
     expect(validateOutDir).toHaveBeenCalled();
@@ -273,7 +240,7 @@ describe('build (async spawn)', () => {
 
     // Ensure deleteZeroLengthFiles is called, simulating removal of empty.js
     expect(deleteZeroLengthFiles).toHaveBeenCalledWith(
-      path.join('/fake/project', 'dist')
+      path.join(projectDir, 'dist')
     );
   });
 });

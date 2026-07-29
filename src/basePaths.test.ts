@@ -1,10 +1,10 @@
-import { describe, it, beforeEach, afterEach, expect } from 'vitest';
-import mockFs from 'mock-fs';
+import { describe, it, beforeEach, expect } from 'vitest';
+import { setProject } from './__test__/project';
 import { getBasePath } from './basePaths';
 
 describe('getBasePath', () => {
   beforeEach(() => {
-    mockFs({
+    setProject({
       'package.json': JSON.stringify({
         name: 'test-project',
         homepage: 'https://www.reuters.com/graphics/my-graphic/',
@@ -13,10 +13,6 @@ describe('getBasePath', () => {
         },
       }),
     });
-  });
-
-  afterEach(() => {
-    mockFs.restore();
   });
 
   describe('dev mode', () => {
@@ -124,7 +120,7 @@ describe('getBasePath', () => {
     });
 
     it('should return dev URLs if homepage is not yet set', () => {
-      mockFs({
+      setProject({
         'package.json': JSON.stringify({
           name: 'test-project',
           reuters: {

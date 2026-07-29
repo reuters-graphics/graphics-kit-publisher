@@ -1,11 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { type Mock } from 'vitest';
-import mockFs from 'mock-fs';
+import { setProject, writeHome } from '../__test__/project';
 import { select as selectPrompt, isCancel, cancel } from '@clack/prompts';
 import { select, getOrPromptTextSelect, getOrSetPkgTextSelect } from './select';
 import { utils } from '@reuters-graphics/graphics-bin';
-import os from 'os';
-import path from 'path';
+
+/**
+ * These tests read a desk from a `~/.reuters-graphics/profile.json` pointer, so
+ * the fixture profile goes in the harness's stand-in home directory. Without
+ * that redirect they would read — and write — the developer's real profile.
+ */
+const writeProfile = (desk: string) =>
+  writeHome({ '.reuters-graphics/profile.json': JSON.stringify({ desk }) });
 
 vi.mock('@clack/prompts', async () => {
   return {
@@ -20,22 +26,18 @@ const processExitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
 });
 
 beforeEach(() => {
-  mockFs({
-    [path.join(os.homedir(), '.reuters-graphics/profile.json')]: JSON.stringify(
-      {
-        desk: 'london',
-      }
-    ),
+  // `setProject` clears the stand-in home too, so seed the profile after it.
+  setProject({
     'locales/en/metadata.json': JSON.stringify({
       story: { title: 'Hello world', authors: ['Alice', 'Bob'] },
       rootSlug: 'my-graphic',
     }),
     'package.json': JSON.stringify({}),
   });
+  writeProfile('london');
 });
 
 afterEach(() => {
-  mockFs.restore();
   vi.resetAllMocks();
 });
 
@@ -190,15 +192,12 @@ describe('select prompts', () => {
 
   describe('getOrSetPkgTextSelect', () => {
     it('should return value if already in package.json', async () => {
-      mockFs({
-        [path.join(os.homedir(), '.reuters-graphics/profile.json')]:
-          JSON.stringify({
-            desk: 'london',
-          }),
+      setProject({
         'package.json': JSON.stringify({
           reuters: { graphic: { desk: 'singapore' } },
         }),
       });
+      writeProfile('london');
 
       (selectPrompt as Mock).mockResolvedValueOnce('Never called');
       // @ts-expect-error OK to mock
@@ -215,13 +214,10 @@ describe('select prompts', () => {
     });
 
     it('should get from pointer file if not in package.json, then save to package.json', async () => {
-      mockFs({
-        [path.join(os.homedir(), '.reuters-graphics/profile.json')]:
-          JSON.stringify({
-            desk: 'london',
-          }),
+      setProject({
         'package.json': JSON.stringify({}),
       });
+      writeProfile('london');
 
       const value = await getOrSetPkgTextSelect(
         'reuters.graphic.desk',
@@ -234,7 +230,7 @@ describe('select prompts', () => {
     });
 
     it('should validate user input before saving and error if invalid', async () => {
-      mockFs({
+      setProject({
         'locales/en/metadata.json': JSON.stringify({}),
         'package.json': JSON.stringify({}),
       });

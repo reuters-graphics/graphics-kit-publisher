@@ -1,18 +1,14 @@
-import { describe, it, expect, afterEach } from 'vitest';
-import mockFs from 'mock-fs';
+import { describe, it, expect } from 'vitest';
+import { setProject } from '../../../__test__/project';
 import path from 'path';
 import fs from 'fs';
 import { EPS } from './eps';
 import { JPG } from './jpg';
 import { Pack } from '../..';
 
-afterEach(() => {
-  mockFs.restore();
-});
-
 describe('EPS edition', async () => {
   it('should pack up', async () => {
-    mockFs({
+    setProject({
       './media-files/en/map/graphic.JPG': '',
       './media-files/en/map/graphic.eps': '',
     });

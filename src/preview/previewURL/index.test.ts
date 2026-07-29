@@ -1,13 +1,13 @@
-import { describe, it, beforeEach, afterEach, expect } from 'vitest';
-import mockFs from 'mock-fs';
+import { describe, it, beforeEach, expect } from 'vitest';
+import { setProject } from '../../__test__/project';
 
 import { getPreviewURL } from '.';
 import { utils } from '@reuters-graphics/graphics-bin';
 
 describe('getPreviewURL', () => {
   beforeEach(() => {
-    // Mock a fake project structure
-    mockFs({
+    // Write a fake project structure
+    setProject({
       'package.json': JSON.stringify({
         name: 'test-project',
         version: '1.0.0',
@@ -16,13 +16,8 @@ describe('getPreviewURL', () => {
     });
   });
 
-  afterEach(() => {
-    // Restore original file system and working directory
-    mockFs.restore();
-  });
-
   it('returns existing preview URL if present in package.json', () => {
-    // Overwrite the mock package.json to include an existing "reuters.preview"
+    // Add an existing "reuters.preview" to the project's package.json
     const existingPreviewUrl = 'https://example.org/preview-url/';
     utils.setPkgProp('reuters.preview', existingPreviewUrl);
 

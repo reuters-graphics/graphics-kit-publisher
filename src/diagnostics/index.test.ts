@@ -1,11 +1,13 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import mockFs from 'mock-fs';
 import fs from 'fs';
 import path from 'path';
 
+import { projectDir, setProject, type ProjectFiles } from '../__test__/project';
+
 vi.mock('../context', () => ({
   context: {
-    cwd: '/fake/project',
+    // The harness runs each test file from its own temp project directory.
+    cwd: process.cwd(),
     config: { build: { outDir: 'dist/' } },
     pkgMgr: { name: 'pnpm', agent: 'pnpm' },
   },
@@ -16,22 +18,19 @@ import { writeDiagnostics } from './index';
 import { BuildError, PageMetadataError } from '../exceptions/errors';
 import { note } from '@reuters-graphics/clack';
 
-const LATEST = path.join(
-  '/fake/project',
-  '.graphics-kit/diagnostics/latest.md'
-);
+const LATEST = path.join(projectDir, '.graphics-kit/diagnostics/latest.md');
 
 const buildErr = () =>
   new BuildError('App failed to build', {
     code: 'BUILD_FAILED',
-    logPaths: ['/fake/project/.graphics-kit/logs/error.log'],
+    logPaths: [path.join(projectDir, '.graphics-kit/logs/error.log')],
     hint: 'See the logs',
   });
 
 const projectFs = (opts: {
   gitignore?: string;
   git?: boolean;
-}): Parameters<typeof mockFs>[0] => {
+}): ProjectFiles => {
   const project: Record<string, unknown> = {
     '.graphics-kit': {
       logs: {
@@ -43,19 +42,18 @@ const projectFs = (opts: {
   };
   if (opts.git !== false) project['.git'] = { HEAD: 'ref: refs/heads/main' };
   if (opts.gitignore !== undefined) project['.gitignore'] = opts.gitignore;
-  return { '/fake/project': project } as Parameters<typeof mockFs>[0];
+  return project as ProjectFiles;
 };
 
 describe('writeDiagnostics', () => {
   afterEach(() => {
-    mockFs.restore();
     vi.clearAllMocks();
   });
 
-  const GITIGNORE = '/fake/project/.gitignore';
+  const GITIGNORE = path.join(projectDir, '.gitignore');
 
   it('writes latest.md when .graphics-kit is already git-ignored (no .gitignore edit)', () => {
-    mockFs(projectFs({ gitignore: '.graphics-kit/\nnode_modules/' }));
+    setProject(projectFs({ gitignore: '.graphics-kit/\nnode_modules/' }));
 
     const written = writeDiagnostics(buildErr(), 'upload');
 
@@ -76,7 +74,7 @@ describe('writeDiagnostics', () => {
   });
 
   it('appends .graphics-kit/ to .gitignore when not yet ignored, then writes', () => {
-    mockFs(projectFs({ gitignore: 'node_modules/' }));
+    setProject(projectFs({ gitignore: 'node_modules/' }));
 
     const written = writeDiagnostics(buildErr(), 'upload');
 
@@ -87,7 +85,7 @@ describe('writeDiagnostics', () => {
   });
 
   it('creates a .gitignore when the git repo has none, then writes', () => {
-    mockFs(projectFs({ gitignore: undefined }));
+    setProject(projectFs({ gitignore: undefined }));
 
     const written = writeDiagnostics(buildErr(), 'publish');
 
@@ -97,7 +95,7 @@ describe('writeDiagnostics', () => {
   });
 
   it('writes anyway when not in a git repo (no .gitignore created)', () => {
-    mockFs(projectFs({ git: false }));
+    setProject(projectFs({ git: false }));
 
     const written = writeDiagnostics(buildErr(), 'preview');
 
@@ -109,7 +107,7 @@ describe('writeDiagnostics', () => {
   it('omits build logs for an internal rule error (no logPaths)', () => {
     // The build succeeded; the failure was thrown by a publisher rule. The
     // build logs on disk are unrelated noise and must not be surfaced.
-    mockFs(projectFs({ gitignore: '.graphics-kit/\n' }));
+    setProject(projectFs({ gitignore: '.graphics-kit/\n' }));
 
     const ruleErr = new PageMetadataError(
       'No "og:image" tag found in map.html',

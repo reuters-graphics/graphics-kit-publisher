@@ -1,13 +1,15 @@
 import { describe, it, beforeEach, afterEach, expect } from 'vitest';
-import mockFs from 'mock-fs';
+import { setProject } from '../__test__/project';
 
 import { context } from '../context';
 import { getLynxOptions, getConnectOptions } from './publishOptions';
 
 describe('Edition options module', () => {
+  const originalPublishingLocations = context.config.publishingLocations;
+
   beforeEach(() => {
-    mockFs({
-      './package.json': JSON.stringify({
+    setProject({
+      'package.json': JSON.stringify({
         reuters: {
           graphic: {
             archives: {
@@ -55,7 +57,7 @@ describe('Edition options module', () => {
   });
 
   afterEach(() => {
-    mockFs.restore();
+    context.config.publishingLocations = originalPublishingLocations;
   });
 
   describe('getLynxOptions()', () => {
