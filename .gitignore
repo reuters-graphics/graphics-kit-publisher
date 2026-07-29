@@ -159,4 +159,8 @@ dist
 
 dist/
 .size-snapshot.json
-.claude/
+# Ignore Claude Code's local settings but track shared plans. Needs `.claude/*`
+# rather than `.claude/`: git won't descend into an excluded directory, so a
+# negation inside one never matches.
+.claude/*
+!.claude/plans/
