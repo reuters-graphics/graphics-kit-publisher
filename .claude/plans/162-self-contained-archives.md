@@ -251,6 +251,19 @@ Pure, dependency-light, heavily tested. No flow changes; nothing calls it yet.
   the same archives and editions as before, and `preview` output is byte-identical to `main`'s. Verified
   in `test-url-rewrite-scratch` via a `pkg.pr.new` build, not against Sphinx.
 
+  **This can only be verified with the new library installed in the app.** `getBasePath` is called from
+  the app's own `svelte.config.js`/`vite.config.ts`, so the placeholder only appears if *that* copy of the
+  publisher implements it. Confirmed the hard way: building the scratch project with the env var set but
+  the published 3.4.7 installed baked the real `homepage` in all 94 places and no placeholder at all.
+
+- **Trap this exposes, to handle in M4: an *absent* placeholder is as broken as a residual one, and
+  quieter.** If the build didn't pick up the sentinel — version skew between the CLI and the installed
+  library, or an app computing its own base — the output contains real URLs, `assertNoResidualTokens`
+  finds nothing to complain about, and every archive silently ships pointing at the public URL, i.e.
+  today's hub-and-spoke with none of the safety. So M4 must also assert the rewrite *did* something:
+  `rewriteDir` returns per-mapping counts, so fail when `report.total === 0` for an archive whose page
+  should reference the base.
+
 ### M3 — Phase restructuring + front-loaded prompting
 
 The heart of the user-facing change; no rewriting yet.
@@ -277,8 +290,9 @@ The heart of the user-facing change; no rewriting yet.
 ### M4 — Self-contained assembly
 
 - `Interactive.packUp` (`src/pack/edition/types/interactive.ts:123-147`): for media archives, also copy
-  `dist/cdn/**` into `interactive/cdn/`. Then, per archive: rewrite (M1) → assert zero residuals → SRI
-  on the staged copy (D5) → preview image → manifest → zip.
+  `dist/cdn/**` into `interactive/cdn/`. Then, per archive: rewrite (M1) → **assert the rewrite replaced
+  something** (see M2's trap — a zero-replacement archive means the build never saw the placeholder) →
+  assert zero residuals → SRI on the staged copy (D5) → preview image → manifest → zip.
 - **Remove the double pack.** `Archive.createOrUpdate()` calls `packUp()` again
   (`src/pack/archive/index.ts:99`) after `Pack.packUp()` already did (`src/pack/index.ts:128`), and
   `zipDir` deletes the staging dir (`src/utils/zipDir.ts:37`), so everything — including `sharp` image

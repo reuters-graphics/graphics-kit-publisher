@@ -25,6 +25,18 @@ export const PLACEHOLDER_TOKEN = '__GKP_BASE__';
 export const PLACEHOLDER_BASE = `https://www.reuters.com/graphics/${PLACEHOLDER_TOKEN}/`;
 
 /**
+ * How the publisher tells `getBasePath` that this build will be rewritten
+ * per-archive afterwards, so it should hand out {@link PLACEHOLDER_BASE} rather
+ * than a real URL.
+ *
+ * An env var because that's the only channel between the publisher and the build
+ * it spawns — page builders call `getBasePath` from their own config files, so
+ * there's no argument to pass. Set by `buildForProduction` and read by
+ * `getBasePath`; nothing else should touch it.
+ */
+export const PLACEHOLDER_BASE_ENV_VAR = 'PUBLISHER_PLACEHOLDER_BASE';
+
+/**
  * SvelteKit's stand-in host, which leaks into output when a page reads
  * `page.url.href` directly instead of the injected base URL. Not ours to fix,
  * but worth failing on: it means a page baked in a URL we can't rewrite.

@@ -11,9 +11,11 @@ import { context } from '../../../context';
 import mustache from 'mustache';
 import {
   FileNotFoundError,
+  PackageMetadataError,
   PageMetadataError,
 } from '../../../exceptions/errors';
 import { getLocalHTMLPageMetadata } from '../utils/getLocalPageMetadata';
+import { PKG } from '../../../pkg';
 
 export class MediaInteractive extends Edition {
   public static type = 'media-interactive' as const;
@@ -40,6 +42,10 @@ export class MediaInteractive extends Edition {
   private async makeDoc(archiveDir: string, docKey: string) {
     const docValue = context.config.archiveEditions.docs[docKey];
 
+    /**
+     * Still read the page's canonical, but only to check the page has one —
+     * pages without a canonical are a real error worth surfacing here.
+     */
     const { ogUrl } = await getLocalHTMLPageMetadata(this.path);
 
     if (!ogUrl)
@@ -52,8 +58,29 @@ export class MediaInteractive extends Edition {
         }
       );
 
+    /**
+     * The URL clients see comes from package.json, not from the built page. The
+     * project is built against a placeholder base and each archive's copy is
+     * rewritten when it's packed, so the canonical in the page on disk is still
+     * the placeholder at this point — writing it into a client-facing README
+     * would ship an unusable URL.
+     *
+     * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+     */
+    const embedUrl = PKG.archive(this.archive.id).url;
+
+    if (!embedUrl)
+      throw new PackageMetadataError(
+        `No URL yet for archive "${this.archive.id}", needed to write "${docKey}".`,
+        {
+          code: 'MISSING_EDITION_URL',
+          hint: 'Archives get their URL reserved from the graphics server before they are packed — run the upload command rather than packing directly.',
+          context: { archive: this.archive.id, doc: docKey },
+        }
+      );
+
     const docContext = {
-      embedUrl: ogUrl,
+      embedUrl,
       embedSlug: this.archive.id,
       year: new Date().getFullYear().toString(),
     };

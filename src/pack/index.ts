@@ -104,6 +104,14 @@ export class Pack {
 
     this.separateAssets.setUrl();
 
+    /**
+     * One build, against a placeholder base URL. There used to be a second one
+     * here: the first discovered which archives existed, the second baked in the
+     * URLs that discovery had just reserved. Each archive's copy of this output
+     * is rewritten to its own URL when it's packed instead.
+     *
+     * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+     */
     await buildForProduction();
     const finder = new Finder(this);
     finder.findEditions(publicOnly);
@@ -111,7 +119,6 @@ export class Pack {
     for (const archive of this.archives) {
       await archive.getMetadata();
     }
-    await buildForProduction();
     await this.packUp();
     for (const archive of this.archives) {
       await archive.createOrUpdate();
