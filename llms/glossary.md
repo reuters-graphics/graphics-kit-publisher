@@ -69,7 +69,7 @@ description: Key terms for the graphics kit publisher and the Sphinx graphics se
 
 **Self-contained archive** — Every archive carries its own copy of the page(s) and assets it serves, pointing at its own URL. Re-uploading one archive therefore can't break another, which is what makes it safe to upload only some of them.
 
-**Archive selection** — Which archives an `upload` sends: `graphics-publisher upload --archives public,media-en-map` (archive IDs, exactly as the prompt and logs show them), or an interactive prompt when the flag is omitted. CI with no flag uploads everything. Unselected archives are left untouched on the server and keep serving.
+**Archive selection** — Which archives an `upload` sends: `graphics-publisher upload --archives public,media-en-map` (archive IDs, exactly as the prompt and logs show them), or an interactive prompt when the flag is omitted. CI with no flag uploads everything. Unselected archives are left untouched on the server; any previously uploaded keep serving.
 
 **Preview** — A build uploaded to the testfiles S3 bucket for review, before creating a real graphics-server pack (`graphics-publisher preview`).
 

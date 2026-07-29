@@ -207,21 +207,19 @@ export class Pack {
     return this.selectedArchives ?? this.archives;
   }
 
-  /** Summarise what the unattended part of the run is about to do. */
+  /**
+   * Summarise what the unattended part of the run is about to do.
+   *
+   * Only what's being uploaded. An earlier version also listed what was being
+   * skipped, saying those archives went on being served from their own copies —
+   * true of an archive that has been uploaded before, and false of one that
+   * hasn't, which is exactly when someone would be misled.
+   */
   private logPlan() {
     const rows = this.selected.map((archive) => {
       const status = PKG.archive(archive.id).uploaded ? 'update' : 'new';
       return `${picocolors.cyan(archive.id)} ${picocolors.dim(status)}`;
     });
-    const skipped = this.archives.filter(
-      (archive) => !this.selected.includes(archive)
-    );
-    if (skipped.length)
-      rows.push(
-        picocolors.dim(
-          `\nSkipping ${skipped.map((a) => a.id).join(', ')} — still served from their own archives.`
-        )
-      );
     note(rows.join('\n'), 'Uploading');
   }
 
