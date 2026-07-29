@@ -170,12 +170,17 @@ Phase 3(d) validates and throws with a clear message.
   pages, no dotcom page. This matches the issue's wording and keeps archives as small as
   self-containment allows.
 
-Consequence to accept, narrowed by the M0 spike: because we copy the whole `cdn/`, a media archive
-contains the full client route manifest *and every route node chunk* — the spike found
-`"/embeds/en/page"` in `entry/app.*.js` and all six `nodes/*.js` present inside a `media-en-map`
-archive. So a **client-side** navigation to a sibling route renders fine; SvelteKit doesn't need the
-sibling's HTML for an SPA transition. Only a **hard load** of `{archive-url}/embeds/en/page` 404s, and
-nothing in an embed links there.
+Consequence, narrowed by the M0 spike: because we copy the whole `cdn/`, a media archive contains the
+full client route manifest *and every route node chunk* — the spike found `"/embeds/en/page"` in
+`entry/app.*.js` and all six `nodes/*.js` present inside a `media-en-map` archive. So a **client-side**
+navigation to a sibling route renders fine; SvelteKit doesn't need the sibling's HTML for an SPA
+transition. Only a **hard load** of `{archive-url}/embeds/en/page` 404s.
+
+**But we don't want authors relying on that.** The stated expectation is that an embed is a single page:
+no internal routing, no links to other pages in the project. That it happens to work via client-side
+routing is an accident of bundling the whole `cdn/`, not a supported feature — the HTML for those pages
+isn't in the archive, so any hard load, refresh or shared link breaks. M6 documents this as an explicit
+assumption rather than leaving authors to discover the edges.
 
 Consequence for the code: assembly stays two paths (public = whole build, media = page + `cdn/`), so
 `Interactive.packUp` keeps its `archive.type` branch rather than becoming uniform.
@@ -291,23 +296,67 @@ The heart of the user-facing change; no rewriting yet.
 
 ### M5 — Selection
 
-- `--archives <slugs>` on `upload` (`src/cli.ts:84-88`, threaded through `src/index.ts:32-37` →
-  `Pack.upload()`); validate slugs against discovered archives and list valid ones on error.
-- Interactive multiselect when no arg (reuse `src/prompts/multiselect.ts`, already used by `publish`).
-- CI (`utils.environment.isCiEnvironment()`) with no arg → upload all, i.e. today's behaviour.
-- `upload:quick` becomes sugar for `--archives public`; note it currently diverges via
-  `finder.findEditions(publicOnly)` (`src/finder/index.ts:36-44`) and skipping separate assets — decide
-  whether selection replaces the `publicOnly` flag entirely.
-- **Exit:** selecting one of several archives uploads exactly one; skipped archives still serve.
+**The prompt.** clack's `groupMultiselect` (available in the installed 1.7.0), grouped so the publishing
+consequence of each option is legible, and so all embeds can be taken or dropped in one keystroke —
+`selectableGroups` defaults to `true`, which is the reason for choosing this prompt over a flat
+`multiselect`:
+
+```
+◆  Which archives do you want to upload?
+│  ◻ reuters.com
+│  │  ◻ public                        updates existing
+│  ◻ embeds
+│  │  ◻ en-map                        updates existing
+│  │  ◻ en-page                       new
+│  │  ◻ en-israel-leban…-strikes-map  new
+```
+
+- **Groups** — `reuters.com` holds the `public` archive; `embeds` holds the media archives.
+- **Labels are display-only.** `public` stays as-is; media archives drop the `media-` prefix
+  (`media-en-map` → `en-map`), since it's on every one of them and carries no information.
+- **Truncate long labels in the middle, not the end.** Cap at 30 characters with a `…`. Tail truncation
+  is precisely the wrong cut here: sibling embeds routinely share a long prefix and differ in the final
+  token (`…-strikes-map` vs `…-strikes-chart`), so cutting the end can render two options identical.
+  Middle truncation keeps both the locale and the distinguishing tail.
+- **Hint carries status, not the full slug** — `new` or `updates existing`, from
+  `PKG.archive(id).uploaded`. `finder.logFound()` (`src/finder/index.ts:22-31`) has just printed every
+  full archive id immediately above the prompt, so repeating it there wastes the line; status is the
+  thing the user can't otherwise see.
+- **`initialValues`: everything.** Pressing enter reproduces today's upload-all behaviour.
+- Wrapper at `src/prompts/groupMultiselect.ts`, mirroring `src/prompts/multiselect.ts` — thin, and
+  handling `isCancel` → `cancel('Cancelled')` → `process.exit(0)`.
+
+**The flag.** `--archives <slugs>` on `upload` (`src/cli.ts:84-88`, threaded through `src/index.ts:32-37`
+→ `Pack.upload()`) takes **canonical** archive ids — `public`, `media-en-map` — because those are what
+the server, `package.json` and the docs use. Also accept the shortened display form and canonicalise it,
+so anything a user reads off the prompt works when scripted. Validate against discovered archives; on an
+unknown value, error listing the canonical ids.
+
+**Defaults.** CI (`utils.environment.isCiEnvironment()`) with no flag → upload all, i.e. today's
+behaviour. `upload:quick` becomes sugar for `--archives public`; it currently diverges via
+`finder.findEditions(publicOnly)` (`src/finder/index.ts:36-44`) and by skipping separate assets, so decide
+whether selection replaces the `publicOnly` flag outright.
+
+- **Exit:** selecting one of several archives uploads exactly one; skipped archives are untouched on the
+  server; a slug typo fails fast with a useful list.
 
 ### M6 — Docs + changeset
 
 `docs/content/docs/page-builders.mdx:105-129` and `llms/page-building.md:61-70` document the two-pass
 build explicitly and must be rewritten; `llms/glossary.md:68` defines "Two-pass build" as a term.
 Also: `docs/content/docs/sphinx.mdx:78-89` (interactive edition file tree gains `cdn/`),
-`docs/content/docs/commands.mdx:26-62` (`upload` / `upload:quick`), `docs/content/docs/package.mdx`,
-`docs/content/docs/Config/build.mdx`, and the `getBasePath` JSDoc at `src/basePaths.ts:48-96` (rendered
-into API docs). `HOME.md:143-164` states the invariant this change reverses — update or retire it.
+`docs/content/docs/commands.mdx:26-62` (`upload` / `upload:quick`, plus `--archives` and the selection
+prompt), `docs/content/docs/package.mdx`, `docs/content/docs/Config/build.mdx`, and the `getBasePath`
+JSDoc at `src/basePaths.ts:48-96` (rendered into API docs). `HOME.md:143-164` states the invariant this
+change reverses — update or retire it.
+
+**New doc requirement: state that an embed is a single page.** No internal routing, no links to other
+pages in the project. Only the embed's own HTML is hoisted into its archive, so a link to a sibling page
+has no HTML to land on. It will *appear* to work in testing because the whole `cdn/` ships with every
+archive and SvelteKit routes client-side — but a hard load, refresh or shared link 404s. Say this
+positively (an embed is one page) rather than as a list of caveats, and put it where authors are building
+embeds: `docs/content/docs/page-builders.mdx` and `docs/content/docs/sphinx.mdx`, plus
+`llms/page-building.md` for the agent-facing copy.
 
 Changeset: **minor**. Add it in the final commit so the open patch-release PR (#165) stays independently
 mergeable until then.
