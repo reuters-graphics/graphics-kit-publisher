@@ -53,10 +53,23 @@ export const Editions = v.array(
   ])
 );
 
+export const Embed = v.object({
+  declaration: v.string(),
+  dependencies: v.string(),
+});
+
+/**
+ * `embed` stays optional here — statics-only archives never get one — but it
+ * must be declared or `validateOrThrow` strips it from its output object,
+ * which is what `Archive.createOrUpdate` sends to the server.
+ * @see https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+ */
 export const Metadata = v.required(
   v.object({
     language: Language,
     title: Title,
     description: Description,
-  })
+    embed: v.optional(Embed),
+  }),
+  ['language', 'title', 'description']
 );

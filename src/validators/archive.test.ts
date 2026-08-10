@@ -64,6 +64,43 @@ describe('archive validators', () => {
     }).not.toThrowError();
   });
 
+  it('should keep embed metadata through validation', () => {
+    // https://github.com/reuters-graphics/graphics-kit-publisher/issues/162
+    // `embed` used to be missing from this schema, so valibot's default
+    // key-stripping silently dropped it from validateOrThrow's output —
+    // which is the object actually sent to the server.
+    const metadata = {
+      language: 'en',
+      title: 'A title',
+      description: 'A description',
+      embed: {
+        declaration: '<div data-embed-slug="foo"></div>',
+        dependencies: '<script src="foo.js"></script>',
+      },
+    };
+
+    expect(validateOrThrow(archive.Metadata, metadata)).toEqual(metadata);
+  });
+
+  it('should validate embed without requiring it', () => {
+    expect(() => {
+      validateOrThrow(archive.Metadata, {
+        language: 'en',
+        title: 'A title',
+        description: 'A description',
+      });
+    }).not.toThrowError();
+
+    expect(() => {
+      validateOrThrow(archive.Metadata, {
+        language: 'en',
+        title: 'A title',
+        description: 'A description',
+        embed: { declaration: 'missing dependencies' },
+      });
+    }).toThrowError();
+  });
+
   it('should validate editions', () => {
     expect(() => {
       validateOrThrow(archive.Editions, [
