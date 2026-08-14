@@ -246,7 +246,7 @@ type Preview = {
    * branches previewing at once don't overwrite each other.
    *
    * The subdirectory is the branch name slugified, e.g.
-   * `https://graphics.thomsonreuters.com/testfiles/2025/ayzrxlqerve/feat-new-map/`.
+   * `https://graphics.thomsonreuters.com/testfiles/2025/ayzrxlqerve/_branches/feat-new-map/`.
    *
    * Set to `false` for the old behaviour, where every branch shares one URL.
    *

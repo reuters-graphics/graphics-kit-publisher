@@ -65,7 +65,17 @@ describe('getPreviewURL', () => {
   it('puts a branch in its own subdirectory of the preview root', () => {
     process.env.GITHUB_HEAD_REF = 'feat/new-map';
 
-    expect(getPreviewURL()).toBe(`${ROOT}feat-new-map/`);
+    expect(getPreviewURL()).toBe(`${ROOT}_branches/feat-new-map/`);
+  });
+
+  it('keeps branch builds clear of the canonical build’s own directories', () => {
+    // "cdn" and "embeds" are real output directories, and every top-level route
+    // is one too — "world-cup-2026" is a page *and* a plausible branch name.
+    // Without the reserved directory these upload over the canonical preview,
+    // corrupting the thing per-branch previews exist to protect.
+    for (const name of ['cdn', 'embeds', 'world-cup-2026']) {
+      expect(getPreviewURL(name)).toBe(`${ROOT}_branches/${name}/`);
+    }
   });
 
   it('keeps the trailing slash when the root has none', () => {
@@ -73,8 +83,18 @@ describe('getPreviewURL', () => {
     process.env.GITHUB_HEAD_REF = 'feat/new-map';
 
     expect(getPreviewURL()).toBe(
-      'https://example.org/preview-url/feat-new-map/'
+      'https://example.org/preview-url/_branches/feat-new-map/'
     );
+  });
+
+  it('returns a directory URL for the root too, when package.json lacks the slash', () => {
+    // Everything downstream — the S3 key prefix, the base path handed to the
+    // build — treats this as a directory, so it can't depend on how the URL was
+    // hand-typed into package.json.
+    utils.setPkgProp('reuters.preview', 'https://example.org/preview-url');
+    process.env.GITHUB_REF_NAME = 'main';
+
+    expect(getPreviewURL()).toBe('https://example.org/preview-url/');
   });
 
   it('publishes a root branch to the preview root itself', () => {
@@ -105,7 +125,7 @@ describe('getPreviewURL', () => {
 
     const url = getPreviewURL();
 
-    expect(url).toBe(`${ROOT}feat-new-map/`);
+    expect(url).toBe(`${ROOT}_branches/feat-new-map/`);
     expect(utils.getPkgProp('reuters.preview')).toBe(ROOT);
   });
 
@@ -119,6 +139,6 @@ describe('getPreviewURL', () => {
     const root = utils.getPkgProp('reuters.preview') as string;
 
     expect(root).toBeDefined();
-    expect(url).toBe(`${root}feat-new-map/`);
+    expect(url).toBe(`${root}_branches/feat-new-map/`);
   });
 });

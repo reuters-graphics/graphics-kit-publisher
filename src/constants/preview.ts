@@ -15,3 +15,18 @@ export const PREVIEW_ORIGIN = `https://${PREVIEW_HOST}`;
  * @see PLACEHOLDER_BASE_ENV_VAR in `src/constants/rewrite.ts`
  */
 export const PREVIEW_BASE_ENV_VAR = 'PUBLISHER_PREVIEW_BASE';
+
+/**
+ * Directory branch previews live in, beneath the project's preview root.
+ *
+ * Reserved rather than putting the branch slug straight under the root, because
+ * the root holds the canonical build's own top-level directories — `cdn`,
+ * `embeds`, and every top-level route the project has. A branch named after any
+ * of them (`world-cup-2026` is a real page *and* a plausible branch) would
+ * upload itself over the canonical preview's files, corrupting exactly the
+ * thing per-branch previews exist to protect.
+ *
+ * The leading underscore keeps it clear of route names, which can't start with
+ * one in any of our page builders.
+ */
+export const BRANCH_DIR = '_branches';

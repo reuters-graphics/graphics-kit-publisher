@@ -1,4 +1,4 @@
-import { toMerged } from 'es-toolkit';
+import { cloneDeep, mergeWith } from 'es-toolkit';
 import type { Config, UserConfig } from './types';
 import { ASSETS_DIR } from '../constants/build';
 
@@ -25,8 +25,31 @@ export { validateConfig } from './validate';
  * @returns User config merged with defaults
  */
 export const defineConfig = (userConfig: UserConfig) => {
-  return toMerged(defaultConfig, userConfig) as Config;
+  // cloneDeep because mergeWith mutates its target, and the target here is the
+  // shared defaultConfig singleton — without it, one defineConfig call would
+  // leak into the next.
+  return mergeWith(
+    cloneDeep(defaultConfig),
+    userConfig,
+    replaceArrays
+  ) as Config;
 };
+
+/**
+ * Make a user's array replace the default outright, rather than merging into it
+ * index by index.
+ *
+ * The default merge is positional, so `rootBranches: ['develop']` over a default
+ * of `['main', 'master']` would quietly yield `['develop', 'master']` — the user
+ * asks for one root branch and silently gets two. `[]` couldn't clear a default
+ * at all. Replacing is what anyone writing a config list expects, and it's what
+ * makes a non-empty array default safe to ship.
+ *
+ * Returning `undefined` for everything else leaves object merging alone, so
+ * partial config keeps working as before.
+ */
+const replaceArrays = (_target: unknown, source: unknown) =>
+  Array.isArray(source) ? source : undefined;
 
 export const defaultConfig: Config = {
   build: {

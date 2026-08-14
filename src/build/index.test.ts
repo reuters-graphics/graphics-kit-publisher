@@ -178,12 +178,14 @@ describe('build (async spawn)', () => {
     // Expect the output directory was cleaned
     expect(cleanOutDir).toHaveBeenCalledWith(path.join(projectDir, 'dist'));
 
-    // Expect spawn was called with correct arguments
-    // No `env` at all: a preview build inherits the environment untouched, and
-    // must not be handed the placeholder base — its URL is already known.
+    // A preview build inherits the environment, and must not be handed the
+    // placeholder base — its URL is already known.
     expect(spawn).toHaveBeenCalledWith('npm', ['run', 'build:preview'], {
       stdio: ['inherit', 'pipe', 'pipe'],
       cwd: projectDir,
+      env: expect.not.objectContaining({
+        [PLACEHOLDER_BASE_ENV_VAR]: expect.anything(),
+      }),
     });
 
     // Expect zero-length files to be deleted
@@ -307,6 +309,29 @@ describe('build (async spawn)', () => {
 
       expect(spawnEnv()).not.toHaveProperty(PREVIEW_BASE_ENV_VAR);
       delete process.env[PREVIEW_BASE_ENV_VAR];
+    });
+
+    it('strips both stale bases even from a build that sets neither', async () => {
+      // The guarantee can't be conditional on the publisher happening to set one
+      // of them: these two variables are the publisher's to say, so every build
+      // it spawns gets exactly what it's entitled to and nothing left over.
+      process.env[PLACEHOLDER_BASE_ENV_VAR] = PLACEHOLDER_BASE;
+      process.env[PREVIEW_BASE_ENV_VAR] = 'https://example.org/stale/';
+
+      await buildForPreview();
+
+      expect(spawnEnv()).not.toHaveProperty(PLACEHOLDER_BASE_ENV_VAR);
+      expect(spawnEnv()).not.toHaveProperty(PREVIEW_BASE_ENV_VAR);
+      delete process.env[PREVIEW_BASE_ENV_VAR];
+    });
+
+    it('leaves the rest of the environment alone', async () => {
+      process.env.SOME_PROJECT_VAR = 'kept';
+
+      await buildForPreview('https://example.org/preview/feat/');
+
+      expect(spawnEnv()).toMatchObject({ SOME_PROJECT_VAR: 'kept' });
+      delete process.env.SOME_PROJECT_VAR;
     });
   });
 });

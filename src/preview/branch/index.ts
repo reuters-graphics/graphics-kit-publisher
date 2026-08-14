@@ -50,6 +50,17 @@ const gitBranch = () => {
   return runGit(['rev-parse', '--short', 'HEAD']);
 };
 
+export interface ResolvedBranch {
+  /** The branch name. */
+  name: string;
+  /**
+   * Whether the name came from a pull request's head ref, which is chosen by
+   * whoever opened the pull request. See {@link getPreviewBranchSlug} for why
+   * that matters.
+   */
+  fromPullRequestHead: boolean;
+}
+
 /**
  * Work out which branch this preview belongs to.
  *
@@ -62,20 +73,26 @@ const gitBranch = () => {
  * `GITHUB_HEAD_REF` is the branch the author pushed and would recognise.
  *
  * @param override An explicit branch name, e.g. from `--branch`
- * @returns The branch name, or `undefined` if nothing could name it
+ * @returns The branch and where it came from, or `undefined` if nothing named it
  */
-export const resolveBranch = (override?: string): string | undefined => {
+export const resolveBranch = (
+  override?: string
+): ResolvedBranch | undefined => {
   const candidates = [
-    override,
-    process.env[PREVIEW_BRANCH_ENV_VAR],
-    process.env.GITHUB_HEAD_REF,
-    process.env.GITHUB_REF_NAME,
+    { value: override, fromPullRequestHead: false },
+    {
+      value: process.env[PREVIEW_BRANCH_ENV_VAR],
+      fromPullRequestHead: false,
+    },
+    { value: process.env.GITHUB_HEAD_REF, fromPullRequestHead: true },
+    { value: process.env.GITHUB_REF_NAME, fromPullRequestHead: false },
   ];
-  for (const candidate of candidates) {
-    const trimmed = candidate?.trim();
-    if (trimmed) return trimmed;
+  for (const { value, fromPullRequestHead } of candidates) {
+    const name = value?.trim();
+    if (name) return { name, fromPullRequestHead };
   }
-  return gitBranch() || undefined;
+  const name = gitBranch();
+  return name ? { name, fromPullRequestHead: false } : undefined;
 };
 
 /**
@@ -118,14 +135,29 @@ export const slugifyBranch = (branch: string) => {
  */
 export const getPreviewBranchSlug = (override?: string | false) => {
   const { perBranch, rootBranches } = context.config.preview;
-  if (perBranch === false || override === false) return undefined;
+  if (override === false) return undefined;
+  // An explicit `--branch` outranks `perBranch: false`. The flag's whole purpose
+  // is to put this one preview somewhere specific, so honouring the config here
+  // would silently do the opposite of what was asked — and land the build on the
+  // shared root, on top of whatever is being reviewed there.
+  if (perBranch === false && override === undefined) return undefined;
+
   const branch = resolveBranch(override);
   if (!branch) return undefined;
+
+  // A pull request's head ref is named by whoever opened the pull request, and
+  // "main" is what you get by default when someone works on their fork without
+  // branching. Letting that claim the root exemption would let an outside
+  // contributor's build overwrite the canonical preview in any workflow that
+  // makes credentials available to pull requests. A head ref is never canonical,
+  // whatever it's called.
+  const mayUseRoot = !branch.fromPullRequestHead;
   // Matched on the branch name rather than its slug, so what you write in the
   // config is the branch you'd type at a terminal.
   const isRootBranch = rootBranches.some(
-    (rootBranch) => rootBranch.toLowerCase() === branch.toLowerCase()
+    (rootBranch) => rootBranch.toLowerCase() === branch.name.toLowerCase()
   );
-  if (isRootBranch) return undefined;
-  return slugifyBranch(branch);
+  if (mayUseRoot && isRootBranch) return undefined;
+
+  return slugifyBranch(branch.name);
 };

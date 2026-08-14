@@ -29,12 +29,16 @@ interface BuildOptions {
 }
 
 /**
- * The environment a build gets, when it needs one beyond the inherited default.
+ * The environment a build gets: everything inherited, with the two base-URL
+ * variables set to exactly what this build is entitled to and nothing else.
  *
- * The two base-URL channels are mutually exclusive, and this is where that's
- * enforced: `getBasePath` checks the placeholder first and unconditionally, so a
- * stale `PUBLISHER_PLACEHOLDER_BASE` left exported in a shell would otherwise
- * bake `__GKP_BASE__` into a preview and upload it with nothing to rewrite it.
+ * Applied to every build, not only the ones setting a variable. These two are
+ * the publisher's to say, and `getBasePath` checks the placeholder first and
+ * unconditionally — so a stale `PUBLISHER_PLACEHOLDER_BASE` left exported in
+ * someone's shell would otherwise bake `__GKP_BASE__` into a preview and upload
+ * it with nothing to rewrite it. Stripping only when the publisher happens to be
+ * setting the other one would leave that hole open for any build that sets
+ * neither.
  */
 const buildEnv = (options: BuildOptions) => {
   const env = { ...process.env };
@@ -87,11 +91,7 @@ const buildApp = async (buildScript: string, options: BuildOptions = {}) => {
     const child = spawn(pkgMgr?.agent || 'npm', ['run', buildScript], {
       stdio: ['inherit', 'pipe', 'pipe'],
       cwd,
-      // Only passed when there's something to say: an inherited environment is
-      // the default.
-      ...(options.placeholderBase || options.previewBase ?
-        { env: buildEnv(options) }
-      : {}),
+      env: buildEnv(options),
     });
 
     child.stdout?.on('data', (data) => {

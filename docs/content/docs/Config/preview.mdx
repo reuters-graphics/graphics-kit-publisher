@@ -11,10 +11,12 @@ Preview options control where [`preview`](/graphics-kit-publisher/commands/#prev
 By default, each branch gets its own subdirectory of your project's preview URL, so two people previewing at once don't overwrite each other's build:
 
 ```
-https://graphics.thomsonreuters.com/testfiles/2025/ayzrxlqerve/feat-new-map/
+https://graphics.thomsonreuters.com/testfiles/2025/ayzrxlqerve/_branches/feat-new-map/
 ```
 
 The subdirectory is the branch name slugified — `feat/new-map` becomes `feat-new-map`.
+
+Branch builds sit under a reserved `_branches/` directory rather than directly beneath the preview root. The root holds your canonical build's own top-level directories — `cdn`, `embeds`, and every top-level route — and a branch named after one of them would otherwise upload itself over those files. `world-cup-2026` is a real page on one of our projects *and* a perfectly plausible branch name.
 
 <Aside type="note">
 Nothing to do in your project. `getBasePath('preview')` returns the branch's URL while the publisher is building it, so your page builder gets the right base path on its own.
@@ -40,6 +42,8 @@ export default defineConfig({
 });
 ```
 
+An explicit `--branch <name>` still wins over `perBranch: false` — the flag exists to put one preview somewhere specific, and quietly sending it to the shared root instead would land it on top of whatever is being reviewed there. Use `--no-branch` when you do mean the root.
+
 ## rootBranches
 
 - **Type:** `string[]`
@@ -49,14 +53,22 @@ Branches that publish to your preview URL itself rather than a subdirectory of i
 
 Matched case-insensitively against the branch name, not its slug — write the branch as you'd type it at a terminal.
 
+Your list replaces the default outright rather than adding to it, so this publishes only `develop` to the root, and `master` gets a subdirectory like any other branch:
+
 ```typescript
 // publisher.config.ts
 export default defineConfig({
   preview: {
-    rootBranches: ['main', 'develop'],
+    rootBranches: ['develop'],
   },
 });
 ```
+
+Set it to `[]` if no branch should publish to the root.
+
+<Aside type="note">
+A pull request's head branch never qualifies, whatever it's named. The head ref is chosen by whoever opened the pull request — and `main` is what you get by default from anyone working on a fork without branching — so honouring it would let an outside contribution publish over your canonical preview in any workflow that makes credentials available to pull requests.
+</Aside>
 
 ## How the branch is worked out
 

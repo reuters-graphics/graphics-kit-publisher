@@ -1,4 +1,4 @@
-import { PREVIEW_ORIGIN } from '../../constants/preview';
+import { BRANCH_DIR, PREVIEW_ORIGIN } from '../../constants/preview';
 import cryptoRandomString from 'crypto-random-string';
 import urljoin from 'url-join';
 import { PKG } from '../../pkg';
@@ -13,7 +13,11 @@ import { getPreviewBranchSlug } from '../branch';
  */
 export const getPreviewRoot = () => {
   const preview = PKG.preview;
-  if (preview) return preview;
+  // Normalised to a directory URL. The publisher always writes one with a
+  // trailing slash, but package.json is hand-editable, and everything
+  // downstream — the S3 key prefix, the base path handed to the build, the
+  // branch segment joined onto it — treats this as a directory.
+  if (preview) return preview.endsWith('/') ? preview : `${preview}/`;
   const hash = cryptoRandomString({ length: 12, type: 'url-safe' }).replace(
     /[^A-Za-z0-9]/g,
     ''
@@ -44,5 +48,5 @@ export const getPreviewURL = (branch?: string | false) => {
   // urljoin normalises the root's trailing slash for us; we add our own back
   // because the rest of the preview flow (and the S3 path derived from it)
   // expects a directory URL.
-  return `${urljoin(root, slug)}/`;
+  return `${urljoin(root, BRANCH_DIR, slug)}/`;
 };

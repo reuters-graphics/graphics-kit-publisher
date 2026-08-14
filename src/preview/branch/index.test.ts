@@ -69,33 +69,42 @@ describe('slugifyBranch', () => {
 describe('resolveBranch', () => {
   it('prefers an explicit override over everything else', () => {
     process.env.GITHUB_HEAD_REF = 'from-head-ref';
-    expect(resolveBranch('explicit')).toBe('explicit');
+    expect(resolveBranch('explicit')).toEqual({
+      name: 'explicit',
+      fromPullRequestHead: false,
+    });
   });
 
   it('reads the override env var when there is no argument', () => {
     process.env[PREVIEW_BRANCH_ENV_VAR] = 'from-env';
     process.env.GITHUB_HEAD_REF = 'from-head-ref';
-    expect(resolveBranch()).toBe('from-env');
+    expect(resolveBranch()?.name).toBe('from-env');
   });
 
-  it('prefers GITHUB_HEAD_REF over GITHUB_REF_NAME', () => {
+  it('prefers GITHUB_HEAD_REF over GITHUB_REF_NAME, and marks it as a PR head', () => {
     // On a pull_request event GITHUB_REF_NAME is the merge ref — "395/merge" —
     // while GITHUB_HEAD_REF is the branch the author would recognise.
     process.env.GITHUB_HEAD_REF = 'feat/the-real-branch';
     process.env.GITHUB_REF_NAME = '395/merge';
-    expect(resolveBranch()).toBe('feat/the-real-branch');
+    expect(resolveBranch()).toEqual({
+      name: 'feat/the-real-branch',
+      fromPullRequestHead: true,
+    });
   });
 
   it('falls back to GITHUB_REF_NAME on a push, where there is no head ref', () => {
     process.env.GITHUB_REF_NAME = 'main';
-    expect(resolveBranch()).toBe('main');
+    expect(resolveBranch()).toEqual({
+      name: 'main',
+      fromPullRequestHead: false,
+    });
   });
 
   it('ignores blank values rather than treating them as a branch', () => {
     // GitHub sets GITHUB_HEAD_REF to an empty string on non-PR events.
     process.env.GITHUB_HEAD_REF = '';
     process.env.GITHUB_REF_NAME = 'main';
-    expect(resolveBranch()).toBe('main');
+    expect(resolveBranch()?.name).toBe('main');
   });
 });
 
@@ -141,12 +150,47 @@ describe('getPreviewBranchSlug', () => {
 
   it('returns nothing when per-branch previews are switched off', () => {
     context.config.preview.perBranch = false;
-    process.env.GITHUB_HEAD_REF = 'feat/new-map';
+    process.env.GITHUB_REF_NAME = 'feat/new-map';
     expect(getPreviewBranchSlug()).toBeUndefined();
   });
 
   it('honours an explicit branch over the environment', () => {
     process.env.GITHUB_HEAD_REF = 'feat/from-the-environment';
     expect(getPreviewBranchSlug('feat/explicit')).toBe('feat-explicit');
+  });
+
+  it('honours an explicit branch even when per-branch previews are off', () => {
+    // Ignoring the flag here wouldn't just do nothing — it would send the build
+    // to the shared root, on top of whatever is being reviewed there.
+    context.config.preview.perBranch = false;
+    expect(getPreviewBranchSlug('spike')).toBe('spike');
+  });
+
+  it('still lets an explicit --no-branch win over an explicit branch name', () => {
+    expect(getPreviewBranchSlug(false)).toBeUndefined();
+  });
+
+  describe('pull request head refs', () => {
+    it('never treats a head ref as a root branch, whatever it is called', () => {
+      // A head ref is named by whoever opened the pull request, and "main" is
+      // the default for anyone working on a fork without branching. Letting it
+      // claim the exemption would publish an outside contributor's build over
+      // the canonical preview wherever credentials reach pull requests.
+      process.env.GITHUB_HEAD_REF = 'main';
+      process.env.GITHUB_REF_NAME = '395/merge';
+
+      expect(getPreviewBranchSlug()).toBe('main');
+    });
+
+    it('also isolates a head ref named master', () => {
+      process.env.GITHUB_HEAD_REF = 'master';
+      expect(getPreviewBranchSlug()).toBe('master');
+    });
+
+    it('still lets a real push to main use the root', () => {
+      // The same name, arriving the way GitHub reports a push, is canonical.
+      process.env.GITHUB_REF_NAME = 'main';
+      expect(getPreviewBranchSlug()).toBeUndefined();
+    });
   });
 });
