@@ -1,8 +1,52 @@
 import { BRANCH_DIR, PREVIEW_ORIGIN } from '../../constants/preview';
 import cryptoRandomString from 'crypto-random-string';
-import urljoin from 'url-join';
 import { PKG } from '../../pkg';
 import { getPreviewBranchSlug } from '../branch';
+import { PackageConfigError } from '../../exceptions/errors';
+
+/**
+ * Read `reuters.preview` as a directory URL.
+ *
+ * Parsed rather than string-patched, because the whole preview flow reads this
+ * value two incompatible ways: a browser resolves it as a URL, while the S3 key
+ * prefix comes from the serialized string. Anything that lives outside the
+ * pathname makes those two disagree — append a slash to
+ * `…/project?stage=1` and the upload goes to `project?stage=1/…` while the
+ * browser asks for `/project`, so the published objects and the advertised URL
+ * address different prefixes entirely.
+ *
+ * A query or fragment has no meaningful S3-prefix semantics, so this rejects
+ * rather than quietly dropping it: the value is hand-edited, and silently
+ * publishing somewhere other than what's written in package.json is worse than
+ * saying so.
+ */
+const asDirectoryURL = (preview: string) => {
+  let url: URL;
+  try {
+    url = new URL(preview);
+  } catch {
+    throw new PackageConfigError(
+      `"reuters.preview" in package.json isn't a valid URL: ${preview}`,
+      {
+        code: 'INVALID_PREVIEW_URL',
+        hint: 'Set it to an absolute URL, or remove it and the publisher will make you a new one.',
+        context: { preview },
+      }
+    );
+  }
+  if (url.search || url.hash) {
+    throw new PackageConfigError(
+      `"reuters.preview" in package.json can't have a ${url.search ? 'query string' : 'fragment'}: ${preview}`,
+      {
+        code: 'INVALID_PREVIEW_URL',
+        hint: 'The preview URL is also an S3 directory, so it has to be just an origin and a path.',
+        context: { preview, search: url.search, hash: url.hash },
+      }
+    );
+  }
+  if (!url.pathname.endsWith('/')) url.pathname += '/';
+  return url;
+};
 
 /**
  * Gets the project's preview root from package.json. Sets a random one if it
@@ -13,11 +57,7 @@ import { getPreviewBranchSlug } from '../branch';
  */
 export const getPreviewRoot = () => {
   const preview = PKG.preview;
-  // Normalised to a directory URL. The publisher always writes one with a
-  // trailing slash, but package.json is hand-editable, and everything
-  // downstream — the S3 key prefix, the base path handed to the build, the
-  // branch segment joined onto it — treats this as a directory.
-  if (preview) return preview.endsWith('/') ? preview : `${preview}/`;
+  if (preview) return asDirectoryURL(preview).toString();
   const hash = cryptoRandomString({ length: 12, type: 'url-safe' }).replace(
     /[^A-Za-z0-9]/g,
     ''
@@ -42,11 +82,13 @@ export const getPreviewRoot = () => {
  * @returns The preview URL, with a trailing slash
  */
 export const getPreviewURL = (branch?: string | false) => {
-  const root = getPreviewRoot();
   const slug = getPreviewBranchSlug(branch);
+  const root = getPreviewRoot();
   if (!slug) return root;
-  // urljoin normalises the root's trailing slash for us; we add our own back
-  // because the rest of the preview flow (and the S3 path derived from it)
-  // expects a directory URL.
-  return `${urljoin(root, BRANCH_DIR, slug)}/`;
+  // Extended on the pathname rather than joined onto the serialized string, so
+  // the segment can only ever land in the part of the URL that becomes the S3
+  // prefix. `asDirectoryURL` guarantees the pathname ends in a slash.
+  const url = new URL(root);
+  url.pathname += `${BRANCH_DIR}/${slug}/`;
+  return url.toString();
 };

@@ -4,6 +4,7 @@ import { isolateBranchEnv } from '../../__test__/branchEnv';
 import { context } from '../../context';
 
 import { getPreviewRoot, getPreviewURL } from '.';
+import { PackageConfigError } from '../../exceptions/errors';
 import { utils } from '@reuters-graphics/graphics-bin';
 
 isolateBranchEnv();
@@ -95,6 +96,47 @@ describe('getPreviewURL', () => {
     process.env.GITHUB_REF_NAME = 'main';
 
     expect(getPreviewURL()).toBe('https://example.org/preview-url/');
+  });
+
+  describe('a hand-edited root that isn’t just an origin and a path', () => {
+    // The preview URL is read two incompatible ways: a browser resolves it as a
+    // URL, while the S3 key prefix is taken from the serialized string. Patching
+    // a slash onto the end of `…/project?stage=1` uploads to
+    // `project?stage=1/_branches/feat/` while the browser asks for `/project` —
+    // the objects and the advertised URL stop addressing the same prefix.
+    it('rejects a query string rather than publishing somewhere else', () => {
+      utils.setPkgProp(
+        'reuters.preview',
+        'https://example.org/project?stage=1'
+      );
+      process.env.GITHUB_HEAD_REF = 'feat/new-map';
+
+      expect(() => getPreviewURL()).toThrow(PackageConfigError);
+      expect(() => getPreviewURL()).toThrow(/query string/);
+    });
+
+    it('rejects a fragment for the same reason', () => {
+      utils.setPkgProp('reuters.preview', 'https://example.org/project#frag');
+      process.env.GITHUB_HEAD_REF = 'feat/new-map';
+
+      expect(() => getPreviewURL()).toThrow(PackageConfigError);
+      expect(() => getPreviewURL()).toThrow(/fragment/);
+    });
+
+    it('rejects something that isn’t a URL at all', () => {
+      utils.setPkgProp('reuters.preview', 'not-a-url');
+
+      expect(() => getPreviewURL()).toThrow(PackageConfigError);
+    });
+
+    it('leaves a legitimate root untouched', () => {
+      // Guard against over-eager normalising: nothing about a normal URL should
+      // change, including one already ending in a slash.
+      utils.setPkgProp('reuters.preview', ROOT);
+      process.env.GITHUB_REF_NAME = 'main';
+
+      expect(getPreviewURL()).toBe(ROOT);
+    });
   });
 
   it('publishes a root branch to the preview root itself', () => {

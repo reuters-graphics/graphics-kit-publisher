@@ -50,7 +50,7 @@ const gitBranch = () => {
   return runGit(['rev-parse', '--short', 'HEAD']);
 };
 
-export interface ResolvedBranch {
+interface ResolvedBranch {
   /** The branch name. */
   name: string;
   /**
