@@ -2,6 +2,7 @@ import url from 'url';
 import urljoin from 'url-join';
 import { PKG } from './pkg';
 import { PLACEHOLDER_BASE_ENV_VAR } from './constants/rewrite';
+import { PREVIEW_BASE_ENV_VAR } from './constants/preview';
 
 const TESTING_BASE_PATH = 'https://www.reuters.com/graphics/testing/';
 
@@ -43,7 +44,13 @@ const getBasePathByMode = (
     case 'test':
       return TESTING_BASE_PATH;
     case 'preview':
-      return PKG.preview!;
+      /**
+       * The publisher sets this when the preview isn't going to the URL saved
+       * in package.json — a branch preview lands in a subdirectory of it. A
+       * build you run yourself sees nothing set and gets package.json's value,
+       * exactly as before.
+       */
+      return process.env[PREVIEW_BASE_ENV_VAR] ?? PKG.preview!;
     case 'prod':
       return PKG.homepage || '';
     default:
@@ -101,7 +108,9 @@ interface Options {
  * Returns a static fake URL you can use for testing.
  *
  * #### `preview`
- * Returns the URL saved to `"reuters.graphic.preview"` in package.json.
+ * Returns the URL saved to `"reuters.preview"` in package.json — or, when the
+ * publisher is running a branch preview, that URL plus the branch's own
+ * subdirectory. Nothing to do on your side either way.
  *
  * #### `prod`
  * Returns the URL saved to `"homepage"` in package.json.

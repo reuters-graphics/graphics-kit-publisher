@@ -13,6 +13,19 @@ const prog = sade('graphics-publisher');
  * value arrives as `true`, which we treat as "not specified" so the user still
  * gets the prompt rather than a confusing error.
  */
+/**
+ * Read `--branch feat/thing` into a branch name, and `--no-branch` into `false`,
+ * which publishes to the preview URL itself.
+ *
+ * A bare `--branch` with no value arrives as `true`, which we treat as "not
+ * specified" — that's already what omitting it does, so the run works rather
+ * than erroring over a flag the user clearly meant as a no-op.
+ */
+const parseBranch = (value?: string | boolean) => {
+  if (value === false) return false;
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+};
+
 const parseArchives = (value?: string | boolean) =>
   typeof value === 'string' ?
     value
@@ -90,8 +103,14 @@ const exitCleanly = (code: number) => {
 
 prog
   .command('preview')
-  .action(() =>
-    runCommand('preview', () => new GraphicsKitPublisher().preview())
+  .option(
+    '--branch',
+    'Publish under this branch name instead of the current one. Pass --no-branch to publish to the preview URL itself.'
+  )
+  .action((opts: { branch?: string | boolean }) =>
+    runCommand('preview', () =>
+      new GraphicsKitPublisher().preview(parseBranch(opts.branch))
+    )
   );
 
 prog

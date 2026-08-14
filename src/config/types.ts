@@ -240,6 +240,30 @@ interface EditionPublishingLocations {
 
 type PublishingLocations = EditionPublishingLocations[];
 
+type Preview = {
+  /**
+   * Give each branch its own subdirectory beneath the preview URL, so two
+   * branches previewing at once don't overwrite each other.
+   *
+   * The subdirectory is the branch name slugified, e.g.
+   * `https://graphics.thomsonreuters.com/testfiles/2025/ayzrxlqerve/_branches/feat-new-map/`.
+   *
+   * Set to `false` for the old behaviour, where every branch shares one URL.
+   *
+   * @defaultValue `true`
+   */
+  perBranch: boolean;
+  /**
+   * Branches that publish to the preview URL itself rather than a subdirectory
+   * of it, so the project's canonical preview link keeps working.
+   *
+   * Matched case-insensitively against the branch name, not its slug.
+   *
+   * @defaultValue `['main', 'master']`
+   */
+  rootBranches: string[];
+};
+
 export type Config = {
   build: Build;
   packLocations: PackLocations;
@@ -247,6 +271,7 @@ export type Config = {
   archiveEditions: ArchiveEditions;
   embedTemplate: EmbedTemplate;
   publishingLocations: PublishingLocations;
+  preview: Preview;
   /**
    * When a command fails, whether to offer an AI diagnosis handoff to Claude
    * Code. `'prompt'` (default) asks interactively; `'off'` disables it.

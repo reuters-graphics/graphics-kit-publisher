@@ -15,13 +15,19 @@ export { PKG } from './pkg';
 
 export class GraphicsKitPublisher {
   /**
-   * Build and publish a preview of your project
+   * Build and publish a preview of your project.
+   *
+   * Previews land in a subdirectory named for the current branch, so two
+   * branches previewing at once don't overwrite each other.
+   *
+   * @param branch Publish under this branch name instead of the current one, or
+   * `false` to publish to the preview URL itself. Omit for the usual behaviour.
    */
   @loadConfig
   @withIntroOutro
-  async preview() {
+  async preview(branch?: string | false) {
     log.info(`Running: ${picocolors.green('preview')}`);
-    await uploadPreview();
+    await uploadPreview(branch);
   }
 
   /**

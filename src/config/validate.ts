@@ -109,6 +109,12 @@ const ConfigSchema = v.required(
         ),
       })
     ),
+    preview: v.required(
+      v.object({
+        perBranch: v.boolean(),
+        rootBranches: v.array(v.pipe(v.string(), v.nonEmpty())),
+      })
+    ),
     ai: v.union([v.literal('prompt'), v.literal('off')]),
   })
 );
