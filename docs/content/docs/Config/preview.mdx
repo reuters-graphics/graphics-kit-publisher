@@ -1,0 +1,76 @@
+---
+title: Preview
+sidebar:
+  order: 17
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Preview options control where [`preview`](/graphics-kit-publisher/commands/#preview) publishes to.
+
+By default, each branch gets its own subdirectory of your project's preview URL, so two people previewing at once don't overwrite each other's build:
+
+```
+https://graphics.thomsonreuters.com/testfiles/2025/ayzrxlqerve/feat-new-map/
+```
+
+The subdirectory is the branch name slugified — `feat/new-map` becomes `feat-new-map`.
+
+<Aside type="note">
+Nothing to do in your project. `getBasePath('preview')` returns the branch's URL while the publisher is building it, so your page builder gets the right base path on its own.
+
+The branch part is worked out fresh on every run and is **never** written to package.json. The URL saved there stays the one URL every branch agrees on — otherwise it would be a different value on each branch, which is a standing merge conflict in the one file every branch touches.
+</Aside>
+
+## perBranch
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Whether to give each branch its own subdirectory.
+
+Set to `false` for the old behaviour, where every branch publishes to the same URL and the last preview to run wins.
+
+```typescript
+// publisher.config.ts
+export default defineConfig({
+  preview: {
+    perBranch: false,
+  },
+});
+```
+
+## rootBranches
+
+- **Type:** `string[]`
+- **Default:** `['main', 'master']`
+
+Branches that publish to your preview URL itself rather than a subdirectory of it, so the link you've shared for the project keeps working.
+
+Matched case-insensitively against the branch name, not its slug — write the branch as you'd type it at a terminal.
+
+```typescript
+// publisher.config.ts
+export default defineConfig({
+  preview: {
+    rootBranches: ['main', 'develop'],
+  },
+});
+```
+
+## How the branch is worked out
+
+In order, the publisher uses:
+
+1. The `--branch` flag
+2. `PUBLISHER_PREVIEW_BRANCH`
+3. `GITHUB_HEAD_REF`, which GitHub Actions sets on a pull request
+4. `GITHUB_REF_NAME`, which it sets on a push
+5. `git rev-parse --abbrev-ref HEAD`
+6. The short commit hash, if the checkout has no branch
+
+The environment comes before git deliberately. `actions/checkout` leaves a detached HEAD, so git alone can't name the branch in CI — the one place branch previews matter most. And `GITHUB_HEAD_REF` comes first because on a pull request `GITHUB_REF_NAME` is the merge ref, `395/merge`, rather than the branch you'd recognise.
+
+<Aside type="caution">
+Slugs are lossy, so two branches can collide: `feat/a-b` and `feat-a-b` both give `feat-a-b` and would share a preview. Rare enough that it's worth keeping URLs readable — but if you hit it, pass `--branch` to name one of them something else.
+</Aside>

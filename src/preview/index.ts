@@ -10,10 +10,10 @@ import { log } from '@clack/prompts';
 import picocolors from 'picocolors';
 import { buildForPreview } from '../build';
 
-export const uploadPreview = async () => {
-  const url = getPreviewURL();
+export const uploadPreview = async (branch?: string | false) => {
+  const url = getPreviewURL(branch);
 
-  await buildForPreview();
+  await buildForPreview(url);
 
   const bucketDirPath = url.replace(PREVIEW_ORIGIN + '/', '');
 

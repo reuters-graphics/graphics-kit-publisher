@@ -1,6 +1,6 @@
 ---
 name: Configuration
-description: Reference for publisher.config.ts options — build, packLocations, metadataPointers, archiveEditions, embedTemplate, and publishingLocations.
+description: Reference for publisher.config.ts options — build, packLocations, metadataPointers, archiveEditions, embedTemplate, publishingLocations, and preview.
 ---
 
 # Configuration
@@ -16,7 +16,7 @@ export default defineConfig({
 });
 ```
 
-Options are grouped into six keys: `build`, `packLocations`, `metadataPointers`, `archiveEditions`, `embedTemplate`, `publishingLocations`. `packLocations` and `metadataPointers` are covered in depth in [page-building.md](./page-building.md) and [pack-metadata.md](./pack-metadata.md) respectively and summarized here.
+Options are grouped into seven keys: `build`, `packLocations`, `metadataPointers`, `archiveEditions`, `embedTemplate`, `publishingLocations`, `preview`. `packLocations` and `metadataPointers` are covered in depth in [page-building.md](./page-building.md) and [pack-metadata.md](./pack-metadata.md) respectively and summarized here.
 
 ## build
 
@@ -121,3 +121,23 @@ publishingLocations: [
 - **archive** — a `string` or `RegExp` matching an [archive ID](./graphics-server.md#archive-naming).
 - **availableLocations.lynx** — whether matching archives may be promoted/searchable in [Lynx](./glossary.md#publishing-destinations).
 - **availableLocations.connect** — whether matching archives may publish to [Reuters Connect](./glossary.md#publishing-destinations).
+
+## preview
+
+Where `graphics-publisher preview` publishes to.
+
+```typescript
+preview: {
+  perBranch: true,
+  rootBranches: ['main', 'master'],
+}
+```
+
+- **perBranch** — whether each branch previews to its own subdirectory of the project's preview URL, e.g. `https://graphics.thomsonreuters.com/testfiles/2025/ayzrxlqerve/feat-new-map/`. Default `true`. Set `false` for the old behaviour, where every branch shares one URL and the last preview to run wins.
+- **rootBranches** — branches that publish to the preview URL itself rather than a subdirectory, so the project's canonical preview link keeps working. Matched case-insensitively against the branch name, not its slug. Default `['main', 'master']`.
+
+The subdirectory is the branch name slugified — `feat/new-map` → `feat-new-map`. The branch is resolved from, in order: `--branch`, `PUBLISHER_PREVIEW_BRANCH`, `GITHUB_HEAD_REF`, `GITHUB_REF_NAME`, `git rev-parse --abbrev-ref HEAD`, then the short commit hash. Environment before git because `actions/checkout` leaves a detached HEAD; `GITHUB_HEAD_REF` before `GITHUB_REF_NAME` because on a pull request the latter is the merge ref (`395/merge`).
+
+**The branch part is never written to `package.json`.** It's derived per run, so `reuters.preview` stays one stable URL every branch agrees on rather than a per-branch value that conflicts on merge and dirties the working tree after a preview. `getBasePath('preview')` picks up the branch URL from the environment during a publisher-driven build (see [page-building.md](./page-building.md#base-paths)), so projects need no change.
+
+Pass `--branch <name>` to publish under a different name, or `--no-branch` to publish to the preview URL itself.

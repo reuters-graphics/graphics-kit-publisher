@@ -5,6 +5,7 @@ import {
   PLACEHOLDER_BASE,
   PLACEHOLDER_BASE_ENV_VAR,
 } from './constants/rewrite';
+import { PREVIEW_BASE_ENV_VAR } from './constants/preview';
 
 describe('getBasePath', () => {
   beforeEach(() => {
@@ -138,6 +139,61 @@ describe('getBasePath', () => {
 
       const assets = getBasePath('prod', 'cdn');
       expect(assets).toBe('cdn');
+    });
+  });
+
+  describe('preview base (publisher-driven branch previews)', () => {
+    const BRANCH_URL = 'https://www.reuters.com/graphics/my-graphic/preview/x/';
+
+    afterEach(() => {
+      delete process.env[PREVIEW_BASE_ENV_VAR];
+      delete process.env[PLACEHOLDER_BASE_ENV_VAR];
+    });
+
+    it('uses the URL the publisher is actually uploading to', () => {
+      // This is what lets a consuming app pick up branch previews without
+      // changing a line: it goes on calling getBasePath('preview') as before.
+      process.env[PREVIEW_BASE_ENV_VAR] = BRANCH_URL;
+
+      expect(
+        getBasePath('preview', { trailingSlash: true, rootRelative: false })
+      ).toBe(BRANCH_URL);
+    });
+
+    it('applies the usual transforms to it', () => {
+      process.env[PREVIEW_BASE_ENV_VAR] = BRANCH_URL;
+
+      expect(getBasePath('preview')).toBe('/graphics/my-graphic/preview/x');
+      expect(getBasePath('preview', 'cdn')).toBe(
+        '/graphics/my-graphic/preview/x/cdn'
+      );
+    });
+
+    it('affects only preview mode', () => {
+      process.env[PREVIEW_BASE_ENV_VAR] = BRANCH_URL;
+
+      expect(
+        getBasePath('prod', { trailingSlash: true, rootRelative: false })
+      ).toBe('https://www.reuters.com/graphics/my-graphic/');
+      expect(getBasePath('dev')).toBe('');
+    });
+
+    it('is inert when unset, falling back to package.json', () => {
+      expect(
+        getBasePath('preview', { trailingSlash: true, rootRelative: false })
+      ).toBe('https://www.reuters.com/graphics/my-graphic/preview/');
+    });
+
+    it('still yields to the placeholder, which outranks every mode', () => {
+      // Belt and braces: buildForPreview strips the placeholder from the child
+      // environment, so the two should never both be set. If they somehow are,
+      // the publisher-is-going-to-rewrite-this signal has to win.
+      process.env[PREVIEW_BASE_ENV_VAR] = BRANCH_URL;
+      process.env[PLACEHOLDER_BASE_ENV_VAR] = PLACEHOLDER_BASE;
+
+      expect(
+        getBasePath('preview', { trailingSlash: true, rootRelative: false })
+      ).toBe(PLACEHOLDER_BASE);
     });
   });
 

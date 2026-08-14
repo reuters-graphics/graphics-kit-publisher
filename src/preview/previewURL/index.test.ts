@@ -1,12 +1,17 @@
-import { describe, it, beforeEach, expect } from 'vitest';
+import { describe, it, beforeEach, afterEach, expect } from 'vitest';
 import { setProject } from '../../__test__/project';
+import { isolateBranchEnv } from '../../__test__/branchEnv';
+import { context } from '../../context';
 
-import { getPreviewURL } from '.';
+import { getPreviewRoot, getPreviewURL } from '.';
 import { utils } from '@reuters-graphics/graphics-bin';
 
-describe('getPreviewURL', () => {
+isolateBranchEnv();
+
+const ROOT = 'https://example.org/preview-url/';
+
+describe('getPreviewRoot', () => {
   beforeEach(() => {
-    // Write a fake project structure
     setProject({
       'package.json': JSON.stringify({
         name: 'test-project',
@@ -16,30 +21,104 @@ describe('getPreviewURL', () => {
     });
   });
 
-  it('returns existing preview URL if present in package.json', () => {
-    // Add an existing "reuters.preview" to the project's package.json
-    const existingPreviewUrl = 'https://example.org/preview-url/';
-    utils.setPkgProp('reuters.preview', existingPreviewUrl);
+  it('returns the existing preview URL if present in package.json', () => {
+    utils.setPkgProp('reuters.preview', ROOT);
 
-    const result = getPreviewURL();
-    expect(result).toBe(existingPreviewUrl);
+    expect(getPreviewRoot()).toBe(ROOT);
 
     // Verify that it did NOT get overwritten
-    expect(utils.getPkgProp('reuters.preview')).toBe(existingPreviewUrl);
+    expect(utils.getPkgProp('reuters.preview')).toBe(ROOT);
   });
 
-  it('generates a new preview URL if none is present', () => {
-    expect(utils.getPkgProp('reuters.preview')).toBeUndefined(); // no preview property initially
+  it('generates and saves a preview URL if none is present', () => {
+    expect(utils.getPkgProp('reuters.preview')).toBeUndefined();
 
-    const result = getPreviewURL();
+    const result = getPreviewRoot();
 
-    // The result should be the newly set preview URL
-    expect(result).toMatch(/^https?:\/\//); // Simple check that it's a URL
-    // You can optionally check the year and path structure:
+    expect(result).toMatch(/^https?:\/\//);
     const currentYear = new Date().getFullYear().toString();
     expect(result).toContain(`/testfiles/${currentYear}/`);
 
     // Confirm it was saved to package.json
     expect(utils.getPkgProp('reuters.preview')).toBe(result);
+  });
+});
+
+describe('getPreviewURL', () => {
+  const originalPreview = context.config.preview;
+
+  beforeEach(() => {
+    setProject({
+      'package.json': JSON.stringify({
+        name: 'test-project',
+        version: '1.0.0',
+        reuters: { preview: ROOT },
+      }),
+    });
+    context.config.preview = { ...originalPreview };
+  });
+
+  afterEach(() => {
+    context.config.preview = originalPreview;
+  });
+
+  it('puts a branch in its own subdirectory of the preview root', () => {
+    process.env.GITHUB_HEAD_REF = 'feat/new-map';
+
+    expect(getPreviewURL()).toBe(`${ROOT}feat-new-map/`);
+  });
+
+  it('keeps the trailing slash when the root has none', () => {
+    utils.setPkgProp('reuters.preview', 'https://example.org/preview-url');
+    process.env.GITHUB_HEAD_REF = 'feat/new-map';
+
+    expect(getPreviewURL()).toBe(
+      'https://example.org/preview-url/feat-new-map/'
+    );
+  });
+
+  it('publishes a root branch to the preview root itself', () => {
+    process.env.GITHUB_REF_NAME = 'main';
+
+    expect(getPreviewURL()).toBe(ROOT);
+  });
+
+  it('publishes to the root when the caller asks for it', () => {
+    process.env.GITHUB_HEAD_REF = 'feat/new-map';
+
+    expect(getPreviewURL(false)).toBe(ROOT);
+  });
+
+  it('publishes to the root when per-branch previews are off', () => {
+    context.config.preview.perBranch = false;
+    process.env.GITHUB_HEAD_REF = 'feat/new-map';
+
+    expect(getPreviewURL()).toBe(ROOT);
+  });
+
+  it('never writes the branch URL back to package.json', () => {
+    // The whole point of splitting root from branch. Writing it back would put
+    // a different value in package.json on every branch — a standing merge
+    // conflict — and leave the working tree dirty after a preview, which some
+    // projects read as "there's publish metadata to commit".
+    process.env.GITHUB_HEAD_REF = 'feat/new-map';
+
+    const url = getPreviewURL();
+
+    expect(url).toBe(`${ROOT}feat-new-map/`);
+    expect(utils.getPkgProp('reuters.preview')).toBe(ROOT);
+  });
+
+  it('mints a root, then hangs the branch beneath it, when there is none yet', () => {
+    setProject({
+      'package.json': JSON.stringify({ name: 'test-project', reuters: {} }),
+    });
+    process.env.GITHUB_HEAD_REF = 'feat/new-map';
+
+    const url = getPreviewURL();
+    const root = utils.getPkgProp('reuters.preview') as string;
+
+    expect(root).toBeDefined();
+    expect(url).toBe(`${root}feat-new-map/`);
   });
 });

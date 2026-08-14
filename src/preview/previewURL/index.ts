@@ -1,11 +1,17 @@
 import { PREVIEW_ORIGIN } from '../../constants/preview';
 import cryptoRandomString from 'crypto-random-string';
+import urljoin from 'url-join';
 import { PKG } from '../../pkg';
+import { getPreviewBranchSlug } from '../branch';
 
 /**
- * Gets preview URL from package.json. Sets a random URL if one hasn't been set yet.
+ * Gets the project's preview root from package.json. Sets a random one if it
+ * hasn't been set yet.
+ *
+ * This is the value branch previews hang beneath, and the only preview URL ever
+ * written to package.json — see {@link getPreviewURL}.
  */
-export const getPreviewURL = () => {
+export const getPreviewRoot = () => {
   const preview = PKG.preview;
   if (preview) return preview;
   const hash = cryptoRandomString({ length: 12, type: 'url-safe' }).replace(
@@ -15,4 +21,28 @@ export const getPreviewURL = () => {
   const url = `${PREVIEW_ORIGIN}/testfiles/${new Date().getFullYear()}/${hash}/`;
   PKG.preview = url;
   return url;
+};
+
+/**
+ * Gets the URL this preview should publish to: the project's preview root, plus
+ * a subdirectory for the current branch.
+ *
+ * The branch part is deliberately *not* saved to package.json. It's derived
+ * afresh each run, so package.json holds one stable URL that every branch
+ * agrees on. Writing the branch URL there instead would put a different value
+ * in the one file every branch touches — a standing merge conflict — and would
+ * leave the working tree dirty after a preview, which some projects treat as a
+ * signal that there's publish metadata to commit.
+ *
+ * @param branch An explicit branch name, or `false` to publish to the root
+ * @returns The preview URL, with a trailing slash
+ */
+export const getPreviewURL = (branch?: string | false) => {
+  const root = getPreviewRoot();
+  const slug = getPreviewBranchSlug(branch);
+  if (!slug) return root;
+  // urljoin normalises the root's trailing slash for us; we add our own back
+  // because the rest of the preview flow (and the S3 path derived from it)
+  // expects a directory URL.
+  return `${urljoin(root, slug)}/`;
 };
