@@ -71,6 +71,6 @@ description: Key terms for the graphics kit publisher and the Sphinx graphics se
 
 **Archive selection** — Which archives an `upload` sends: `graphics-publisher upload --archives public,media-en-map` (archive IDs, exactly as the prompt and logs show them), or an interactive prompt when the flag is omitted. CI with no flag uploads everything. Unselected archives are left untouched on the server; any previously uploaded keep serving.
 
-**Preview** — A build uploaded to the testfiles S3 bucket for review, before creating a real graphics-server pack (`graphics-publisher preview`).
+**Preview** — A build uploaded to the testfiles S3 bucket for review, before creating a real graphics-server pack (`graphics-publisher preview`). One per git branch, under a per-project root prefix (`reuters.preview.root`) that `publish` deletes wholesale.
 
 **`.graphics-kit/`** — A working directory the publisher manages in the project root (build logs, packing, temp files); excluded from packed archives. Its `logs/` holds `error.log` (build `stderr`) and `out.log` (build `stdout`), overwritten and timestamped each build — read `error.log` to diagnose a failed `preview`/`upload` build.

@@ -79,7 +79,7 @@ export default config;
 
 ### Preview pages
 
-Before calling your [preview build script](/graphics-kit-publisher/config/build/#buildscripts), the publisher generates a unique URL and saves it to your `package.json`, which you can then use to satisfy page builders' base path requirements:
+Before calling your [preview build script](/graphics-kit-publisher/config/build/#buildscripts), the publisher works out this branch's preview URL and saves it to your `package.json`, which you can then use to satisfy page builders' base path requirements:
 
 ```json
 // package.json
@@ -88,8 +88,12 @@ Before calling your [preview build script](/graphics-kit-publisher/config/build/
     "build:preview": "PREVIEW=true vite build"
   },
   "reuters": {
-    "graphic": {
-      "preview": "https://graphics.thomsonreuters.com/testfiles/2025/your-project/"
+    "preview": {
+      "root": "testfiles/2026/your-project/",
+      "branches": {
+        "main": "https://graphics.thomsonreuters.com/testfiles/2026/your-project/main/",
+        "feat-new-chart": "https://graphics.thomsonreuters.com/testfiles/2026/your-project/feat-new-chart/"
+      }
     }
   }
 }
@@ -99,8 +103,17 @@ Before calling your [preview build script](/graphics-kit-publisher/config/build/
 import { getBasePath } from '@reuters-graphics/graphics-kit-publisher';
 
 const basePath = getBasePath('preview');
-// '/testfiles/2025/your-project'
+// on main:            '/testfiles/2026/your-project/main'
+// on feat/new-chart:  '/testfiles/2026/your-project/feat-new-chart'
 ```
+
+Each git branch gets [its own preview](/graphics-kit-publisher/package/#preview), so previewing a feature branch won't overwrite the preview someone published from another branch. `getBasePath('preview')` picks the entry for whichever branch you're on, so there's nothing to change in your config.
+
+<Aside>
+The branch is read from git (or, in CI, from GitHub Actions' environment). On a detached `HEAD` there's no branch to find, so set `PUBLISHER_PREVIEW_BRANCH` to name one yourself.
+
+If a branch hasn't been previewed yet, `getBasePath('preview')` returns `''` — the same way `prod` does before your first upload.
+</Aside>
 
 ### Production pages
 

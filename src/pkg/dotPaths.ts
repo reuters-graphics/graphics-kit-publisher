@@ -1,5 +1,13 @@
 export const dotPaths = {
-  preview: 'reuters.preview',
+  preview: {
+    /** The whole `{ root, branches }` object — read to detect the legacy string shape. */
+    self: 'reuters.preview',
+    root: 'reuters.preview.root',
+    branches: 'reuters.preview.branches',
+    branch: {
+      url: (slug: string) => `reuters.preview.branches.${slug}` as const,
+    },
+  },
   homepage: 'homepage',
   separateAssets: 'reuters.separateAssets',
   pack: {

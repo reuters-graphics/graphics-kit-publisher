@@ -10,6 +10,8 @@ import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
 Build and upload a preview of your project to our testfiles S3 bucket.
 
+Each git branch gets its own preview, so previewing a feature branch won't overwrite the preview someone published from another branch. The URLs are saved [per branch](/graphics-kit-publisher/package/#preview) in your `package.json`.
+
 <Tabs>
   <TabItem label="CLI" icon="setting">
     ```console
@@ -22,6 +24,10 @@ Build and upload a preview of your project to our testfiles S3 bucket.
     ```
   </TabItem>
 </Tabs>
+
+<Aside>
+If the publisher can't work out your git branch — a detached `HEAD`, or a directory that isn't a git repo — it warns and publishes to a shared `"_"` preview that everyone else in that state also uses. Set `PUBLISHER_PREVIEW_BRANCH=<name>` to get a path of your own.
+</Aside>
 
 ## Upload
 

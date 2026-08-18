@@ -261,7 +261,7 @@ The `build` script will run your page builder, which should build the pages and 
 
 The `build:preview` will be run during the publisher's `preview` command.
 
-Before the publisher runs either `build` or `build:preview`, it will fill out the `homepage` or `reuters.preview` property in package.json, respectively, with the eventual URL the root `index.html` page will be published to. Your page builder can then access that info for use in filling out metatags and absolutely referencing static assets.
+Before the publisher runs either `build` or `build:preview`, it will fill out the `homepage` or `reuters.preview.branches.<branch-slug>` property in package.json, respectively, with the eventual URL the root `index.html` page will be published to. (Previews are published per git branch, so `reuters.preview` holds a `root` prefix plus one entry per branch.) Your page builder can then access that info for use in filling out metatags and absolutely referencing static assets.
 
 ## Reuters Graphics user profiles
 

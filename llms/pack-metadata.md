@@ -111,7 +111,9 @@ Use `PKG` getters for typed access instead of reading `package.json` directly:
 import { PKG } from '@reuters-graphics/graphics-kit-publisher';
 
 PKG.homepage; // 'https://www.reuters.com/graphics/.../'
-PKG.preview; // preview URL
+PKG.preview.root; // 'testfiles/2026/XXXX/' — S3 key prefix, NOT a URL
+PKG.preview.branches; // { 'main': 'https://.../main/' } — per git branch
+PKG.preview.branch('main').url; // one branch's preview URL
 PKG.separateAssets; // S3 assets.zip URL
 PKG.pack.id; // Sphinx pack ID
 PKG.pack.desk; // 'london'

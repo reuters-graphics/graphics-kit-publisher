@@ -2,6 +2,7 @@ import url from 'url';
 import urljoin from 'url-join';
 import { PKG } from './pkg';
 import { PLACEHOLDER_BASE_ENV_VAR } from './constants/rewrite';
+import { currentBranchSlug } from './git/branch';
 
 const TESTING_BASE_PATH = 'https://www.reuters.com/graphics/testing/';
 
@@ -42,8 +43,23 @@ const getBasePathByMode = (
   switch (mode) {
     case 'test':
       return TESTING_BASE_PATH;
+    /**
+     * One preview per git branch, so a feature branch's preview doesn't
+     * overwrite another's. The branch is resolved from git (or the CI
+     * environment) and looked up in the map the publisher wrote to
+     * `package.json` before spawning this build.
+     *
+     * Reads the *recorded* entry rather than composing `root + slug`: a branch
+     * nobody has previewed yet then resolves to nothing, instead of to a URL with
+     * no files behind it.
+     *
+     * Read-only, deliberately. Minting a preview is `uploadPreview`'s job — a
+     * build config that wrote to `package.json` as a side effect of being loaded
+     * would be a nasty surprise, and in a publisher-driven run it would race the
+     * publisher's own write.
+     */
     case 'preview':
-      return PKG.preview!;
+      return PKG.preview.branch(currentBranchSlug()).url ?? '';
     case 'prod':
       return PKG.homepage || '';
     default:
@@ -101,7 +117,17 @@ interface Options {
  * Returns a static fake URL you can use for testing.
  *
  * #### `preview`
- * Returns the URL saved to `"reuters.graphic.preview"` in package.json.
+ * Returns the preview URL for the **current git branch**, from
+ * `"reuters.preview.branches"` in package.json — the publisher writes it there
+ * before running your preview build.
+ *
+ * The branch is taken from `PUBLISHER_PREVIEW_BRANCH`, then GitHub Actions'
+ * `GITHUB_HEAD_REF` / `GITHUB_REF_NAME`, then `git rev-parse`. Set
+ * `PUBLISHER_PREVIEW_BRANCH` to override it — useful on a detached HEAD, where
+ * there's no branch to find.
+ *
+ * Returns `''` if this branch has no preview yet, the same way `prod` does before
+ * a first upload.
  *
  * #### `prod`
  * Returns the URL saved to `"homepage"` in package.json.

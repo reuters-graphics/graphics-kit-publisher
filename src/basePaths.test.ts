@@ -1,22 +1,60 @@
 import { describe, it, beforeEach, afterEach, expect } from 'vitest';
-import { setProject } from './__test__/project';
+import fs from 'fs';
+import path from 'path';
+import { projectDir, setProject } from './__test__/project';
 import { getBasePath } from './basePaths';
 import {
   PLACEHOLDER_BASE,
   PLACEHOLDER_BASE_ENV_VAR,
 } from './constants/rewrite';
+import { resetBranchCache } from './git/branch';
+
+/**
+ * The preview base is now per branch, so these tests pin the branch through the
+ * env override rather than depending on the repo's checked-out branch.
+ */
+const PREVIEW_URL = 'https://www.reuters.com/graphics/my-graphic/preview/';
+
+const onBranch = (branch: string) => {
+  process.env.PUBLISHER_PREVIEW_BRANCH = branch;
+  resetBranchCache();
+};
+
+const BRANCH_ENV_VARS = [
+  'PUBLISHER_PREVIEW_BRANCH',
+  'GITHUB_HEAD_REF',
+  'GITHUB_REF_NAME',
+] as const;
+
+const savedBranchEnv: Record<string, string | undefined> = {};
 
 describe('getBasePath', () => {
   beforeEach(() => {
+    for (const envVar of BRANCH_ENV_VARS) {
+      savedBranchEnv[envVar] = process.env[envVar];
+      delete process.env[envVar];
+    }
     setProject({
       'package.json': JSON.stringify({
         name: 'test-project',
         homepage: 'https://www.reuters.com/graphics/my-graphic/',
         reuters: {
-          preview: 'https://www.reuters.com/graphics/my-graphic/preview/',
+          preview: {
+            root: 'testfiles/2026/ab12cd34ef56/',
+            branches: { main: PREVIEW_URL },
+          },
         },
       }),
     });
+    onBranch('main');
+  });
+
+  afterEach(() => {
+    for (const envVar of BRANCH_ENV_VARS) {
+      if (savedBranchEnv[envVar] === undefined) delete process.env[envVar];
+      else process.env[envVar] = savedBranchEnv[envVar];
+    }
+    resetBranchCache();
   });
 
   describe('dev mode', () => {
@@ -94,6 +132,130 @@ describe('getBasePath', () => {
       const base = getBasePath('preview', 'extra-path');
       expect(base).toBe('/graphics/my-graphic/preview/extra-path');
     });
+
+    it('resolves the entry for the current branch', () => {
+      setProject({
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          reuters: {
+            preview: {
+              root: 'testfiles/2026/ab12cd34ef56/',
+              branches: {
+                main: 'https://graphics.thomsonreuters.com/testfiles/2026/ab12cd34ef56/main/',
+                'feat-x':
+                  'https://graphics.thomsonreuters.com/testfiles/2026/ab12cd34ef56/feat-x/',
+              },
+            },
+          },
+        }),
+      });
+
+      onBranch('main');
+      expect(getBasePath('preview')).toBe('/testfiles/2026/ab12cd34ef56/main');
+
+      onBranch('feat/x');
+      expect(getBasePath('preview')).toBe(
+        '/testfiles/2026/ab12cd34ef56/feat-x'
+      );
+    });
+
+    /**
+     * A branch nobody has previewed yet resolves to nothing rather than to a URL
+     * with no files behind it — and never mints one, because a build config must
+     * not write to package.json as a side effect of being loaded.
+     */
+    it('returns an empty string for a branch with no preview, without writing one', () => {
+      onBranch('never-previewed');
+
+      expect(getBasePath('preview')).toBe('');
+
+      const pkg = JSON.parse(
+        fs.readFileSync(path.join(projectDir, 'package.json'), 'utf8')
+      );
+      expect(Object.keys(pkg.reuters.preview.branches)).toEqual(['main']);
+    });
+
+    /**
+     * `rootRelative: false` with no entry used to throw a TypeError in
+     * `removeTrailingSlash`, because the missing value reached it as `undefined`.
+     */
+    it('returns an empty string rather than throwing when fully specified', () => {
+      onBranch('never-previewed');
+
+      expect(
+        getBasePath('preview', { trailingSlash: false, rootRelative: false })
+      ).toBe('');
+      expect(getBasePath('preview', 'cdn')).toBe('cdn');
+    });
+
+    it('falls back to the shared slug when there is no branch', () => {
+      setProject({
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          reuters: {
+            preview: {
+              root: 'testfiles/2026/ab12cd34ef56/',
+              branches: {
+                _: 'https://graphics.thomsonreuters.com/testfiles/2026/ab12cd34ef56/_/',
+              },
+            },
+          },
+        }),
+      });
+      // No override, and the temp project isn't a git repo.
+      delete process.env.PUBLISHER_PREVIEW_BRANCH;
+      resetBranchCache();
+
+      expect(getBasePath('preview')).toBe('/testfiles/2026/ab12cd34ef56/_');
+    });
+
+    /**
+     * The GitHub Actions `pull_request` shape, from the build's side: the base
+     * path has to match the branch the publisher uploaded to, which is the PR's
+     * head ref — not `GITHUB_REF_NAME`, which is the PR number.
+     */
+    it('uses the PR head branch in a pull_request run', () => {
+      setProject({
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          reuters: {
+            preview: {
+              root: 'testfiles/2026/ab12cd34ef56/',
+              branches: {
+                'feat-new-chart':
+                  'https://graphics.thomsonreuters.com/testfiles/2026/ab12cd34ef56/feat-new-chart/',
+              },
+            },
+          },
+        }),
+      });
+      delete process.env.PUBLISHER_PREVIEW_BRANCH;
+      process.env.GITHUB_HEAD_REF = 'feat/new-chart';
+      process.env.GITHUB_REF_NAME = '123/merge';
+      resetBranchCache();
+
+      expect(getBasePath('preview')).toBe(
+        '/testfiles/2026/ab12cd34ef56/feat-new-chart'
+      );
+    });
+
+    it('reads a legacy string preview as having no branch entries', () => {
+      setProject({
+        'package.json': JSON.stringify({
+          name: 'test-project',
+          reuters: { preview: PREVIEW_URL },
+        }),
+      });
+      onBranch('main');
+
+      // Nothing recorded per branch yet, so there's no base to hand out — and
+      // reading must not migrate it.
+      expect(getBasePath('preview')).toBe('');
+      const pkg = JSON.parse(
+        fs.readFileSync(path.join(projectDir, 'package.json'), 'utf8')
+      );
+      expect(pkg.reuters.preview).toBe(PREVIEW_URL);
+    });
   });
 
   describe('prod mode', () => {
@@ -128,7 +290,10 @@ describe('getBasePath', () => {
         'package.json': JSON.stringify({
           name: 'test-project',
           reuters: {
-            preview: 'https://www.reuters.com/graphics/my-graphic/preview/',
+            preview: {
+              root: 'testfiles/2026/ab12cd34ef56/',
+              branches: { main: PREVIEW_URL },
+            },
           },
         }),
       });
