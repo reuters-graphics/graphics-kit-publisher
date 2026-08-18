@@ -9,10 +9,25 @@ type PkgArchive = {
   editions: EditionType[];
 };
 
+export type PkgPreview = {
+  /**
+   * S3 key prefix the project's previews live under, e.g.
+   * `testfiles/2026/ab12cd34ef56/` — **not** a URL. It has no scheme or host
+   * because it isn't a page to open: it's the prefix branch previews are
+   * composed from and the prefix `publish` deletes.
+   *
+   * Minted once and then kept for the life of the project, including across
+   * publishes, so every branch resolves under the same prefix.
+   */
+  root: string;
+  /** Branch slug → fully specified, openable preview URL. */
+  branches: Record<string, string>;
+};
+
 export type Pkg = {
   homepage: string;
   reuters: {
-    preview: string;
+    preview: PkgPreview;
     separateAssets: string;
     graphic: {
       slugs: {

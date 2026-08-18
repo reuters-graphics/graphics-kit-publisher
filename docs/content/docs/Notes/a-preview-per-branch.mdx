@@ -1,0 +1,80 @@
+---
+title: A preview per branch (4.0.0)
+sidebar:
+  badge: New
+  order: 104
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+A project used to have exactly one preview URL. So if you were working on a feature branch and someone else previewed from `main`, whoever ran `preview` last won — and the link you'd just sent an editor quietly became someone else's page.
+
+Now every git branch gets its own preview.
+
+<Tabs>
+  <TabItem label="Graphics kit" icon="laptop">
+    ```console
+    pnpm preview
+    ```
+  </TabItem>
+  <TabItem label="CLI" icon="setting">
+    ```console
+    pnpm graphics-publisher preview
+    ```
+  </TabItem>
+</Tabs>
+
+```
+◇  Uploaded preview of feat-new-chart to:
+│  https://graphics.thomsonreuters.com/testfiles/2026/XXXXXXXXXXXX/feat-new-chart/
+```
+
+Switch branches, run `preview` again, and you get a second URL alongside the first. Both keep working.
+
+## What changed in package.json
+
+`reuters.preview` used to be a single URL string. It's now a root prefix plus one entry per branch:
+
+```json
+// package.json
+{
+  "reuters": {
+    "preview": {
+      "root": "testfiles/2026/XXXXXXXXXXXX/",
+      "branches": {
+        "main": "https://graphics.thomsonreuters.com/testfiles/2026/XXXXXXXXXXXX/main/",
+        "feat-new-chart": "https://graphics.thomsonreuters.com/testfiles/2026/XXXXXXXXXXXX/feat-new-chart/"
+      }
+    }
+  }
+}
+```
+
+The `branches` values are the links you share. `root` is an S3 path, **not** a link — it has no `https://` because it isn't a page to open. It's the prefix your branch previews are built under, and the one `publish` deletes.
+
+Your project migrates itself the next time you run `preview`, keeping the URL it already had as the root. Nothing to do by hand.
+
+If you read these values in code, the [`PKG`](/graphics-kit-publisher/package/#preview) getters changed shape to match:
+
+```typescript
+PKG.preview; // ❌ was the URL string
+PKG.preview.branch('main').url; // ✅ now
+```
+
+## Nothing changes in your build
+
+Keep calling `getBasePath('preview')` exactly as you do now. It works out which branch you're on and hands back that branch's URL, so your `svelte.config.js` doesn't need to know any of this happened.
+
+<Aside>
+On a detached `HEAD` there's no branch name to find, so previews go to a shared `_` path and the publisher warns you. Set `PUBLISHER_PREVIEW_BRANCH=<name>` to get a path of your own.
+</Aside>
+
+## Previews get cleaned up again
+
+Publishing now clears **every** branch's preview, not just the one you happen to be on. Once a project is published, the previews have done their job, so `publish` removes them all and empties `branches` in your `package.json`.
+
+<Aside type="caution">
+Deleting files is skipped in CI, so previews published from a GitHub Action stick around until the next time someone runs `publish` locally — which sweeps them too.
+
+Relatedly, if you want to publish previews from CI, run `preview` once locally first and commit `reuters.preview.root`. In CI the publisher won't create one, because the `package.json` it writes gets thrown away with the runner and nothing would record where those files went.
+</Aside>

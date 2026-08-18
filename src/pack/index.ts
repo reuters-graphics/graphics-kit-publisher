@@ -31,6 +31,7 @@ import { multiselect } from '../prompts/multiselect';
 import picocolors from 'picocolors';
 import { SeparateAssets } from '../separateAssets';
 import { selectArchives } from './selection';
+import { deleteAllPreviews } from '../preview/cleanup';
 
 export class Pack {
   public metadata: Partial<PackMetadata> = {};
@@ -315,6 +316,26 @@ export class Pack {
     PKG.pack.updated = new Date().toISOString();
   }
 
+  /**
+   * Delete every preview of this project, now that it's published.
+   *
+   * Never fails the command. The pack *is* published by the time this runs, and a
+   * publish that reports failure after succeeding is worse than an orphaned
+   * preview — which the next publish would sweep anyway, since deletion works off
+   * an S3 prefix listing rather than what `package.json` records.
+   */
+  private async cleanUpPreviews() {
+    try {
+      await deleteAllPreviews();
+    } catch (error) {
+      log.warn(
+        `Couldn't clean up previews: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
   async publish() {
     const id = PKG.pack.id;
     const archives = PKG.pack.archives;
@@ -360,6 +381,7 @@ export class Pack {
         revisionType
       );
       this.setPublishTimes();
+      await this.cleanUpPreviews();
       return;
     }
 
@@ -435,6 +457,7 @@ export class Pack {
     }
 
     this.setPublishTimes();
+    await this.cleanUpPreviews();
 
     if (PKG.homepage) log.info(`🏠 ${picocolors.cyan(PKG.homepage)}`);
   }

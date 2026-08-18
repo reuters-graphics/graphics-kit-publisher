@@ -55,7 +55,7 @@ const assetsPath = getBasePath(mode, 'cdn', {
 
 `mode` is one of `dev`, `test`, `preview`, `prod`. It reads URLs the publisher has saved to `package.json`:
 
-- **preview**: before the preview build, the publisher generates a unique URL and saves it to `reuters.graphic.preview`, so `getBasePath('preview')` resolves during that build.
+- **preview**: before the preview build, the publisher works out this git branch's preview URL and saves it to `reuters.preview.branches.<branch-slug>`, so `getBasePath('preview')` resolves during that build. **One preview per branch** — `getBasePath('preview')` resolves the branch itself (from `PUBLISHER_PREVIEW_BRANCH`, then GitHub Actions' `GITHUB_HEAD_REF`/`GITHUB_REF_NAME`, then `git rev-parse`) and looks up that entry. Note there is **no env var handoff for preview**, unlike the placeholder base below: `package.json` is the channel, written before the build spawns. Returns `''` if the branch has no preview yet.
 - **prod**: the URL saved to `homepage` in `package.json`, which the graphics server issues on the first upload. **Exception:** during the build the publisher runs itself as part of `upload`, `getBasePath('prod')` returns a placeholder base instead, which the publisher rewrites per archive (see below). Any other build — a human's `npm run build`, CI, a client building the source shipped in `app.zip` — gets the real URL.
 
 ## One production build, rewritten per archive

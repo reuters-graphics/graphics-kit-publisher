@@ -15,7 +15,12 @@ After uploading your project, pack metadata from the graphics server is saved in
 // package.json
 {
   "reuters": {
-    "preview": "https://graphics.thomsonreuters.com/.../",
+    "preview": {
+      "root": "testfiles/2026/XXXXXXXXXXXX/",
+      "branches": {
+        "main": "https://graphics.thomsonreuters.com/testfiles/2026/XXXXXXXXXXXX/main/"
+      }
+    },
     "separateAssets": "https://graphics.thomsonreuters.com/.../assets.zip",
     "graphic": {
       "pack": "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX",
@@ -98,12 +103,43 @@ PKG.homepage = 'https://www.reuters.com/graphics/.../';
 
 ### preview
 
-Preview URL for the project.
+Preview URLs for the project — **one per git branch**, so previewing a feature
+branch doesn't overwrite the preview from another branch.
 
 ```typescript
-PKG.preview
-// 'https://graphics.thomsonreuters.com/.../'
+PKG.preview.root;
+// 'testfiles/2026/XXXXXXXXXXXX/'
+
+PKG.preview.branches;
+// { main: 'https://graphics.thomsonreuters.com/testfiles/2026/XXXXXXXXXXXX/main/' }
+
+PKG.preview.branch('main').url;
+// 'https://graphics.thomsonreuters.com/testfiles/2026/XXXXXXXXXXXX/main/'
 ```
+
+<Aside type="caution">
+`root` is an **S3 key prefix, not a link.** It has no scheme or host because it
+isn't a page to open — it's the prefix branch previews are built from, and the
+prefix `publish` deletes. The openable URLs are the `branches` values.
+
+`root` is minted once and then kept for the life of the project, including across
+publishes. That's deliberate: it means every branch's preview lives under the same
+prefix, so two people previewing different branches can't end up with previews in
+two unrelated places.
+</Aside>
+
+Which branch you get is resolved from `PUBLISHER_PREVIEW_BRANCH`, then GitHub
+Actions' `GITHUB_HEAD_REF` / `GITHUB_REF_NAME`, then `git rev-parse`. If none of
+those find a branch — a detached `HEAD`, or a directory that isn't a git repo —
+previews go to a shared `"_"` entry, and the publisher warns you. Set
+`PUBLISHER_PREVIEW_BRANCH` to get a path of your own instead.
+
+<Aside type="caution">
+In CI the publisher **won't create** a `root` that doesn't exist yet, because the
+`package.json` it wrote to is thrown away with the runner — nothing would record
+where those files went, so they could never be cleaned up. Run `preview` once
+locally and commit `reuters.preview.root` before wiring up a CI preview.
+</Aside>
 ### separateAssets
 
 URL to the [separate assets](/graphics-kit-publisher/config/archiveeditions/#separateassets) archive on S3.
